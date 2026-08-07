@@ -1,6 +1,12 @@
-﻿namespace Demo.Controllers
+﻿
+using Microsoft.AspNetCore.Mvc;
+namespace Demo.Controllers
 {
-    public class CartController
+    public class CartController : Controller
     {
+        public IActionResult Cart()
+        {
+            return View();
+        }
     }
 }
