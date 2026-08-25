@@ -1,3 +1,161 @@
 ﻿@{
     ViewBag.Title = "Product";
 }
+
+<style>
+    /* Horizontal Category Navigation Bar */
+    .category-nav {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 12px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .category-btn {
+        border: 1px solid #007bff;
+        background-color: transparent;
+        color: #007bff;
+        padding: 8px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .category-btn.active, .category-btn:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    /* Responsive Grid Layout based on Screen Size */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    /* Card Item Styling */
+    .product-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        background-color: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-img-wrapper {
+        width: 100%;
+        height: 180px;
+        background-color: #f8f9fa;
+    }
+
+    .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-details {
+        padding: 16px;
+        text-align: center;
+    }
+
+    .product-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+
+    .product-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2b6cb0;
+    }
+</style>
+
+<div class="container my-4">
+    <!-- Category Filter Bar (Default "ALL") -->
+    <div class="category-nav" id="categoryNav">
+        <button class="category-btn active" data-category-id="ALL">All</button>
+        @if (ViewBag.Categories != null)
+        {
+            foreach (var category in ViewBag.Categories)
+            {
+                <button class="category-btn" data-category-id="@category.Id">@category.Name</button>
+            }
+        }
+    </div>
+
+    <!-- AJAX Product Card Container -->
+    <div class="product-grid" id="productContainer">
+        <!-- Loaded dynamically via AJAX -->
+    </div>
+</div>
+
+@section foot {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initial load for "ALL" categories
+            loadProducts("ALL");
+
+            // AJAX trigger on category selection
+            document.getElementById("categoryNav").addEventListener("click", function (e) {
+                if (e.target.classList.contains("category-btn")) {
+                    document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
+                    e.target.classList.add("active");
+
+                    const categoryId = e.target.getAttribute("data-category-id");
+                    loadProducts(categoryId);
+                }
+            });
+        });
+
+        // AJAX Function to fetch filtered products
+        function loadProducts(categoryId) {
+            const url = categoryId === "ALL"
+                ? '/Product/GetProducts'
+                : `/Product/GetProducts?categoryId=${encodeURIComponent(categoryId)}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(products => {
+                    const container = document.getElementById("productContainer");
+                    container.innerHTML = "";
+
+                    if (!products || products.length === 0) {
+                        container.innerHTML = `<div class="col-12 text-center text-muted py-5">No products available in this category.</div>`;
+                        return;
+                    }
+
+                    products.forEach(product => {
+                        const cardHtml = `
+                            <div class="product-card">
+                                <div class="product-img-wrapper">
+                                    <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
+                                </div>
+                                <div class="product-details">
+                                    <div class="product-title">${product.name}</div>
+                                    <div class="product-price">$${product.unitPrice.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += cardHtml;
+                    });
+                })
+                .catch(err => console.error("Error loading products:", err));
+        }
+    </script>
+}
