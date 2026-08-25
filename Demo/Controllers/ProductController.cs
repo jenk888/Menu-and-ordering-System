@@ -3,7 +3,11 @@ namespace Demo.Controllers
 {
     public class ProductController : Controller
     {
-        public IActionResult Product()
+        //GET: Product/Index
+        [Route("")]
+        [Route("Product")]
+        [Route("Product/Index")]
+        public IActionResult Index()
         {
             return View();
         }

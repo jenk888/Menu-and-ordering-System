@@ -4,7 +4,8 @@ namespace Demo.Controllers
 {
     public class CartController : Controller
     {
-        public IActionResult Cart()
+        //GET: Cart/Index
+        public IActionResult Index()
         {
             return View();
         }

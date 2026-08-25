@@ -8,13 +8,19 @@ builder.Services.AddSqlServer<DB>($@"
     AttachDbFilename={builder.Environment.ContentRootPath}\DB.mdf;
 ");
 builder.Services.AddScoped<Helper>();
-
-// TODO
 builder.Services.AddAuthentication().AddCookie();
 builder.Services.AddHttpContextAccessor();
+// Add session
+builder.Services.AddSession();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.MapDefaultControllerRoute();
+app.UseRequestLocalization("en-MY");
+// Use session
+app.UseSession();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Product}/{action=Index}/{id?}");
 app.Run();

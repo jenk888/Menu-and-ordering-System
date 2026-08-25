@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
-    <link rel="shortcut icon" href="/images/favicon.png">
+    <link rel="shortcut icon" href="/photos/icon/logo.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="/css/pager.css">
     <link rel="stylesheet" href="/css/app.css" asp-append-version="true">
@@ -15,14 +15,36 @@
     <div class="info">@Html.Raw(TempData["Info"])</div>
 
     <header>
-        <h1><a href="/">Many-To-Many Relationship</a></h1>
+        <h1><a href="/">Menu and Ordering System</a></h1>
     </header>
 
     <nav>
-        <a href="/">Index</a>
-        <a href="/Teacher/Index">Teacher</a>
-        <a href="/Subject/Index">Subject</a>
+        <a href="/">Product</a>
+        <a href="/Cart/Index">Cart</a>
         <div></div>
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <div class="d-flex align-items-center gap-2">
+                <img src="@(User.FindFirst("Photo")?.Value ?? "/photos/default-user.png")"
+                     alt="Profile"
+                     class="rounded-circle"
+                     style="width: 32px; height: 32px; object-fit: cover;" />
+
+                <div class="d-flex flex-column text-end" style="font-size: 0.85rem; line-height: 1.2;">
+                    <span class="fw-bold">@User.Identity.Name</span>
+                    <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</small>
+                </div>
+            </div>
+
+            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+            </form>
+        }
+        else
+        {
+            <a href="/User/Login" class="btn btn-outline-primary btn-sm">Login</a>
+            <a href="/User/Register" class="btn btn-primary btn-sm">Register</a>
+        }
     </nav>
 
     <main>
@@ -32,7 +54,7 @@
 
     <footer>
         <!--
-        Developed by <b>BAE SUZY</b> &middot;
+        Developed by <b>Yellow Palace</b> &middot;
         Copyrighted &copy; @DateTime.Today.Year
         -->
         
