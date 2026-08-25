@@ -25,10 +25,10 @@
         transition: all 0.2s ease-in-out;
     }
 
-    .category-btn.active, .category-btn:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
+        .category-btn.active, .category-btn:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
 
     /* Responsive Grid Layout based on Screen Size */
     .product-grid {
@@ -50,10 +50,10 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .product-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
 
     .product-img-wrapper {
         width: 100%;
@@ -83,7 +83,33 @@
         font-size: 1.1rem;
         font-weight: 700;
         color: #2b6cb0;
+        margin-bottom: 12px;
     }
+
+    .btn-add-cart {
+        width: 100%;
+        border: none;
+        border-radius: 20px;
+        background-color: #007bff;
+        color: #fff;
+        padding: 8px 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+        .btn-add-cart:hover {
+            background-color: #0069d9;
+        }
+
+        .btn-add-cart:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .btn-add-cart.added {
+            background-color: #28a745;
+        }
 </style>
 
 <div class="container my-4">
@@ -141,6 +167,7 @@
                     }
 
                     products.forEach(product => {
+                        const outOfStock = product.stock <= 0;
                         const cardHtml = `
                             <div class="product-card">
                                 <div class="product-img-wrapper">
@@ -149,6 +176,9 @@
                                 <div class="product-details">
                                     <div class="product-title">${product.name}</div>
                                     <div class="product-price">$${product.unitPrice.toFixed(2)}</div>
+                                    <button class="btn-add-cart" data-product-id="${product.id}" ${outOfStock ? "disabled" : ""}>
+                                        ${outOfStock ? "Out of Stock" : "Add to Cart"}
+                                    </button>
                                 </div>
                             </div>
                         `;
@@ -157,5 +187,38 @@
                 })
                 .catch(err => console.error("Error loading products:", err));
         }
+
+        // AJAX trigger on "Add to Cart" click (event delegation, since cards are rendered dynamically)
+        document.getElementById("productContainer").addEventListener("click", function (e) {
+            if (!e.target.classList.contains("btn-add-cart") || e.target.disabled) return;
+
+            const btn = e.target;
+            const productId = btn.getAttribute("data-product-id");
+            btn.disabled = true;
+
+            fetch('/Cart/Add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: productId })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error("Failed to add to cart");
+                    return response.json();
+                })
+                .then(() => {
+                    btn.textContent = "Added ✓";
+                    btn.classList.add("added");
+                    setTimeout(() => {
+                        btn.textContent = "Add to Cart";
+                        btn.classList.remove("added");
+                        btn.disabled = false;
+                    }, 1200);
+                })
+                .catch(err => {
+                    console.error("Error adding to cart:", err);
+                    btn.disabled = false;
+                    alert("Could not add item to cart. Please try again.");
+                });
+        });
     </script>
 }

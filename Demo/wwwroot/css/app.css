@@ -15,21 +15,21 @@ body {
 
 header,
 footer {
-    background: #ccc;
-    padding: 10px 50px;
+    padding: 20px 10px;
 }
 
 header {
     display: flex;
     gap: 10px;
     align-items: center;
+    color: #080896
 }
 
     header h1 {
         flex: 1;
         margin: 0;
         padding-left: 40px;
-        background: url(/images/favicon.png) no-repeat left / 32px;
+        background: url(/photos/favicon.png) no-repeat left / 32px;
     }
 
     header a {
@@ -45,21 +45,20 @@ header {
     }
 
 nav {
-    background: #999;
+    background: #fff;
     padding: 0 50px;
     display: flex;
 }
 
     nav a {
-        background: #666;
-        color: #fff;
+        color: #080896;
         text-decoration: none;
         padding: 5px 10px;
         white-space: nowrap;
     }
 
         nav a:hover {
-            background: #333;
+            color: #7eb6e8;
         }
 
     nav b {
@@ -247,6 +246,10 @@ label > * {
 .field-validation-error,
 .validation-summary-errors {
     color: red;
+}
+
+.btn{
+    margin: 5px;
 }
 
 /* Photo Upload --------------------------------------------------------------- */

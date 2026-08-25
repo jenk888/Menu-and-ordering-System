@@ -30,6 +30,7 @@ namespace Demo.Controllers
                 p.Id,
                 p.Name,
                 p.UnitPrice,
+                p.Stock,
                 // Grabs the PhotoUrl of the first photo in the relation directly, or falls back to default if null
                 PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() ?? "/images/no-image.jpg"
             }).ToList();

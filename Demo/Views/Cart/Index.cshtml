@@ -1,3 +1,226 @@
-﻿@{
+﻿@model Demo.Models.CartViewModel
+@{
     ViewBag.Title = "Cart";
+}
+
+<style>
+
+    .cart-item-card {
+        border: 1px solid #edf0f5;
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        transition: box-shadow .15s ease;
+    }
+
+        .cart-item-card:hover {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+
+    .cart-item-thumb {
+        width: 64px;
+        height: 64px;
+        border-radius: 10px;
+        object-fit: cover;
+        background-color: #f2f4f8;
+        flex-shrink: 0;
+    }
+
+    .cart-item-name {
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 0.15rem;
+    }
+
+    .cart-item-unit-price {
+        color: #8a8fa3;
+        font-size: 0.9rem;
+    }
+
+    .qty-control {
+        display: flex;
+        align-items: center;
+        border: 1px solid #e2e5ec;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+        .qty-control button {
+            background: #fff;
+            border: none;
+            width: 32px;
+            height: 32px;
+            font-weight: 600;
+            color: #0d6efd;
+            cursor: pointer;
+        }
+
+            .qty-control button:hover {
+                background: #f0f6ff;
+            }
+
+        .qty-control input {
+            width: 36px;
+            border: none;
+            text-align: center;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+    .cart-item-subtotal {
+        font-weight: 700;
+        color: #1a1a2e;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    .btn-remove {
+        background: none;
+        border: none;
+        color: #c9432f;
+        font-size: 1.1rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+        .btn-remove:hover {
+            color: #a5301f;
+        }
+
+    .order-summary {
+        border: 1px solid #edf0f5;
+        border-radius: 14px;
+        padding: 1.5rem;
+        position: sticky;
+        top: 1rem;
+    }
+
+        .order-summary h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1.25rem;
+        }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        color: #4a4f5e;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1a1a2e;
+        padding-top: 0.75rem;
+        border-top: 1px solid #edf0f5;
+        margin-bottom: 1.25rem;
+    }
+
+    .btn-checkout {
+        width: 100%;
+        border-radius: 999px;
+        background-color: #0d6efd;
+        border: none;
+        padding: 0.65rem;
+        font-weight: 600;
+    }
+
+        .btn-checkout:hover {
+            background-color: #0b5ed7;
+        }
+
+    .empty-cart {
+        text-align: center;
+        color: #8a8fa3;
+        padding: 4rem 1rem;
+    }
+</style>
+
+@if (Model == null || Model.Items == null || !Model.Items.Any())
+{
+    <div class="empty-cart">
+        <p class="mb-3">Your cart is empty.</p>
+        <a asp-controller="Product" asp-action="Index" class="btn btn-primary rounded-pill px-4">Browse Products</a>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-lg-8">
+            @foreach (var item in Model.Items)
+            {
+                <div class="cart-item-card" data-cart-item-id="@item.CartItemId">
+                    <img class="cart-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
+
+                    <div class="flex-grow-1">
+                        <div class="cart-item-name">@item.ProductName</div>
+                        <div class="cart-item-unit-price">RM @item.Price.ToString("0.00") each</div>
+                    </div>
+
+                    <div class="qty-control">
+                        <button type="button" class="btn-qty-decrease" data-id="@item.CartItemId">−</button>
+                        <input type="text" class="qty-value" value="@item.Quantity" readonly />
+                        <button type="button" class="btn-qty-increase" data-id="@item.CartItemId" data-stock="@item.Stock">+</button>
+                    </div>
+
+                    <div class="cart-item-subtotal">RM @((item.Price * item.Quantity).ToString("0.00"))</div>
+
+                    <button type="button" class="btn-remove" data-id="@item.CartItemId" title="Remove item">&times;</button>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="order-summary">
+                <h5>Order Summary</h5>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>RM @Model.Subtotal.ToString("0.00")</span>
+                </div>
+                <div class="summary-row">
+                    <span>Delivery Fee</span>
+                    <span>RM @Model.DeliveryFee.ToString("0.00")</span>
+                </div>
+                <div class="summary-total">
+                    <span>Total</span>
+                    <span>RM @Model.Total.ToString("0.00")</span>
+                </div>
+                <button type="button" class="btn btn-primary btn-checkout" id="btnCheckout">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+}
+
+@section foot {
+    <script>
+        // Wire these up to your Cart controller endpoints (e.g. /Cart/UpdateQuantity, /Cart/Remove)
+        document.querySelectorAll('.btn-qty-increase').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // TODO: call increase-quantity endpoint with btn.dataset.id, then refresh totals
+            });
+        });
+
+        document.querySelectorAll('.btn-qty-decrease').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // TODO: call decrease-quantity endpoint with btn.dataset.id, then refresh totals
+            });
+        });
+
+        document.querySelectorAll('.btn-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // TODO: call remove-item endpoint with btn.dataset.id, then remove the card from DOM
+            });
+        });
+
+        document.getElementById('btnCheckout')?.addEventListener('click', () => {
+            window.location.href = '/Checkout';
+        });
+    </script>
 }
