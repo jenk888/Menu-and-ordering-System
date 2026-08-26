@@ -1,3 +1,31 @@
-﻿@{
+﻿@model LoginVM
+@{
     ViewBag.Title = "Login";
 }
+<form class="form" method="post">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label asp-for="Email"></label>
+    <input asp-for="Email" autofocus>
+    <span asp-validation-for="Email"></span>
+
+    <label asp-for="Password"></label>
+    <input asp-for="Password">
+    <span asp-validation-for="Password"></span>
+
+    <br>
+    <label>
+        <input asp-for="RememberMe">Remember Me
+    </label>
+    <br>
+
+    <section>
+        <button>Login</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>
+
+<p>
+    [ <a href="/User/Register">Register</a> |
+    <a href="/User/ResetPassword">Reset Password</a> ]
+</p>
