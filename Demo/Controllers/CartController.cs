@@ -85,7 +85,15 @@ namespace Demo.Controllers
         public IActionResult Add([FromBody] AddToCartRequest request)
         {
             var product = db.Products.Find(request.ProductId);
-            if (product == null) return NotFound();
+            if (product == null) return NotFound(new { message = "Product not found." });
+
+            // Cart.UserId is a required FK to Users.Id — without a real user row, creating
+            // a Cart for CurrentUserId throws at SaveChanges. Checking here gives a clear
+            // message instead of a raw 500. Remove this once login is wired up properly.
+            if (!db.Users.Any(u => u.Id == CurrentUserId))
+            {
+                return BadRequest(new { message = $"No user with Id '{CurrentUserId}' exists yet. Insert a User row with this Id (or wire up real authentication) before testing Add to Cart." });
+            }
 
             var cart = db.Carts
                 .Include(c => c.CartItems)
@@ -114,8 +122,18 @@ namespace Demo.Controllers
                 });
             }
 
-            db.SaveChanges();
-            return Ok();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Surfaces the real DB error (e.g. FK violation) instead of a bare 500,
+                // so the browser console / network tab shows what actually failed.
+                return StatusCode(500, new { message = "Database error while saving the cart.", detail = ex.InnerException?.Message ?? ex.Message });
+            }
+
+            return Ok(new { success = true, cartItemCount = cart.CartItems.Sum(ci => ci.Quantity) });
         }
 
         // Generates a random 5-character ID and retries on the rare collision.

@@ -175,7 +175,7 @@
                                 </div>
                                 <div class="product-details">
                                     <div class="product-title">${product.name}</div>
-                                    <div class="product-price">$${product.unitPrice.toFixed(2)}</div>
+                                    <div class="product-price">RM${product.unitPrice.toFixed(2)}</div>
                                     <button class="btn-add-cart" data-product-id="${product.id}" ${outOfStock ? "disabled" : ""}>
                                         ${outOfStock ? "Out of Stock" : "Add to Cart"}
                                     </button>
@@ -201,9 +201,13 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ productId: productId })
             })
-                .then(response => {
-                    if (!response.ok) throw new Error("Failed to add to cart");
-                    return response.json();
+                .then(async response => {
+                    const data = await response.json().catch(() => null);
+                    if (!response.ok) {
+                        const message = data?.message || `Request failed (${response.status})`;
+                        throw new Error(message);
+                    }
+                    return data;
                 })
                 .then(() => {
                     btn.textContent = "Added ✓";
@@ -217,7 +221,7 @@
                 .catch(err => {
                     console.error("Error adding to cart:", err);
                     btn.disabled = false;
-                    alert("Could not add item to cart. Please try again.");
+                    alert(err.message || "Could not add item to cart. Please try again.");
                 });
         });
     </script>
