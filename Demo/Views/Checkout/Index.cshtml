@@ -1,0 +1,194 @@
+﻿@model Demo.Models.CheckoutViewModel
+@{
+    ViewBag.Title = "Checkout";
+}
+
+<style>
+    .checkout-title {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1.5rem;
+    }
+
+    .checkout-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    .checkout-item-row:last-child {
+        border-bottom: none;
+    }
+
+    .checkout-item-thumb {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+        background-color: #f2f4f8;
+        flex-shrink: 0;
+    }
+
+    .checkout-item-name {
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+
+    .checkout-item-qty {
+        color: #8a8fa3;
+        font-size: 0.9rem;
+    }
+
+    .checkout-item-line-total {
+        font-weight: 700;
+        color: #1a1a2e;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    .order-summary {
+        border: 1px solid #edf0f5;
+        border-radius: 14px;
+        padding: 1.5rem;
+    }
+
+    .order-summary h5 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1.25rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        color: #4a4f5e;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1a1a2e;
+        padding-top: 0.75rem;
+        border-top: 1px solid #edf0f5;
+        margin-bottom: 1.25rem;
+    }
+
+    .payment-method-panel {
+        border: 1px solid #edf0f5;
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .payment-method-panel h5 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+    }
+
+    .payment-option {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        border: 1px solid #e2e5ec;
+        border-radius: 10px;
+        padding: 0.65rem 1rem;
+        margin-bottom: 0.6rem;
+        cursor: pointer;
+    }
+
+    .payment-option:hover {
+        border-color: #0d6efd;
+    }
+
+    .payment-option input {
+        accent-color: #0d6efd;
+    }
+
+    .btn-place-order {
+        width: 100%;
+        border-radius: 999px;
+        background-color: #0d6efd;
+        border: none;
+        padding: 0.65rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    .btn-place-order:hover {
+        background-color: #0b5ed7;
+    }
+</style>
+
+<h2 class="checkout-title">Checkout</h2>
+
+@if (TempData["CheckoutError"] != null)
+{
+    <div class="alert alert-danger">@TempData["CheckoutError"]</div>
+}
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="order-summary">
+            <h5>Order Items</h5>
+            @foreach (var item in Model.Items)
+            {
+                <div class="checkout-item-row">
+                    <img class="checkout-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
+                    <div class="flex-grow-1">
+                        <div class="checkout-item-name">@item.ProductName</div>
+                        <div class="checkout-item-qty">Qty: @item.Quantity &times; RM @item.Price.ToString("0.00")</div>
+                    </div>
+                    <div class="checkout-item-line-total">RM @((item.Price * item.Quantity).ToString("0.00"))</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="order-summary">
+            <h5>Order Summary</h5>
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>RM @Model.Subtotal.ToString("0.00")</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery Fee</span>
+                <span>RM @Model.DeliveryFee.ToString("0.00")</span>
+            </div>
+            <div class="summary-total">
+                <span>Total</span>
+                <span>RM @Model.Total.ToString("0.00")</span>
+            </div>
+        </div>
+
+        <form asp-controller="Checkout" asp-action="PlaceOrder" method="post">
+            <div class="payment-method-panel">
+                <h5>Payment Method</h5>
+
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="Card" checked />
+                    <span>Credit / Debit Card</span>
+                </label>
+
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="E-Wallet" />
+                    <span>E-Wallet</span>
+                </label>
+
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="Cash" />
+                    <span>Cash on Delivery</span>
+                </label>
+
+                <button type="submit" class="btn btn-primary btn-place-order">Place Order</button>
+            </div>
+        </form>
+    </div>
+</div>
