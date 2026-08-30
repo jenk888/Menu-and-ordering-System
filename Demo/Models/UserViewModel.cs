@@ -22,7 +22,7 @@ public class RegisterVM
 {
     [StringLength(100)]
     [EmailAddress]
-    [Remote("CheckEmail", "Account", ErrorMessage = "Duplicated {0}.")]
+    [Remote("CheckEmail", "User", ErrorMessage = "Duplicated {0}.")]
     public string Email { get; set; }
 
     [StringLength(100, MinimumLength = 5)]

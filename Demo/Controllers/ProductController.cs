@@ -15,21 +15,21 @@ namespace Demo.Controllers
 
         // AJAX Endpoint for Filtering Products
         [HttpGet]
-        public IActionResult GetProducts(string? categoryId = null)
+        public IActionResult GetProducts(int? categoryId = null)
         {
             var query = db.Products
                 .Where(p => p.IsAvailable);
 
-            if (!string.IsNullOrEmpty(categoryId) && categoryId != "ALL")
+            if (categoryId.HasValue)
             {
-                query = query.Where(p => p.CategoryId == categoryId);
+                query = query.Where(p => p.CategoryId == categoryId.Value);
             }
 
             var products = query.Select(p => new
             {
                 p.Id,
                 p.Name,
-                p.UnitPrice,
+                p.Price,
                 p.Stock,
                 // Grabs the PhotoUrl of the first photo in the relation directly, or falls back to default if null
                 PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() ?? "/images/no-image.jpg"
