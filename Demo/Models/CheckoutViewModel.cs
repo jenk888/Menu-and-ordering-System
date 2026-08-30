@@ -20,12 +20,17 @@ namespace Demo.Models
 
     public class OrderConfirmationViewModel
     {
-        public string OrderId { get; set; } = string.Empty;
+        public int OrderId { get; set; }
         public DateTime? OrderDateTime { get; set; }
+
+        // Kept both Status and PaymentStatus (same value) so this still matches
+        // whatever the existing Confirmation.cshtml references — Order no longer
+        // has a separate order-level status, only PaymentStatus (Unpaid/Paid).
         public string Status { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
+
         public List<OrderConfirmationItemViewModel> Items { get; set; } = new();
         public decimal Total { get; set; }
         public string PaymentMethod { get; set; } = string.Empty;
-        public string PaymentStatus { get; set; } = string.Empty;
     }
 }

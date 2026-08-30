@@ -2,8 +2,8 @@
 {
     public class CartItemViewModel
     {
-        public string CartItemId { get; set; } = string.Empty;
-        public string ProductId { get; set; } = string.Empty;
+        public int CartItemId { get; set; }
+        public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int Quantity { get; set; }
