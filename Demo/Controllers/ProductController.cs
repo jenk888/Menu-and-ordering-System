@@ -31,8 +31,12 @@ namespace Demo.Controllers
                 p.Name,
                 p.Price,
                 p.Stock,
-                // Grabs the PhotoUrl of the first photo in the relation directly, or falls back to default if null
-                PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() ?? "/images/no-image.jpg"
+                // ProductPhoto.PhotoUrl only stores the bare filename (e.g. "hiteaset_1.png"),
+                // matching what Helper.SavePhoto() returns — the actual files live in
+                // wwwroot/photos/product/, so that folder needs to be prepended here.
+                PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() != null
+                    ? "/photos/product/" + p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault()
+                    : "/photos/no-image.jpg"
             }).ToList();
 
             return Json(products);
