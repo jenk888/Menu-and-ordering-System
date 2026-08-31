@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Menu_and_Ordering_System.Migrations
+namespace Demo.Migrations
 {
     [DbContext(typeof(DB))]
     partial class DBModelSnapshot : ModelSnapshot
@@ -22,55 +22,68 @@ namespace Menu_and_Ordering_System.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Demo.Models.Cart", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Carts");
-                });
-
             modelBuilder.Entity("Demo.Models.CartItem", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("CartId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("UnitPriceSnapshot")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CartId");
-
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("CartItems");
                 });
 
+            modelBuilder.Entity("Demo.Models.CartItemModifier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CartItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ModifierOptionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartItemId");
+
+                    b.HasIndex("ModifierOptionId");
+
+                    b.ToTable("CartItemModifiers");
+                });
+
             modelBuilder.Entity("Demo.Models.Category", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -79,56 +92,152 @@ namespace Menu_and_Ordering_System.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("Demo.Models.ModifierGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SelectionType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ModifierGroups");
+                });
+
+            modelBuilder.Entity("Demo.Models.ModifierOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("ExtraPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("ModifierGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModifierGroupId");
+
+                    b.ToTable("ModifierOptions");
                 });
 
             modelBuilder.Entity("Demo.Models.Order", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("OrderDateTime")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("AmountTendered")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("ChangeGiven")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(10,2)");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(6,2)");
+                    b.Property<string>("GuestName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<string>("GuestPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VoucherId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("VoucherId");
+
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("Demo.Models.OrderDetail", b =>
+            modelBuilder.Entity("Demo.Models.OrderItem", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("OrderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ProductId")
+                    b.Property<decimal>("LineTotal")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductNameSnapshot")
                         .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(6,2)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPriceSnapshot")
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
 
@@ -136,52 +245,54 @@ namespace Menu_and_Ordering_System.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderItems");
                 });
 
-            modelBuilder.Entity("Demo.Models.Payment", b =>
+            modelBuilder.Entity("Demo.Models.OrderItemModifier", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(6,2)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("OrderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<decimal>("ExtraPriceSnapshot")
+                        .HasColumnType("decimal(10,2)");
 
-                    b.Property<DateTime?>("PaidDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentMethod")
+                    b.Property<string>("ModifierGroupNameSnapshot")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("ModifierOptionNameSnapshot")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("OrderItemId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId")
-                        .IsUnique();
+                    b.HasIndex("OrderItemId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("OrderItemModifiers");
                 });
 
             modelBuilder.Entity("Demo.Models.Product", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("CategoryId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
@@ -191,11 +302,11 @@ namespace Menu_and_Ordering_System.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<int>("Stock")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(6,2)");
 
                     b.HasKey("Id");
 
@@ -206,18 +317,19 @@ namespace Menu_and_Ordering_System.Migrations
 
             modelBuilder.Entity("Demo.Models.ProductPhoto", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("PhotoUrl")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -228,9 +340,11 @@ namespace Menu_and_Ordering_System.Migrations
 
             modelBuilder.Entity("Demo.Models.User", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -239,6 +353,9 @@ namespace Menu_and_Ordering_System.Migrations
 
                     b.Property<int>("FailedLoginCount")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LockoutUntil")
                         .HasColumnType("datetime2");
@@ -254,7 +371,6 @@ namespace Menu_and_Ordering_System.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("ProfilePhoto")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -270,9 +386,11 @@ namespace Menu_and_Ordering_System.Migrations
 
             modelBuilder.Entity("Demo.Models.UserToken", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("Expire")
                         .HasColumnType("datetime2");
@@ -290,9 +408,8 @@ namespace Menu_and_Ordering_System.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -301,51 +418,159 @@ namespace Menu_and_Ordering_System.Migrations
                     b.ToTable("UserTokens");
                 });
 
-            modelBuilder.Entity("Demo.Models.Cart", b =>
+            modelBuilder.Entity("Demo.Models.Voucher", b =>
                 {
-                    b.HasOne("Demo.Models.User", "User")
-                        .WithOne("Cart")
-                        .HasForeignKey("Demo.Models.Cart", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Navigation("User");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VoucherRuleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VoucherRuleId");
+
+                    b.ToTable("Vouchers");
+                });
+
+            modelBuilder.Entity("Demo.Models.VoucherRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int?>("ExpiryDurationDays")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MinimumSpend")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VoucherRules");
                 });
 
             modelBuilder.Entity("Demo.Models.CartItem", b =>
                 {
-                    b.HasOne("Demo.Models.Cart", "Cart")
-                        .WithMany("CartItems")
-                        .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Demo.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Cart");
+                    b.HasOne("Demo.Models.User", "User")
+                        .WithMany("CartItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Demo.Models.CartItemModifier", b =>
+                {
+                    b.HasOne("Demo.Models.CartItem", "CartItem")
+                        .WithMany("SelectedModifiers")
+                        .HasForeignKey("CartItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Models.ModifierOption", "ModifierOption")
+                        .WithMany()
+                        .HasForeignKey("ModifierOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CartItem");
+
+                    b.Navigation("ModifierOption");
+                });
+
+            modelBuilder.Entity("Demo.Models.ModifierGroup", b =>
+                {
+                    b.HasOne("Demo.Models.Product", "Product")
+                        .WithMany("ModifierGroups")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Demo.Models.ModifierOption", b =>
+                {
+                    b.HasOne("Demo.Models.ModifierGroup", "ModifierGroup")
+                        .WithMany("Options")
+                        .HasForeignKey("ModifierGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ModifierGroup");
                 });
 
             modelBuilder.Entity("Demo.Models.Order", b =>
                 {
                     b.HasOne("Demo.Models.User", "User")
                         .WithMany("Orders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("Demo.Models.Voucher", "Voucher")
+                        .WithMany()
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
+
+                    b.Navigation("Voucher");
                 });
 
-            modelBuilder.Entity("Demo.Models.OrderDetail", b =>
+            modelBuilder.Entity("Demo.Models.OrderItem", b =>
                 {
                     b.HasOne("Demo.Models.Order", "Order")
-                        .WithMany("Details")
+                        .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -361,15 +586,15 @@ namespace Menu_and_Ordering_System.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Demo.Models.Payment", b =>
+            modelBuilder.Entity("Demo.Models.OrderItemModifier", b =>
                 {
-                    b.HasOne("Demo.Models.Order", "Order")
-                        .WithOne("Payment")
-                        .HasForeignKey("Demo.Models.Payment", "OrderId")
+                    b.HasOne("Demo.Models.OrderItem", "OrderItem")
+                        .WithMany("SelectedModifiers")
+                        .HasForeignKey("OrderItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Order");
+                    b.Navigation("OrderItem");
                 });
 
             modelBuilder.Entity("Demo.Models.Product", b =>
@@ -405,9 +630,28 @@ namespace Menu_and_Ordering_System.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Demo.Models.Cart", b =>
+            modelBuilder.Entity("Demo.Models.Voucher", b =>
                 {
-                    b.Navigation("CartItems");
+                    b.HasOne("Demo.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Models.VoucherRule", "VoucherRule")
+                        .WithMany("Vouchers")
+                        .HasForeignKey("VoucherRuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("VoucherRule");
+                });
+
+            modelBuilder.Entity("Demo.Models.CartItem", b =>
+                {
+                    b.Navigation("SelectedModifiers");
                 });
 
             modelBuilder.Entity("Demo.Models.Category", b =>
@@ -415,25 +659,40 @@ namespace Menu_and_Ordering_System.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("Demo.Models.ModifierGroup", b =>
+                {
+                    b.Navigation("Options");
+                });
+
             modelBuilder.Entity("Demo.Models.Order", b =>
                 {
-                    b.Navigation("Details");
+                    b.Navigation("OrderItems");
+                });
 
-                    b.Navigation("Payment");
+            modelBuilder.Entity("Demo.Models.OrderItem", b =>
+                {
+                    b.Navigation("SelectedModifiers");
                 });
 
             modelBuilder.Entity("Demo.Models.Product", b =>
                 {
+                    b.Navigation("ModifierGroups");
+
                     b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("Demo.Models.User", b =>
                 {
-                    b.Navigation("Cart");
+                    b.Navigation("CartItems");
 
                     b.Navigation("Orders");
 
                     b.Navigation("UserTokens");
+                });
+
+            modelBuilder.Entity("Demo.Models.VoucherRule", b =>
+                {
+                    b.Navigation("Vouchers");
                 });
 #pragma warning restore 612, 618
         }

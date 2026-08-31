@@ -24,6 +24,27 @@ public class DB(DbContextOptions options) : DbContext(options)
 
     public DbSet<VoucherRule> VoucherRules { get; set; }
     public DbSet<Voucher> Vouchers { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.Voucher)
+            .WithMany()
+            .HasForeignKey(o => o.VoucherId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Voucher>()
+            .HasOne(v => v.User)
+            .WithMany()
+            .HasForeignKey(v => v.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CartItemModifier>()
+            .HasOne(cim => cim.ModifierOption)
+            .WithMany()
+            .HasForeignKey(cim => cim.ModifierOptionId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }
 
 // ============================================================================
