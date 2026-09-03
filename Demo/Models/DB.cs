@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -195,7 +195,7 @@ public class ProductPhoto
     public string PhotoUrl { get; set; }
 
     [Required]
-    public int ProductId { get; set; }
+    public string ProductId { get; set; }
     public Product Product { get; set; }
 }
 
@@ -213,7 +213,7 @@ public class ModifierGroup
     public bool IsRequired { get; set; }
 
     [Required]
-    public int ProductId { get; set; }
+    public string ProductId { get; set; }
     public Product Product { get; set; }
 
     public List<ModifierOption> Options { get; set; } = [];
@@ -255,7 +255,7 @@ public class CartItem
     public User User { get; set; }
 
     [Required]
-    public int ProductId { get; set; }
+    public string ProductId { get; set; }
     public Product Product { get; set; }
 
     public List<CartItemModifier> SelectedModifiers { get; set; } = [];
@@ -432,7 +432,7 @@ public class OrderItem
     public Order Order { get; set; }
 
     [Required]
-    public int ProductId { get; set; }
+    public string ProductId { get; set; }
     public Product Product { get; set; }
 
     public List<OrderItemModifier> SelectedModifiers { get; set; } = [];
