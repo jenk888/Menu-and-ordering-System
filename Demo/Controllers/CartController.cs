@@ -134,6 +134,6 @@ namespace Demo.Controllers
 
     public class AddToCartRequest
     {
-        public int ProductId { get; set; }
+        public string ProductId { get; set; }
     }
 }
