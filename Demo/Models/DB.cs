@@ -88,7 +88,7 @@ public enum VoucherStatus
 public class User
 {
     [Key]
-    public int Id { get; set; }
+    public string Id { get; set; }
 
     [Required, MaxLength(100)]
     public string Name { get; set; }
@@ -135,7 +135,7 @@ public class UserToken
     public DateTime? Expire { get; set; }
 
     [Required]
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     public User User { get; set; }
 }
 
@@ -158,8 +158,8 @@ public class Category
 
 public class Product
 {
-    [Key]
-    public int Id { get; set; }
+    [Key, MaxLength(10)]
+    public string Id { get; set; }
 
     [Required, MaxLength(100)]
     public string Name { get; set; }
@@ -251,7 +251,7 @@ public class CartItem
     public decimal UnitPriceSnapshot { get; set; }
 
     [Required]
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     public User User { get; set; }
 
     [Required]
@@ -339,7 +339,7 @@ public class Voucher
     public VoucherRule VoucherRule { get; set; }
 
     [Required]
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     public User User { get; set; }
 
     // Derived, read-only — this is the actual state to check/display; UsedAt/ExpiresAt
@@ -389,7 +389,7 @@ public class Order
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Null for guest orders.
-    public int? UserId { get; set; }
+    public string? UserId { get; set; }
     public User? User { get; set; }
 
     // Members only; always null for guest orders.

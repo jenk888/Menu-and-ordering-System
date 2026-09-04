@@ -7,7 +7,7 @@ namespace Demo.Controllers
     public class CheckoutController(DB db) : Controller
     {
         // TODO: replace with your actual signed-in user id lookup (e.g. from claims / session)
-        private int CurrentUserId => 1;
+        private string CurrentUserId => "1";
 
         //GET: Checkout/Index
         public IActionResult Index()
