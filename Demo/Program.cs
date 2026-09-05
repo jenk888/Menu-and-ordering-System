@@ -6,7 +6,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSqlServer<DB>($@"
     Data Source=(LocalDB)\MSSQLLocalDB;
     AttachDbFilename={builder.Environment.ContentRootPath}\DB.mdf;
-    Initial Catalog=DemoDB;
+    Initial Catalog=MenuOrderingDB;
 ");
 builder.Services.AddScoped<Helper>();
 builder.Services.AddAuthentication().AddCookie();

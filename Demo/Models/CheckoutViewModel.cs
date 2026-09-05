@@ -26,9 +26,11 @@ namespace Demo.Models
         public string PaymentMethod { get; set; } = string.Empty;
         public string PaymentStatus { get; set; } = string.Empty;
 
+
         public List<OrderConfirmationItemViewModel> Items { get; set; } = new();
         public decimal Subtotal { get; set; }
         public decimal SST { get; set; }
         public decimal Total { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty;
     }
 }

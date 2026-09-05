@@ -14,7 +14,27 @@ namespace Demo.Controllers
         //GET: Cart/Index
         public IActionResult Index()
         {
-            return View(new CartViewModel { Items = GetCartItems() });
+            var items = db.CartItems
+                .Include(ci => ci.Product)
+                    .ThenInclude(p => p.Photos)
+                .Where(ci => ci.UserId == CurrentUserId)
+                .ToList();
+
+            var vm = new CartViewModel
+            {
+                Items = items.Select(ci => new CartItemViewModel
+                {
+                    CartItemId = ci.Id,
+                    ProductId = ci.ProductId,
+                    ProductName = ci.Product.Name,
+                    Price = ci.Product.Price,
+                    Quantity = ci.Quantity,
+                    Stock = ci.Product.Stock,
+                    ImageUrl = ci.Product.Photos.FirstOrDefault()?.PhotoUrl
+                }).ToList()
+            };
+
+            return View(vm);
         }
 
         //POST: Cart/Increase/{id}
@@ -224,6 +244,6 @@ namespace Demo.Controllers
 
     public class AddToCartRequest
     {
-        public int ProductId { get; set; }
+        public string ProductId { get; set; }
     }
 }
