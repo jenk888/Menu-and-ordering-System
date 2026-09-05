@@ -130,8 +130,6 @@ public class Category
     [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
 
-    public int DisplayOrder { get; set; }
-
     public List<Product> Products { get; set; } = [];
 }
 
