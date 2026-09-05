@@ -79,6 +79,19 @@
         margin-bottom: 1.25rem;
     }
 
+    .guest-details-panel {
+        border: 1px solid #edf0f5;
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .guest-details-panel h5 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+    }
+
     .payment-method-panel {
         border: 1px solid #edf0f5;
         border-radius: 14px;
@@ -150,7 +163,20 @@
             }
         </div>
     </div>
-
+    @if (Model.IsGuest)
+    {
+        <div class="guest-details mb-3">
+            <h5>Your Details</h5>
+            <div class="mb-2">
+                <label class="form-label">Name</label>
+                <input type="text" name="guestName" class="form-control" autocomplete="name" required />
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" name="guestPhone" class="form-control" autocomplete="tel" required />
+            </div>
+        </div>
+    }
     <div class="col-lg-5">
         <div class="order-summary">
             <h5>Order Summary</h5>
@@ -159,8 +185,8 @@
                 <span>RM @Model.Subtotal.ToString("0.00")</span>
             </div>
             <div class="summary-row">
-                <span>Delivery Fee</span>
-                <span>RM @Model.DeliveryFee.ToString("0.00")</span>
+                <span>SST (6%)</span>
+                <span>RM @Model.SST.ToString("0.00")</span>
             </div>
             <div class="summary-total">
                 <span>Total</span>
@@ -169,22 +195,37 @@
         </div>
 
         <form asp-controller="Checkout" asp-action="PlaceOrder" method="post">
+            @if (Model.IsGuest)
+            {
+                <div class="guest-details-panel">
+                    <h5>Your Details</h5>
+                    <div class="mb-2">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="guestName" class="form-control" autocomplete="name" required />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" name="guestPhone" class="form-control" autocomplete="tel" required />
+                    </div>
+                </div>
+            }
+
             <div class="payment-method-panel">
                 <h5>Payment Method</h5>
 
                 <label class="payment-option">
-                    <input type="radio" name="paymentMethod" value="Card" checked />
+                    <input type="radio" name="paymentMethod" value="CreditCard" checked />
                     <span>Credit / Debit Card</span>
                 </label>
 
                 <label class="payment-option">
-                    <input type="radio" name="paymentMethod" value="E-Wallet" />
-                    <span>E-Wallet</span>
+                    <input type="radio" name="paymentMethod" value="TouchNGo" />
+                    <span>Touch 'n Go E-Wallet</span>
                 </label>
 
                 <label class="payment-option">
                     <input type="radio" name="paymentMethod" value="Cash" />
-                    <span>Cash on Delivery</span>
+                    <span>Cash</span>
                 </label>
 
                 <button type="submit" class="btn btn-primary btn-place-order">Place Order</button>

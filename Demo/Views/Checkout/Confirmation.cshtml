@@ -48,8 +48,15 @@
         border-bottom: 1px solid #edf0f5;
     }
 
-    .confirmation-item-row:last-child {
-        border-bottom: none;
+        .confirmation-item-row:last-child {
+            border-bottom: none;
+        }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        color: #4a4f5e;
     }
 
     .summary-total {
@@ -93,10 +100,6 @@
             <span>@Model.OrderDateTime?.ToString("dd MMM yyyy, h:mm tt")</span>
         </div>
         <div class="meta-row">
-            <span>Status</span>
-            <span>@Model.Status</span>
-        </div>
-        <div class="meta-row">
             <span>Payment Method</span>
             <span>@Model.PaymentMethod</span>
         </div>
@@ -115,6 +118,16 @@
             </div>
         }
 
+        <hr />
+
+        <div class="summary-row">
+            <span>Subtotal</span>
+            <span>RM @Model.Subtotal.ToString("0.00")</span>
+        </div>
+        <div class="summary-row">
+            <span>SST (6%)</span>
+            <span>RM @Model.SST.ToString("0.00")</span>
+        </div>
         <div class="summary-total">
             <span>Total</span>
             <span>RM @Model.Total.ToString("0.00")</span>

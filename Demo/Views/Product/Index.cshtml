@@ -134,10 +134,8 @@
 @section foot {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Initial load for "ALL" categories
             loadProducts("ALL");
 
-            // AJAX trigger on category selection
             document.getElementById("categoryNav").addEventListener("click", function (e) {
                 if (e.target.classList.contains("category-btn")) {
                     document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
@@ -149,7 +147,6 @@
             });
         });
 
-        // AJAX Function to fetch filtered products
         function loadProducts(categoryId) {
             const url = categoryId === "ALL"
                 ? '/Product/GetProducts'
@@ -175,7 +172,7 @@
                                 </div>
                                 <div class="product-details">
                                     <div class="product-title">${product.name}</div>
-                                    <div class="product-price">RM${product.unitPrice.toFixed(2)}</div>
+                                    <div class="product-price">RM${product.price.toFixed(2)}</div>
                                     <button class="btn-add-cart" data-product-id="${product.id}" ${outOfStock ? "disabled" : ""}>
                                         ${outOfStock ? "Out of Stock" : "Add to Cart"}
                                     </button>
@@ -188,12 +185,11 @@
                 .catch(err => console.error("Error loading products:", err));
         }
 
-        // AJAX trigger on "Add to Cart" click (event delegation, since cards are rendered dynamically)
         document.getElementById("productContainer").addEventListener("click", function (e) {
             if (!e.target.classList.contains("btn-add-cart") || e.target.disabled) return;
 
             const btn = e.target;
-            const productId = btn.getAttribute("data-product-id");
+            const productId = parseInt(btn.getAttribute("data-product-id"), 10);
             btn.disabled = true;
 
             fetch('/Cart/Add', {

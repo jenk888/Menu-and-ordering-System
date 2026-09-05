@@ -1,13 +1,13 @@
 namespace Demo.Models
 {
-    // Reuses CartItemViewModel (defined in CartViewModel.cs) since the checkout
-    // summary needs the exact same shape: product name, price, quantity, stock, image.
     public class CheckoutViewModel
     {
         public List<CartItemViewModel> Items { get; set; } = new();
         public decimal Subtotal => Items.Sum(i => i.Price * i.Quantity);
-        public decimal DeliveryFee { get; set; } = 0m;
-        public decimal Total => Subtotal + DeliveryFee;
+        public decimal SST => Math.Round(Subtotal * 0.06m, 2);
+        public decimal Total => Subtotal + SST;
+
+        public bool IsGuest { get; set; }
     }
 
     public class OrderConfirmationItemViewModel
@@ -20,12 +20,15 @@ namespace Demo.Models
 
     public class OrderConfirmationViewModel
     {
-        public string OrderId { get; set; } = string.Empty;
+        public int OrderId { get; set; }
         public DateTime? OrderDateTime { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public List<OrderConfirmationItemViewModel> Items { get; set; } = new();
-        public decimal Total { get; set; }
+
         public string PaymentMethod { get; set; } = string.Empty;
         public string PaymentStatus { get; set; } = string.Empty;
+
+        public List<OrderConfirmationItemViewModel> Items { get; set; } = new();
+        public decimal Subtotal { get; set; }
+        public decimal SST { get; set; }
+        public decimal Total { get; set; }
     }
 }

@@ -20,18 +20,17 @@ namespace Demo.Controllers
             var query = db.Products
                 .Where(p => p.IsAvailable);
 
-            if (!string.IsNullOrEmpty(categoryId) && categoryId != "ALL")
+            if (!string.IsNullOrEmpty(categoryId) && categoryId != "ALL" && int.TryParse(categoryId, out int catId))
             {
-                query = query.Where(p => p.CategoryId == categoryId);
+                query = query.Where(p => p.CategoryId == catId);
             }
 
             var products = query.Select(p => new
             {
                 p.Id,
                 p.Name,
-                p.UnitPrice,
+                p.Price,
                 p.Stock,
-                // Grabs the PhotoUrl of the first photo in the relation directly, or falls back to default if null
                 PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() ?? "/images/no-image.jpg"
             }).ToList();
 

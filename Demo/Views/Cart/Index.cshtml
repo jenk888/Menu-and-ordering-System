@@ -68,6 +68,11 @@
         background: #f0f6ff;
     }
 
+    .qty-control button:disabled {
+        color: #c7cbd6;
+        cursor: not-allowed;
+    }
+
     .qty-control input {
         width: 36px;
         border: none;
@@ -166,7 +171,7 @@ else
         <div class="col-lg-8">
             @foreach (var item in Model.Items)
             {
-                <div class="cart-item-card" data-cart-item-id="@item.CartItemId">
+                <div class="cart-item-card" data-product-id="@item.ProductId">
                     <img class="cart-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
 
                     <div class="flex-grow-1">
@@ -175,14 +180,14 @@ else
                     </div>
 
                     <div class="qty-control">
-                        <button type="button" class="btn-qty-decrease" data-id="@item.CartItemId">−</button>
+                        <button type="button" class="btn-qty-decrease" data-id="@item.ProductId" @(item.Quantity <= 1 ? "disabled" : "")>−</button>
                         <input type="text" class="qty-value" value="@item.Quantity" readonly />
-                        <button type="button" class="btn-qty-increase" data-id="@item.CartItemId" data-stock="@item.Stock">+</button>
+                        <button type="button" class="btn-qty-increase" data-id="@item.ProductId" data-stock="@item.Stock" @(item.Quantity >= item.Stock ? "disabled" : "")>+</button>
                     </div>
 
                     <div class="cart-item-subtotal">RM @((item.Price * item.Quantity).ToString("0.00"))</div>
 
-                    <button type="button" class="btn-remove" data-id="@item.CartItemId" title="Remove item">&times;</button>
+                    <button type="button" class="btn-remove" data-id="@item.ProductId" title="Remove item">&times;</button>
                 </div>
             }
         </div>
@@ -192,15 +197,11 @@ else
                 <h5>Order Summary</h5>
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span>RM @Model.Subtotal.ToString("0.00")</span>
-                </div>
-                <div class="summary-row">
-                    <span>Delivery Fee</span>
-                    <span>RM @Model.DeliveryFee.ToString("0.00")</span>
+                    <span id="summarySubtotal">RM @Model.Subtotal.ToString("0.00")</span>
                 </div>
                 <div class="summary-total">
                     <span>Total</span>
-                    <span>RM @Model.Total.ToString("0.00")</span>
+                    <span id="summaryTotal">RM @Model.Total.ToString("0.00")</span>
                 </div>
                 <button type="button" class="btn btn-primary btn-checkout" id="btnCheckout">Proceed to Checkout</button>
             </div>
@@ -210,22 +211,77 @@ else
 
 @section foot {
     <script>
-        // Wire these up to your Cart controller endpoints (e.g. /Cart/UpdateQuantity, /Cart/Remove)
+        function formatMoney(n) {
+            return 'RM ' + n.toFixed(2);
+        }
+
+        function recalcOrderTotal() {
+            let subtotal = 0;
+            document.querySelectorAll('.cart-item-card').forEach(card => {
+                const text = card.querySelector('.cart-item-subtotal').textContent.replace('RM', '').trim();
+                subtotal += parseFloat(text) || 0;
+            });
+
+            document.getElementById('summarySubtotal').textContent = formatMoney(subtotal);
+            document.getElementById('summaryTotal').textContent = formatMoney(subtotal);
+
+            if (document.querySelectorAll('.cart-item-card').length === 0) {
+                window.location.reload();
+            }
+        }
+
+        async function postJson(url) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: 'Something went wrong.' }));
+                alert(err.message || 'Something went wrong.');
+                return null;
+            }
+            const text = await res.text();
+            return text ? JSON.parse(text) : {};
+        }
+
+        function updateCardFromResponse(card, data) {
+            card.querySelector('.qty-value').value = data.quantity;
+            card.querySelector('.cart-item-subtotal').textContent = formatMoney(data.subtotal);
+
+            const increaseBtn = card.querySelector('.btn-qty-increase');
+            const decreaseBtn = card.querySelector('.btn-qty-decrease');
+            const stock = parseInt(increaseBtn.dataset.stock, 10);
+
+            increaseBtn.disabled = data.quantity >= stock;
+            decreaseBtn.disabled = data.quantity <= 1;
+
+            recalcOrderTotal();
+        }
+
         document.querySelectorAll('.btn-qty-increase').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // TODO: call increase-quantity endpoint with btn.dataset.id, then refresh totals
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.id;
+                const data = await postJson(`/Cart/Increase/${id}`);
+                if (data) updateCardFromResponse(btn.closest('.cart-item-card'), data);
             });
         });
 
         document.querySelectorAll('.btn-qty-decrease').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // TODO: call decrease-quantity endpoint with btn.dataset.id, then refresh totals
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.id;
+                const data = await postJson(`/Cart/Decrease/${id}`);
+                if (data) updateCardFromResponse(btn.closest('.cart-item-card'), data);
             });
         });
 
         document.querySelectorAll('.btn-remove').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // TODO: call remove-item endpoint with btn.dataset.id, then remove the card from DOM
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.id;
+                const data = await postJson(`/Cart/Remove/${id}`);
+                if (data !== null) {
+                    btn.closest('.cart-item-card').remove();
+                    recalcOrderTotal();
+                }
             });
         });
 

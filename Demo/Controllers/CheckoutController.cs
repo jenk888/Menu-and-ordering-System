@@ -4,21 +4,20 @@ using Demo.Models;
 
 namespace Demo.Controllers
 {
-    public class CheckoutController(DB db) : Controller
+    public class CheckoutController(DB db, Helper hp) : Controller
     {
-        // TODO: replace with your actual signed-in user id lookup (e.g. from claims / session)
-        private string CurrentUserId => "U0001";
+        private User? CurrentUser =>
+            User.Identity?.IsAuthenticated == true
+                ? db.Users.FirstOrDefault(u => u.Email == User.Identity!.Name)
+                : null;
 
         //GET: Checkout/Index
         public IActionResult Index()
         {
-            var cart = db.Carts
-                .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.Product)
-                        .ThenInclude(p => p.Photos)
-                .FirstOrDefault(c => c.UserId == CurrentUserId);
+            var user = CurrentUser;
+            var items = GetCartItems(user);
 
-            if (cart == null || !cart.CartItems.Any())
+            if (!items.Any())
             {
                 TempData["CheckoutError"] = "Your cart is empty.";
                 return RedirectToAction("Index", "Cart");
@@ -26,16 +25,8 @@ namespace Demo.Controllers
 
             var vm = new CheckoutViewModel
             {
-                Items = cart.CartItems.Select(ci => new CartItemViewModel
-                {
-                    CartItemId = ci.Id,
-                    ProductId = ci.ProductId,
-                    ProductName = ci.Product.Name,
-                    Price = ci.Product.UnitPrice,
-                    Quantity = ci.Quantity,
-                    Stock = ci.Product.Stock,
-                    ImageUrl = ci.Product.Photos.FirstOrDefault()?.PhotoUrl
-                }).ToList()
+                Items = items,
+                IsGuest = user == null
             };
 
             return View(vm);
@@ -43,74 +34,87 @@ namespace Demo.Controllers
 
         //POST: Checkout/PlaceOrder
         [HttpPost]
-        public IActionResult PlaceOrder(string paymentMethod)
+        public IActionResult PlaceOrder(string paymentMethod, string? guestName, string? guestPhone)
         {
-            if (string.IsNullOrWhiteSpace(paymentMethod))
+            if (!Enum.TryParse<PaymentMethod>(paymentMethod, ignoreCase: true, out var method))
             {
-                TempData["CheckoutError"] = "Please select a payment method.";
+                TempData["CheckoutError"] = "Please select a valid payment method.";
                 return RedirectToAction("Index");
             }
 
-            var cart = db.Carts
-                .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.Product)
-                .FirstOrDefault(c => c.UserId == CurrentUserId);
+            var user = CurrentUser;
 
-            if (cart == null || !cart.CartItems.Any())
+            if (user == null)
+            {
+                if (string.IsNullOrWhiteSpace(guestName) || string.IsNullOrWhiteSpace(guestPhone))
+                {
+                    TempData["CheckoutError"] = "Please enter your name and phone number.";
+                    return RedirectToAction("Index");
+                }
+            }
+
+            var cartItems = GetCartItems(user);
+            if (!cartItems.Any())
             {
                 TempData["CheckoutError"] = "Your cart is empty.";
                 return RedirectToAction("Index", "Cart");
             }
 
-            // Re-check stock server-side before committing the order, in case
-            // it changed since the cart page was last loaded.
-            foreach (var item in cart.CartItems)
+            foreach (var item in cartItems)
             {
-                if (item.Quantity > item.Product.Stock)
+                var product = db.Products.Find(item.ProductId);
+                if (product == null || item.Quantity > product.Stock)
                 {
-                    TempData["CheckoutError"] = $"{item.Product.Name} only has {item.Product.Stock} left in stock.";
+                    TempData["CheckoutError"] = $"{item.ProductName} only has {product?.Stock ?? 0} left in stock.";
                     return RedirectToAction("Index");
                 }
             }
 
-            var total = cart.CartItems.Sum(ci => ci.Quantity * ci.Product.UnitPrice);
+            var subtotal = cartItems.Sum(ci => ci.Quantity * ci.Price);
+            var sst = Math.Round(subtotal * 0.06m, 2);
+            var total = subtotal + sst;
+
+            var paymentStatus = method == PaymentMethod.Cash ? PaymentStatus.Unpaid : PaymentStatus.Paid;
 
             var order = new Order
             {
-                Id = GenerateId(db.Orders.Select(o => o.Id)),
-                OrderDateTime = DateTime.Now,
-                Status = "Paid",
-                TotalAmount = total,
-                UserId = CurrentUserId
+                UserId = user?.Id,
+                GuestName = user == null ? guestName : null,
+                GuestPhone = user == null ? guestPhone : null,
+                PaymentMethod = method,
+                PaymentStatus = paymentStatus,
+                Subtotal = subtotal,
+                DiscountAmount = 0,
+                Total = total,
+                CreatedAt = DateTime.UtcNow
             };
 
-            foreach (var item in cart.CartItems)
+            foreach (var item in cartItems)
             {
-                order.Details.Add(new OrderDetail
+                var product = db.Products.Find(item.ProductId)!;
+
+                order.OrderItems.Add(new OrderItem
                 {
-                    Id = GenerateId(db.OrderDetails.Select(od => od.Id)),
-                    ProductId = item.ProductId,
+                    ProductId = product.Id,
+                    ProductNameSnapshot = product.Name,
+                    UnitPriceSnapshot = product.Price,
                     Quantity = item.Quantity,
-                    UnitPrice = item.Product.UnitPrice
+                    LineTotal = item.Quantity * product.Price
                 });
 
-                // Deduct stock now that the order is committed
-                item.Product.Stock -= item.Quantity;
+                product.Stock -= item.Quantity;
             }
-
-            order.Payment = new Payment
-            {
-                Id = GenerateId(db.Payments.Select(p => p.Id)),
-                PaymentMethod = paymentMethod,
-                Amount = total,
-                Status = "Completed",
-                PaidDate = DateTime.Now
-            };
 
             db.Orders.Add(order);
 
-            // Empty the cart now that its items have become an order
-            db.CartItems.RemoveRange(cart.CartItems);
+            if (user != null)
+            {
+                db.CartItems.RemoveRange(db.CartItems.Where(ci => ci.UserId == user.Id));
+            }
+            else
+            {
+                hp.SetCart(null); // clears the guest session cart
+            }
 
             db.SaveChanges();
 
@@ -118,49 +122,77 @@ namespace Demo.Controllers
         }
 
         //GET: Checkout/Confirmation/{id}
-        public IActionResult Confirmation(string id)
+        public IActionResult Confirmation(int id)
         {
+            var user = CurrentUser;
+
             var order = db.Orders
-                .Include(o => o.Details)
-                    .ThenInclude(d => d.Product)
-                .Include(o => o.Payment)
-                .FirstOrDefault(o => o.Id == id && o.UserId == CurrentUserId);
+                .Include(o => o.OrderItems)
+                .FirstOrDefault(o => o.Id == id && (user != null ? o.UserId == user.Id : o.UserId == null));
 
             if (order == null) return NotFound();
 
             var vm = new OrderConfirmationViewModel
             {
                 OrderId = order.Id,
-                OrderDateTime = order.OrderDateTime,
-                Status = order.Status,
-                Total = order.TotalAmount,
-                PaymentMethod = order.Payment?.PaymentMethod ?? "-",
-                PaymentStatus = order.Payment?.Status ?? "-",
-                Items = order.Details.Select(d => new OrderConfirmationItemViewModel
+                OrderDateTime = order.CreatedAt,
+                PaymentMethod = order.PaymentMethod.ToString(),
+                PaymentStatus = order.PaymentStatus.ToString(),
+                Subtotal = order.Subtotal,
+                SST = order.Total - order.Subtotal + order.DiscountAmount,
+                Total = order.Total,
+                Items = order.OrderItems.Select(oi => new OrderConfirmationItemViewModel
                 {
-                    ProductName = d.Product.Name,
-                    UnitPrice = d.UnitPrice,
-                    Quantity = d.Quantity
+                    ProductName = oi.ProductNameSnapshot,
+                    UnitPrice = oi.UnitPriceSnapshot,
+                    Quantity = oi.Quantity
                 }).ToList()
             };
 
             return View(vm);
         }
 
-        // Generates a random 5-character ID and retries on the rare collision.
-        // NOTE: duplicated from CartController for now — worth moving to a shared
-        // helper class if you add more controllers that need generated IDs.
-        private static string GenerateId(IQueryable<string> existingIds)
+        private List<CartItemViewModel> GetCartItems(User? user)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            string id;
-            do
+            if (user != null)
             {
-                id = new string(Enumerable.Range(0, 5).Select(_ => chars[random.Next(chars.Length)]).ToArray());
-            } while (existingIds.Any(x => x == id));
+                return db.CartItems
+                    .Include(ci => ci.Product)
+                        .ThenInclude(p => p.Photos)
+                    .Where(ci => ci.UserId == user.Id)
+                    .Select(ci => new CartItemViewModel
+                    {
+                        ProductId = ci.ProductId,
+                        ProductName = ci.Product.Name,
+                        Price = ci.Product.Price,
+                        Quantity = ci.Quantity,
+                        Stock = ci.Product.Stock,
+                        ImageUrl = ci.Product.Photos.FirstOrDefault() != null ? ci.Product.Photos.First().PhotoUrl : null
+                    })
+                    .ToList();
+            }
 
-            return id;
+            var sessionCart = hp.GetCart();
+            if (sessionCart.Count == 0) return [];
+
+            var ids = sessionCart.Keys.Select(int.Parse).ToList();
+            var products = db.Products.Include(p => p.Photos).Where(p => ids.Contains(p.Id)).ToList();
+
+            return sessionCart
+                .Select(kv => products.FirstOrDefault(p => p.Id == int.Parse(kv.Key)) is { } product
+                    ? new CartItemViewModel
+                    {
+                        ProductId = product.Id,
+                        ProductName = product.Name,
+                        Price = product.Price,
+                        Quantity = kv.Value,
+                        Stock = product.Stock,
+                        ImageUrl = product.Photos.FirstOrDefault()?.PhotoUrl
+                    }
+                    : null)
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
         }
     }
 }

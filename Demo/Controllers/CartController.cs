@@ -4,78 +4,117 @@ using Demo.Models;
 
 namespace Demo.Controllers
 {
-    public class CartController(DB db) : Controller
+    public class CartController(DB db, Helper hp) : Controller
     {
-        // TODO: replace with your actual signed-in user id lookup (e.g. from claims / session)
-        private string CurrentUserId => "U0001";
+        private User? CurrentUser =>
+            User.Identity?.IsAuthenticated == true
+                ? db.Users.FirstOrDefault(u => u.Email == User.Identity!.Name)
+                : null;
 
         //GET: Cart/Index
         public IActionResult Index()
         {
-            var cart = db.Carts
-                .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.Product)
-                        .ThenInclude(p => p.Photos)
-                .FirstOrDefault(c => c.UserId == CurrentUserId);
-
-            var vm = new CartViewModel
-            {
-                Items = cart?.CartItems.Select(ci => new CartItemViewModel
-                {
-                    CartItemId = ci.Id,
-                    ProductId = ci.ProductId,
-                    ProductName = ci.Product.Name,
-                    Price = ci.Product.UnitPrice,
-                    Quantity = ci.Quantity,
-                    Stock = ci.Product.Stock,
-                    ImageUrl = ci.Product.Photos.FirstOrDefault()?.PhotoUrl
-                }).ToList() ?? []
-            };
-
-            return View(vm);
+            return View(new CartViewModel { Items = GetCartItems() });
         }
 
         //POST: Cart/Increase/{id}
         [HttpPost]
-        public IActionResult Increase(string id)
+        public IActionResult Increase(int id)
         {
-            var item = db.CartItems.Include(ci => ci.Product).FirstOrDefault(ci => ci.Id == id);
-            if (item == null) return NotFound();
+            var user = CurrentUser;
 
-            if (item.Quantity < item.Product.Stock)
+            if (user != null)
             {
-                item.Quantity++;
-                db.SaveChanges();
-            }
+                var item = db.CartItems.Include(ci => ci.Product)
+                    .FirstOrDefault(ci => ci.UserId == user.Id && ci.ProductId == id);
+                if (item == null) return NotFound();
 
-            return Ok(new { quantity = item.Quantity, subtotal = item.Quantity * item.Product.UnitPrice });
+                if (item.Quantity < item.Product.Stock)
+                {
+                    item.Quantity++;
+                    db.SaveChanges();
+                }
+
+                return Ok(new { quantity = item.Quantity, subtotal = item.Quantity * item.Product.Price });
+            }
+            else
+            {
+                var product = db.Products.Find(id);
+                if (product == null) return NotFound();
+
+                var cart = hp.GetCart();
+                var key = id.ToString();
+                if (!cart.ContainsKey(key)) return NotFound();
+
+                if (cart[key] < product.Stock)
+                {
+                    cart[key]++;
+                    hp.SetCart(cart);
+                }
+
+                return Ok(new { quantity = cart[key], subtotal = cart[key] * product.Price });
+            }
         }
 
         //POST: Cart/Decrease/{id}
         [HttpPost]
-        public IActionResult Decrease(string id)
+        public IActionResult Decrease(int id)
         {
-            var item = db.CartItems.Include(ci => ci.Product).FirstOrDefault(ci => ci.Id == id);
-            if (item == null) return NotFound();
+            var user = CurrentUser;
 
-            if (item.Quantity > 1)
+            if (user != null)
             {
-                item.Quantity--;
-                db.SaveChanges();
-            }
+                var item = db.CartItems.Include(ci => ci.Product)
+                    .FirstOrDefault(ci => ci.UserId == user.Id && ci.ProductId == id);
+                if (item == null) return NotFound();
 
-            return Ok(new { quantity = item.Quantity, subtotal = item.Quantity * item.Product.UnitPrice });
+                if (item.Quantity > 1)
+                {
+                    item.Quantity--;
+                    db.SaveChanges();
+                }
+
+                return Ok(new { quantity = item.Quantity, subtotal = item.Quantity * item.Product.Price });
+            }
+            else
+            {
+                var product = db.Products.Find(id);
+                if (product == null) return NotFound();
+
+                var cart = hp.GetCart();
+                var key = id.ToString();
+                if (!cart.ContainsKey(key)) return NotFound();
+
+                if (cart[key] > 1)
+                {
+                    cart[key]--;
+                    hp.SetCart(cart);
+                }
+
+                return Ok(new { quantity = cart[key], subtotal = cart[key] * product.Price });
+            }
         }
 
         //POST: Cart/Remove/{id}
         [HttpPost]
-        public IActionResult Remove(string id)
+        public IActionResult Remove(int id)
         {
-            var item = db.CartItems.FirstOrDefault(ci => ci.Id == id);
-            if (item == null) return NotFound();
+            var user = CurrentUser;
 
-            db.CartItems.Remove(item);
-            db.SaveChanges();
+            if (user != null)
+            {
+                var item = db.CartItems.FirstOrDefault(ci => ci.UserId == user.Id && ci.ProductId == id);
+                if (item == null) return NotFound();
+
+                db.CartItems.Remove(item);
+                db.SaveChanges();
+            }
+            else
+            {
+                var cart = hp.GetCart();
+                if (!cart.Remove(id.ToString())) return NotFound();
+                hp.SetCart(cart);
+            }
 
             return Ok();
         }
@@ -87,73 +126,104 @@ namespace Demo.Controllers
             var product = db.Products.Find(request.ProductId);
             if (product == null) return NotFound(new { message = "Product not found." });
 
-            // Cart.UserId is a required FK to Users.Id — without a real user row, creating
-            // a Cart for CurrentUserId throws at SaveChanges. Checking here gives a clear
-            // message instead of a raw 500. Remove this once login is wired up properly.
-            if (!db.Users.Any(u => u.Id == CurrentUserId))
-            {
-                return BadRequest(new { message = $"No user with Id '{CurrentUserId}' exists yet. Insert a User row with this Id (or wire up real authentication) before testing Add to Cart." });
-            }
+            var user = CurrentUser;
 
-            var cart = db.Carts
-                .Include(c => c.CartItems)
-                .FirstOrDefault(c => c.UserId == CurrentUserId);
-
-            if (cart == null)
+            if (user != null)
             {
-                cart = new Cart { Id = GenerateId(db.Carts.Select(c => c.Id)), UserId = CurrentUserId };
-                db.Carts.Add(cart);
-            }
+                var existingItem = db.CartItems.FirstOrDefault(ci => ci.UserId == user.Id && ci.ProductId == request.ProductId);
 
-            var existingItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == request.ProductId);
-            if (existingItem != null)
-            {
-                if (existingItem.Quantity >= product.Stock) return BadRequest(new { message = "No more stock available." });
-                existingItem.Quantity++;
+                if (existingItem != null)
+                {
+                    if (existingItem.Quantity >= product.Stock) return BadRequest(new { message = "No more stock available." });
+                    existingItem.Quantity++;
+                }
+                else
+                {
+                    if (product.Stock <= 0) return BadRequest(new { message = "Product is out of stock." });
+                    db.CartItems.Add(new CartItem
+                    {
+                        UserId = user.Id,
+                        ProductId = product.Id,
+                        Quantity = 1,
+                        UnitPriceSnapshot = product.Price
+                    });
+                }
+
+                db.SaveChanges();
+
+                var cartItemCount = db.CartItems.Where(ci => ci.UserId == user.Id).Sum(ci => ci.Quantity);
+                return Ok(new { success = true, cartItemCount });
             }
             else
             {
-                if (product.Stock <= 0) return BadRequest(new { message = "Product is out of stock." });
-                cart.CartItems.Add(new CartItem
+                var cart = hp.GetCart();
+                var key = product.Id.ToString();
+
+                if (cart.ContainsKey(key))
                 {
-                    Id = GenerateId(db.CartItems.Select(ci => ci.Id)),
-                    ProductId = request.ProductId,
-                    Quantity = 1
-                });
-            }
+                    if (cart[key] >= product.Stock) return BadRequest(new { message = "No more stock available." });
+                    cart[key]++;
+                }
+                else
+                {
+                    if (product.Stock <= 0) return BadRequest(new { message = "Product is out of stock." });
+                    cart[key] = 1;
+                }
 
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateException ex)
-            {
-                // Surfaces the real DB error (e.g. FK violation) instead of a bare 500,
-                // so the browser console / network tab shows what actually failed.
-                return StatusCode(500, new { message = "Database error while saving the cart.", detail = ex.InnerException?.Message ?? ex.Message });
-            }
+                hp.SetCart(cart);
 
-            return Ok(new { success = true, cartItemCount = cart.CartItems.Sum(ci => ci.Quantity) });
+                return Ok(new { success = true, cartItemCount = cart.Values.Sum() });
+            }
         }
 
-        // Generates a random 5-character ID and retries on the rare collision.
-        // TODO: consider switching these keys to int identity columns if you don't need short display IDs.
-        private static string GenerateId(IQueryable<string> existingIds)
+        private List<CartItemViewModel> GetCartItems()
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            string id;
-            do
-            {
-                id = new string(Enumerable.Range(0, 5).Select(_ => chars[random.Next(chars.Length)]).ToArray());
-            } while (existingIds.Any(x => x == id));
+            var user = CurrentUser;
 
-            return id;
+            if (user != null)
+            {
+                return db.CartItems
+                    .Include(ci => ci.Product)
+                        .ThenInclude(p => p.Photos)
+                    .Where(ci => ci.UserId == user.Id)
+                    .Select(ci => new CartItemViewModel
+                    {
+                        ProductId = ci.ProductId,
+                        ProductName = ci.Product.Name,
+                        Price = ci.Product.Price,
+                        Quantity = ci.Quantity,
+                        Stock = ci.Product.Stock,
+                        ImageUrl = ci.Product.Photos.FirstOrDefault() != null ? ci.Product.Photos.First().PhotoUrl : null
+                    })
+                    .ToList();
+            }
+
+            var sessionCart = hp.GetCart();
+            if (sessionCart.Count == 0) return [];
+
+            var ids = sessionCart.Keys.Select(int.Parse).ToList();
+            var products = db.Products.Include(p => p.Photos).Where(p => ids.Contains(p.Id)).ToList();
+
+            return sessionCart
+                .Select(kv => products.FirstOrDefault(p => p.Id == int.Parse(kv.Key)) is { } product
+                    ? new CartItemViewModel
+                    {
+                        ProductId = product.Id,
+                        ProductName = product.Name,
+                        Price = product.Price,
+                        Quantity = kv.Value,
+                        Stock = product.Stock,
+                        ImageUrl = product.Photos.FirstOrDefault()?.PhotoUrl
+                    }
+                    : null)
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
         }
     }
 
     public class AddToCartRequest
     {
-        public string ProductId { get; set; } = string.Empty;
+        public int ProductId { get; set; }
     }
 }
