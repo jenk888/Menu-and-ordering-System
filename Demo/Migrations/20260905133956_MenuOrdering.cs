@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Demo.Migrations
 {
     /// <inheritdoc />
-    public partial class Ordering_And_Menu_DB : Migration
+    public partial class MenuOrdering : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -273,6 +273,7 @@ namespace Demo.Migrations
                     ProductNameSnapshot = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     UnitPriceSnapshot = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
+                    VoucherId = table.Column<int>(type: "int", nullable: true),
                     LineTotal = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     OrderId = table.Column<int>(type: "int", nullable: false),
@@ -293,6 +294,11 @@ namespace Demo.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderItems_Vouchers_VoucherId",
+                        column: x => x.VoucherId,
+                        principalTable: "Vouchers",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -301,6 +307,8 @@ namespace Demo.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPriceSnapshot = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     CartItemId = table.Column<int>(type: "int", nullable: false),
                     ModifierOptionId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -393,6 +401,11 @@ namespace Demo.Migrations
                 name: "IX_OrderItems_ProductId",
                 table: "OrderItems",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_VoucherId",
+                table: "OrderItems",
+                column: "VoucherId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",

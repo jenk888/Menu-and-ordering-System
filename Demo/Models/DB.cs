@@ -88,7 +88,7 @@ public enum VoucherStatus
 public class User
 {
     [Key]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
@@ -135,8 +135,8 @@ public class UserToken
     public DateTime? Expire { get; set; }
 
     [Required]
-    public string UserId { get; set; }
-    public User User { get; set; }
+    public string UserId { get; set; } = null!;
+    public User User { get; set; } = null!;
 }
 
 // ============================================================================
@@ -159,7 +159,7 @@ public class Category
 public class Product
 {
     [Key, MaxLength(10)]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
@@ -195,8 +195,8 @@ public class ProductPhoto
     public string PhotoUrl { get; set; } = null!;
 
     [Required]
-    public string ProductId { get; set; }
-    public Product Product { get; set; }
+    public string ProductId { get; set; } = null!;
+    public Product Product { get; set; } = null!;
 }
 
 // e.g. "Size" (Single, required), "Toppings" (Multi, optional), "Spice Level" (Single, required)
@@ -206,15 +206,15 @@ public class ModifierGroup
     public int Id { get; set; }
 
     [Required, MaxLength(100)]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     public ModifierSelectionType SelectionType { get; set; }
 
     public bool IsRequired { get; set; }
 
     [Required]
-    public string ProductId { get; set; }
-    public Product Product { get; set; }
+    public string ProductId { get; set; } = null!;
+    public Product Product { get; set; } = null!;
 
     public List<ModifierOption> Options { get; set; } = [];
 }
@@ -226,14 +226,14 @@ public class ModifierOption
     public int Id { get; set; }
 
     [Required, MaxLength(100)]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [Column(TypeName = "decimal(10,2)")]
     public decimal ExtraPrice { get; set; }
 
     [Required]
     public int ModifierGroupId { get; set; }
-    public ModifierGroup ModifierGroup { get; set; }
+    public ModifierGroup ModifierGroup { get; set; } = null!;
 }
 
 // ============================================================================
@@ -251,12 +251,12 @@ public class CartItem
     public decimal UnitPriceSnapshot { get; set; }
 
     [Required]
-    public string UserId { get; set; }
-    public User User { get; set; }
+    public string UserId { get; set; } = null!;
+    public User User { get; set; } = null!;
 
     [Required]
-    public string ProductId { get; set; }
-    public Product Product { get; set; }
+    public string ProductId { get; set; } = null!;
+    public Product Product { get; set; } = null!;
 
     public List<CartItemModifier> SelectedModifiers { get; set; } = [];
 }
@@ -274,11 +274,11 @@ public class CartItemModifier
 
     [Required]
     public int CartItemId { get; set; }
-    public CartItem CartItem { get; set; }
+    public CartItem CartItem { get; set; } = null!;
 
     [Required]
     public int ModifierOptionId { get; set; }
-    public ModifierOption ModifierOption { get; set; }
+    public ModifierOption ModifierOption { get; set; } = null!;
 }
 
 // ============================================================================
@@ -298,7 +298,7 @@ public class VoucherRule
 
     // Admin-facing label, e.g. "Spend RM50 Get RM5 Off". Not shown to the customer directly.
     [Required, MaxLength(100)]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [Column(TypeName = "decimal(10,2)")]
     public decimal MinimumSpend { get; set; }
@@ -329,7 +329,7 @@ public class Voucher
     // Unique per instance (not per rule) so a user's several vouchers from the
     // same rule can still be told apart and redeemed one at a time.
     [Required, MaxLength(30)]
-    public string Code { get; set; }
+    public string Code { get; set; } = null!;
 
     public DateTime IssuedAt { get; set; } = DateTime.UtcNow;
 
@@ -342,11 +342,11 @@ public class Voucher
 
     [Required]
     public int VoucherRuleId { get; set; }
-    public VoucherRule VoucherRule { get; set; }
+    public VoucherRule VoucherRule { get; set; } = null!;
 
     [Required]
-    public string UserId { get; set; }
-    public User User { get; set; }
+    public string UserId { get; set; } = null!;
+    public User User { get; set; } = null!;
 
     // Derived, read-only — this is the actual state to check/display; UsedAt/ExpiresAt
     // are the source of truth so "used" and "expired" can never both apply or drift out of sync.
@@ -420,10 +420,11 @@ public class OrderItem
 
     // Snapshots taken at order time so later Product edits don't rewrite past orders.
     [MaxLength(100)]
-    public string ProductNameSnapshot { get; set; }
+    public string ProductNameSnapshot { get; set; } = null!;
 
     [Column(TypeName = "decimal(10,2)")]
     public decimal UnitPriceSnapshot { get; set; }
+    public int Quantity { get; set; }
 
     // Members only; always null for guest orders.
     public int? VoucherId { get; set; }
@@ -437,11 +438,11 @@ public class OrderItem
 
     [Required]
     public int OrderId { get; set; }
-    public Order Order { get; set; }
+    public Order Order { get; set; } = null!;
 
     [Required]
-    public string ProductId { get; set; }
-    public Product Product { get; set; }
+    public string ProductId { get; set; } = null!;
+    public Product Product { get; set; } = null!;
 
     public List<OrderItemModifier> SelectedModifiers { get; set; } = [];
 }
@@ -453,15 +454,15 @@ public class OrderItemModifier
 
     // Snapshots taken at order time so later Product edits don't rewrite past orders.
     [MaxLength(100)]
-    public string ModifierGroupNameSnapshot { get; set; }
+    public string ModifierGroupNameSnapshot { get; set; } = null!;
 
     [MaxLength(100)]
-    public string ModifierOptionNameSnapshot { get; set; }
+    public string ModifierOptionNameSnapshot { get; set; } = null!;
 
     [Column(TypeName = "decimal(10,2)")]
     public decimal ExtraPriceSnapshot { get; set; }
 
     [Required]
     public int OrderItemId { get; set; }
-    public OrderItem OrderItem { get; set; }
+    public OrderItem OrderItem { get; set; } = null!;
 }

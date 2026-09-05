@@ -31,6 +31,5 @@ namespace Demo.Models
         public decimal Subtotal { get; set; }
         public decimal SST { get; set; }
         public decimal Total { get; set; }
-        public string PaymentMethod { get; set; } = string.Empty;
     }
 }

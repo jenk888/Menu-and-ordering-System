@@ -14,32 +14,13 @@ namespace Demo.Controllers
         //GET: Cart/Index
         public IActionResult Index()
         {
-            var items = db.CartItems
-                .Include(ci => ci.Product)
-                    .ThenInclude(p => p.Photos)
-                .Where(ci => ci.UserId == CurrentUserId)
-                .ToList();
-
-            var vm = new CartViewModel
-            {
-                Items = items.Select(ci => new CartItemViewModel
-                {
-                    CartItemId = ci.Id,
-                    ProductId = ci.ProductId,
-                    ProductName = ci.Product.Name,
-                    Price = ci.Product.Price,
-                    Quantity = ci.Quantity,
-                    Stock = ci.Product.Stock,
-                    ImageUrl = ci.Product.Photos.FirstOrDefault()?.PhotoUrl
-                }).ToList()
-            };
-
+            var vm = new CartViewModel { Items = GetCartItems() };
             return View(vm);
         }
 
         //POST: Cart/Increase/{id}
         [HttpPost]
-        public IActionResult Increase(int id)
+        public IActionResult Increase(string id)
         {
             var user = CurrentUser;
 
@@ -63,22 +44,21 @@ namespace Demo.Controllers
                 if (product == null) return NotFound();
 
                 var cart = hp.GetCart();
-                var key = id.ToString();
-                if (!cart.ContainsKey(key)) return NotFound();
+                if (!cart.ContainsKey(id)) return NotFound();
 
-                if (cart[key] < product.Stock)
+                if (cart[id] < product.Stock)
                 {
-                    cart[key]++;
+                    cart[id]++;
                     hp.SetCart(cart);
                 }
 
-                return Ok(new { quantity = cart[key], subtotal = cart[key] * product.Price });
+                return Ok(new { quantity = cart[id], subtotal = cart[id] * product.Price });
             }
         }
 
         //POST: Cart/Decrease/{id}
         [HttpPost]
-        public IActionResult Decrease(int id)
+        public IActionResult Decrease(string id)
         {
             var user = CurrentUser;
 
@@ -102,22 +82,21 @@ namespace Demo.Controllers
                 if (product == null) return NotFound();
 
                 var cart = hp.GetCart();
-                var key = id.ToString();
-                if (!cart.ContainsKey(key)) return NotFound();
+                if (!cart.ContainsKey(id)) return NotFound();
 
-                if (cart[key] > 1)
+                if (cart[id] > 1)
                 {
-                    cart[key]--;
+                    cart[id]--;
                     hp.SetCart(cart);
                 }
 
-                return Ok(new { quantity = cart[key], subtotal = cart[key] * product.Price });
+                return Ok(new { quantity = cart[id], subtotal = cart[id] * product.Price });
             }
         }
 
         //POST: Cart/Remove/{id}
         [HttpPost]
-        public IActionResult Remove(int id)
+        public IActionResult Remove(string id)
         {
             var user = CurrentUser;
 
@@ -132,7 +111,7 @@ namespace Demo.Controllers
             else
             {
                 var cart = hp.GetCart();
-                if (!cart.Remove(id.ToString())) return NotFound();
+                if (!cart.Remove(id)) return NotFound();
                 hp.SetCart(cart);
             }
 
@@ -177,17 +156,16 @@ namespace Demo.Controllers
             else
             {
                 var cart = hp.GetCart();
-                var key = product.Id.ToString();
 
-                if (cart.ContainsKey(key))
+                if (cart.ContainsKey(product.Id))
                 {
-                    if (cart[key] >= product.Stock) return BadRequest(new { message = "No more stock available." });
-                    cart[key]++;
+                    if (cart[product.Id] >= product.Stock) return BadRequest(new { message = "No more stock available." });
+                    cart[product.Id]++;
                 }
                 else
                 {
                     if (product.Stock <= 0) return BadRequest(new { message = "Product is out of stock." });
-                    cart[key] = 1;
+                    cart[product.Id] = 1;
                 }
 
                 hp.SetCart(cart);
@@ -221,11 +199,11 @@ namespace Demo.Controllers
             var sessionCart = hp.GetCart();
             if (sessionCart.Count == 0) return [];
 
-            var ids = sessionCart.Keys.Select(int.Parse).ToList();
+            var ids = sessionCart.Keys.ToList();
             var products = db.Products.Include(p => p.Photos).Where(p => ids.Contains(p.Id)).ToList();
 
             return sessionCart
-                .Select(kv => products.FirstOrDefault(p => p.Id == int.Parse(kv.Key)) is { } product
+                .Select(kv => products.FirstOrDefault(p => p.Id == kv.Key) is { } product
                     ? new CartItemViewModel
                     {
                         ProductId = product.Id,
@@ -244,6 +222,6 @@ namespace Demo.Controllers
 
     public class AddToCartRequest
     {
-        public string ProductId { get; set; }
+        public string ProductId { get; set; } = null!;
     }
 }

@@ -113,7 +113,7 @@ namespace Demo.Controllers
             }
             else
             {
-                hp.SetCart(null); // clears the guest session cart
+                hp.SetCart(null);
             }
 
             db.SaveChanges();
@@ -175,11 +175,11 @@ namespace Demo.Controllers
             var sessionCart = hp.GetCart();
             if (sessionCart.Count == 0) return [];
 
-            var ids = sessionCart.Keys.Select(int.Parse).ToList();
+            var ids = sessionCart.Keys.ToList();
             var products = db.Products.Include(p => p.Photos).Where(p => ids.Contains(p.Id)).ToList();
 
             return sessionCart
-                .Select(kv => products.FirstOrDefault(p => p.Id == int.Parse(kv.Key)) is { } product
+                .Select(kv => products.FirstOrDefault(p => p.Id == kv.Key) is { } product
                     ? new CartItemViewModel
                     {
                         ProductId = product.Id,

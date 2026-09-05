@@ -67,6 +67,12 @@ namespace Demo.Migrations
                     b.Property<int>("ModifierOptionId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPriceSnapshot")
+                        .HasColumnType("decimal(10,2)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CartItemId");
@@ -243,11 +249,16 @@ namespace Demo.Migrations
                     b.Property<decimal>("UnitPriceSnapshot")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<int?>("VoucherId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("VoucherId");
 
                     b.ToTable("OrderItems");
                 });
@@ -583,9 +594,15 @@ namespace Demo.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Demo.Models.Voucher", "Voucher")
+                        .WithMany()
+                        .HasForeignKey("VoucherId");
+
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+
+                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("Demo.Models.OrderItemModifier", b =>
