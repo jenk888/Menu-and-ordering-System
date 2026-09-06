@@ -1,0 +1,167 @@
+P0001	Carrot Soup	100% Vegan. Special home cooked with some combination of carrot, herbs, nuts and spices. Served with a piece of toasted white bread.	12.90	100	1	1
+P0002	Mushroom Soup	Contains milk. Special home cook with some combination of mushrooms and herbs. Served with a piece of toasted white bread.	14.90	100	1	1
+P0003	Aubergine Bite	Contains dairy. Raw aubergine wrapped with marinated tomato and cheese. With some coriander as topping.	15.90	100	1	2
+P0004	Rainbow Sushi	100% Vegan. Various of vegetables, beetroot, pickled radish and veggie fish wrapped in seaweed.	15.90	100	1	2
+P0005	Fried Mushroom	100% Vegan. Deep fried fresh abalone mushrooms, served with cashew nuts dressing.	10.90	100	1	2
+P0006	Vietnamese Roll	100% Vegan. Various of fresh vegetables wrapped in rice paper, served with thai chili dressing.	14.90	100	1	2
+P0007	Vegan Sashimi	100% Vegan. Slices of vegan sashimi served with soy sauce and wasabi on the side.	16.90	100	1	2
+P0008	Sashimi & Avocado Delight	100% Vegan. Slices of vegan sashimi served with soy sauce and wasabi on the side.	32.90	100	1	2
+P0009	Italian Mushroom Ball	100% Vegan. Fried mushroom ball (chickpea+mushroom), mix herbs drizzled with homemade tomato sauce. With some coriander or basil as topping.	18.90	100	1	2
+P0010	Snack Heaven Combo	100% Vegan. Potato wedges, fried tofu, french fries, sweet potato fries and salad served with three special homemade dressing.	27.90	100	1	2
+P0011	Vietnam Omelette	With egg. Spicy **. Egg wrapped, saute bean sprout, carrot, mix cabbage, basil leaf, mint leaf and vietnamese sauce.	18.90	100	1	2
+P0012	Pasembur	100% Vegan. Spicy **. Shredded cucumber, turnip, bean sprouts, diced potatoes, veggie fritters, fried tofu and fried tempeh. Sweet and spicy nut sauce is served on the side.	20.90	100	1	2
+P0013	Potato Wedges	100% Vegan. Deep fried potato wedges coated with special homemade spicy powder.	14.90	100	1	2
+P0014	French Fries	100% Vegan	12.90	100	1	2
+P0015	French Fries (Party size)	100% Vegan.	25.00	100	1	2
+P0016	Vegan Grill Sausage	100% Vegan. Made from soy-based and vegetable protein. Low in saturated fat and cholesterol.	13.90	100	1	2
+P0017	Truffe Cheese Fries	Flavoring with premium Truffes oil.	25.00	100	1	2
+P0018	Salted Egg French Fries	100% Vegan	14.90	100	1	2
+P0019	Bake Avocado	Avocado, potato, mozzarella cheese, bacon.	14.90	100	1	2
+P0020	Teriyaki Mushroom Burger	100% Vegan. Homemade burger bread, fried abalone mushroom patty topped with homemade teriyaki sauce....	20.90	100	1	3
+P0021	Black Pepper Mushroom Burger	100% Vegan. Homemade burger bread, fried abalone mushroom patty topped with homemade black pepper sauce....	20.90	100	1	3
+P0022	JxD Burger	Milk item. Homemade burger bread, fried abalone mushroom patty topped with our signature sauce....	20.90	100	1	3
+P0023	Mushroom Chop With Cream Sauce	Milk item. Marinated abalone mushroom coated with oat served with homemade cream sauce....	20.90	100	1	3
+P0024	Black Pepper Mushroom Chop	100% Vegan. Spicy **. Marinated abalone mushroom coated with oat served with...	20.90	100	1	3
+P0025	Cheesy Mushroom Sandwich	Milk item. Sauté 3 types of mushroom and aubergine with cheese. Salad with mayo dressing is served on the side.	18.90	100	1	3
+P0026	Cheese Legends	Milk item. Crispy italian homemade pizza bread topped with some combination of mozzarella cheese and slice cheese.	26.90	100	1	4
+P0027	Avocado Pizza	Milk item. Crispy Italian homemade pizza bread topped with some combination of olive oil, avocado, tomato, coriander and...	27.90	100	1	4
+P0028	Deluxe Mushroom Pizza	Milk item. Crispy italian homemade pizza bread topped with some combination of three varieties of mushroom and mozzarella...	22.90	100	1	4
+P0029	Vacon Hawaiian Pizza	Milk item. Crispy italian homemade pizza bread (tomato base) topped with some combination of pineapple, vegan bacon, mayonnaise and...	27.90	100	1	4
+P0030	Salted Egg Pasta	With egg. Fettuccini cooked with special homemade salted egg sauce, fried mushroom and basil.	20.90	100	1	5
+P0031	Pesto Pasta	Milk item. Spaghetti cooked with special homemade pesto sauce with cheese, broccoli, cauliflower topped with chopped tomato.	20.90	100	1	5
+P0032	Creamy Mushroom Spaghetti	Milk item. Spaghetti cooked with special homemade cream sauce, sweet pea, mushrooms, carrot and herbs.	22.90	100	1	5
+P0033	Avocado Pasta with Truffle Oil	100% Vegan. Spaghetti cooked with fresh avocado, truffle oil and tomato.	27.90	100	1	5
+P0034	Pumpkin Pasta	100% Vegan. Spaghetti cooked with homemade pumpkin sauce, broccoli, cauliflower, carrot, sweet pea and green pea.	20.90	100	1	5
+P0035	Aglio-Olio	100% Vegan. Spicy **. Spaghetti cooked with broccoli, cauliflower, carrot, capsicum,...	20.90	100	1	5
+P0036	Mee Mamak	With egg. Spicy ***. Spaghetti cooked with special homemade spicy sauce, tomato,...	20.90	100	1	5
+P0037	Bolognese Pasta	100% Vegan. Spaghetti cooked with special homemade tomato sauce, minced soy meat, capsicum, celery and carrot.	20.90	100	1	5
+P0038	Vegan Cheese Pasta	100% Vegan. Spicy *. Spaghetti cooked with homemade vegan cheese sauce, carrot,...	22.90	100	1	5
+P0039	Arrabiata Ravioli	100% Vegan. Homemade dumpling cooked with special made tomato base.	35.90	100	1	5
+P0040	Lemon Ravioli	100% Vegan. Homemade dumpling, freshly made lemon sauce, basil leaves.	28.90	100	1	5
+P0041	Tom Yam Spaghetti Soup	100% Vegan. Spicy ***. Tomyam broth served with spaghetti, lemongrass, lime...	18.90	100	1	6
+P0042	Veggie Fish Bee Hoon Soup	100% Vegan. Veggie soup broth served with thick rice noodles, ginger, siao bai cai, carrot and fried soy fish.	18.90	100	1	6
+P0043	Pineapple Bitter Guord Pasta	Broth cooked with fusilli, bittersweet, broccoli, milk, cauliflower, green capsicum and carrot.	17.90	100	1	6
+P0044	Sichuan Pasta	Homemade mala soup base cooked with fusili, broccoli, cauliflower, carrot, milk, bittergourd, capsicum, dried chili and...	20.90	100	1	6
+P0045	Vegan Asam Laksa		14.90	100	0	6
+P0046	Penang Curry Mee		18.90	100	0	6
+P0047	Volcano Fried Rice	With egg. Spicy **. Fried rice covered with beated egg and special homemade...	18.90	100	1	7
+P0048	Spicy Pattaya	With egg. Spicy **. Fried rice wrapped inside egg omelette served with salad on t...	18.90	100	1	7
+P0049	Turmeric Fried Rice	100% Vegan. Spicy**. Cooked embryo rice stir fried with cabbage, red cabbage, mix...	18.90	100	1	7
+P0050	Kimchi Fried Rice	100% Vegan. Spicy **. Cooked embryo rice stir fried with homemade kimchi, cabbag...	18.90	100	1	7
+P0051	Janxden Fried Rice	100% Vegan. Spicy **. Our signature fried rice.	18.90	100	1	7
+P0052	Satay Rice	100% Vegan. Spicy *. Satay sauce contains peanut.	23.90	100	1	8
+P0053	Nasi Lemak Combo	100% Vegan. Spicy **. Satay sauce contains peanut....	24.90	100	1	8
+P0054	Pumpkin Porridge	With egg. Blended pumpkin cooked with porridge, fresh broccoli, cauliflower and carrot.	17.90	100	1	10
+P0055	Green Porridge	100% Vegan. Porridge cooked with homemade green paste, fresh broccoli, cauliflower and carrot.	17.90	100	1	10
+P0056	Veggie Fish Hong Kong Porridge	100% Vegan. Porridge cooked with ginger, coriander, siao bai cai, carrot and fried slice veggie fish.	18.90	100	1	10
+P0057	Sashimi Poke Bowl	100% Vegan. Fried konjac rice/noodle, vegan sashimi, edamame, red cabbage, corn, seaweed and sesame seed.	29.90	100	1	11
+P0058	Teriyaki Poke Bowl	100% Vegan. Fried konjac rice/noodle, vegan sashimi, edamame, red cabbage, corn, seaweed, sesame seed and teriyaki patty.	28.90	100	1	11
+P0059	Avocado Poke Bowl	100% Vegan. Fried konjac rice/noodle, red cabbage, edamame, corn, seaweed, avocado and sesame seed.	36.90	100	1	11
+P0060	Katsu Don	100% Vegan. Fried rice, marinated abalone mushroom coated with oat, seaweed and salad served with homemade curry sauce.	18.90	100	1	12
+P0061	Avocado Katsu Don	100% Vegan. Fried rice, marinated abalone mushroom coated with oat, Australia avocado, seaweed and salad served with homemade...	27.90	100	1	12
+P0062	Kinoko Don	100% Vegan. Embryo rice, abalone mushrooms, shimeji mushrooms, shiitake mushroom and wakame (sauce).	18.90	100	1	12
+P0063	Quesadilla	Milk item. Grilled wrap, celery, carrot, capsicum, tomato, soy meat and cheese.	20.90	100	1	13
+P0064	Bolognese Pasta	100% Vegan. Spaghetti cooked with special homemade tomato sauce, minced soy meat, capsicum, celery and carrot. Served with cooked broccoli, scrambled eggs/tofu and juice of your kid's choice.	20.90	100	1	14
+P0065	Cheese Vacon Sandwich	Milk item. Wholemeal loaf, mozarella cheese, vacon (vegan bacon). Served with cooked broccoli, scrambled eggs/tofu and juice of your kid's choice.	20.90	100	1	14
+P0066	Pumpkin Porridge	With egg. Blended pumpkin cooked with porridge, fresh broccoli, cauliflower and carrot. Served with cooked broccoli, scrambled eggs/tofu and juice of your kid's choice.	17.90	100	1	14
+P0067	Embryo Rice		2.50	100	1	15
+P0068	Nasi Lemak Rice		3.50	100	1	15
+P0069	Beehoon (B)		3.00	100	1	15
+P0070	Fried Egg	Comes with 1 pcs.	2.50	100	1	15
+P0071	Vegan Fried Egg	100% Vegan. Made from soy products.	5.00	100	0	15
+P0072	Seaweed		2.50	100	1	15
+P0073	Fried Tofu 6pcs		3.50	100	1	15
+P0074	Satay 7sticks	100% Vegan.	15.40	100	1	15
+P0075	Satay 10sticks	100% Vegan.	20.00	100	1	15
+P0076	Satay Sauce	100% Vegan.	2.50	100	1	15
+P0077	Veggie Black Fish 1pcs		2.50	100	1	15
+P0078	Veggie Sliced Snow Fish 2pcs		2.50	100	1	15
+P0079	Veggie Fish 4pcs		4.90	100	1	15
+P0080	Pasembur Fritters		6.90	100	1	15
+P0081	Papadum		3.00	100	1	15
+P0082	Pasembur Sauce		2.50	100	1	15
+P0083	Soup Bread 2nos		2.50	100	1	15
+P0084	Teriyaki Mushroom Patty		7.00	100	0	15
+P0085	Jiggy Mushroom		6.90	100	1	15
+P0086	Mushroom Chop 1pcs		8.00	100	0	15
+P0087	Mozzarella Cheese		3.50	100	1	15
+P0088	Sour Dough 1psc		2.50	100	1	15
+P0089	Konjac Rice		10.00	100	1	15
+P0090	Add On Vacon 2pcs		6.00	100	1	15
+P0091	Hot Oolong Milk Tea		12.90	100	0	17
+P0092	Iced Oolong Milk Tea		14.90	100	0	17
+P0093	Hot Earl Grey Milk Tea		14.90	100	0	17
+P0094	Iced Earl Grey Milk Tea		16.90	100	0	17
+P0095	Lemon Island Blended	100% Vegan. Citron honey juice blended with lemon and lime wedges.	17.90	100	0	18
+P0096	Avocado Smoothie	Contains milk. Fresh avocado blended with full cream milk and condensed milk.	20.90	100	1	18
+P0097	Strawberry Yogurt	Strawberry Yogurt.	20.90	100	1	18
+P0098	Green Expressions	100% Vegan. Apple + Cucumber.	14.90	100	1	19
+P0099	Pink Summer	100% Vegan. Watermelon + Lychee + Strawberry + Mint leaves.	14.90	100	1	19
+P0100	Purple Valentine	100% Vegan. Apple + Beetroot + Celery.	14.90	100	1	19
+P0101	Bittersweet Memory	100% Vegan. Bittergourd + Honey + Lemon.	14.90	100	1	19
+P0102	Applejito	100% Vegan. Apple + Lemon + Lime + Mint Leaves.	14.90	100	1	19
+P0103	Peachmelon	100% Vegan. Watermelon + Peach.	14.90	100	1	19
+P0104	Lemonade		11.90	100	1	19
+P0105	Fresh Orange Juice	100% Vegan.	12.90	100	1	19
+P0106	Guava Juice	100% Vegan. Served with cold. Contains sugar.	12.90	100	1	21
+P0107	Mango Juice	100% Vegan. Served with cold. Contains sugar.	12.90	100	1	21
+P0108	Fruit Punch	100% Vegan. Served with cold. Contains sugar.	14.90	100	1	21
+P0109	Lemon Roselle Juice	100% Vegan. It is rich in vitamin C, which is important for immune function, and may help lower blood pressure and cholesterol levels.	12.90	100	1	21
+P0110	Kombucha Lemon Ginger	100% Vegan. Kombucha tea is a fermented drink made with tea, sugar, bacteria and yeast.	13.90	100	1	22
+P0111	Raw Honey Lemon		12.90	100	1	22
+P0112	Citron Honey Tea		12.90	100	0	22
+P0113	Organic Soya Milk	100% Vegan. No sugar.	12.90	100	0	22
+P0114	Jia Duo Bao Herbal Tea		6.90	100	0	22
+P0115	Coca-Cola		6.90	100	0	22
+P0116	Filter Water with Lemon		2.00	100	1	22
+P0117	Filter Water		2.00	100	1	22
+P0118	Coolberg Craberry Flavour	100% vegan.	14.90	100	1	22
+P0119	Coolberg Malt Flavour	100% vegan.	14.90	100	1	22
+P0120	Espresso -Hot	100% Vegan. Double shot espresso.	7.90	100	1	23
+P0121	Americano -Hot	100% Vegan. Double shot espresso mix with hot water.	9.90	100	1	23
+P0122	Iced Americano (L)	100% Vegan. Triple shot espresso mix with hot water and ice.	14.90	100	1	23
+P0123	Iced Berrycano (L)	100% Vegan. Triple shot espresso + blackcurrant tea mix with hot water and ice.	18.90	100	1	23
+P0124	Coffee Latte -Hot	Contains milk. Double shot espresso and steamed milk.	14.90	100	1	23
+P0125	Coffee Latte -Ice	Contains milk. Double shot espresso and full cream milk.	16.90	100	1	23
+P0126	Cappuccino -Hot	Contains milk. Double shot espresso and steamed foam milk.	14.90	100	1	23
+P0127	Cappuccino -Ice	Contains milk. Double shot espresso, foam milk and ice.	16.90	100	1	23
+P0128	Butterscotch Latte -Hot	Contains milk. Double shot espresso mix with butterscotch syrup and steamed milk.	16.90	100	1	23
+P0129	Butterscotch Latte -Ice	Contains milk. Double shot espresso mix with butterscotch syrup, full cream milk and ice.	17.90	100	1	23
+P0130	Mocha -Hot	Contains milk. Double shot espresso mix with premix choco powder (contains sugar) and steamed milk.	0.00	100	1	23
+P0131	Mocha -Ice	Contains milk. Double shot espresso mix with premix choco powder (contains sugar), foam milk and ice.	0.00	100	1	23
+P0132	Dark Mocha -Hot	Contains milk. Double shot espresso mix with extra premix choco powder (contains sugar) and steamed milk.	16.90	100	1	23
+P0133	Dark Mocha -Ice	Contains milk. Double shot espresso mix with extra premix choco powder (contains sugar), foam milk and ice.	20.90	100	1	23
+P0134	French Dark Chocolate -Hot	Contains milk. Extra premix choco powder (contains sugar) mix with hot water and steamed milk.	16.90	100	1	23
+P0135	French Dark Chocolate -Ice	Contains milk. Extra premix choco powder (contains sugar) mix with hot water, foam milk and ice.	18.90	100	1	23
+P0136	Matcha Latte -Hot	Contains milk. Premix matcha powder (contains sugar) mix with hot water and steamed milk.	16.90	100	1	23
+P0137	Matcha Latte -Ice	Contains milk. Premix matcha powder (contains sugar) mix with hot water, foam milk and ice.	17.90	100	1	23
+P0138	Matcha Mocha -Hot	Contains milk. Double shot espresso mix with premix choco powder (contains sugar) + premix matcha powder (contains sugar) with hot wate...	16.90	100	1	23
+P0139	Matcha Mocha -Ice	Contains milk. Double shot espresso mix with premix choco powder (contains sugar) + premix matcha powder (contains sugar) with hot wate...	17.90	100	1	23
+P0140	Coconut Coffee -Ice	Contains milk. Double shot espresso mix with coconut water + coconut milk.	0.00	100	1	23
+P0141	Peanut Espresso-Ice	Contains milk. Double shot espresso mix with peanut butter.	0.00	100	1	23
+P0142	Green Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
+P0143	Jasmine Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	0	24
+P0144	Peach Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
+P0145	Blackcurrant Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
+P0146	Lavender Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
+P0147	Stevia & Hawthorn	Refillable. Serve by pax.	20.90	100	1	24
+P0148	Mixed Fruit Tea	Refillable. Serve by pax.	22.90	100	1	24
+P0149	Black Wolfberry&Chrysanthemum Tea	Refillable. Serve by pax.	22.90	100	1	24
+P0150	Berry Strawberry	Mixed of two berries, strawberry flavoured protein powder, nestum and oat.	21.90	100	1	25
+P0151	Matcha Berry	Strawberry, matcha powder, strawberry flavoured protein powder, nestum and oat.	21.90	100	1	25
+P0152	Banana Chocolate	Banana, chocolate powder, banana flavoured protein powder, nestum and oat.	21.90	100	1	25
+P0153	Cookies n Cream	Oreo, cookies crunch flavoured protein powder, nestum and oat.	21.90	100	1	25
+P0154	Peanut Espresso	Espresso, peanut butter, cookies crunch flavoured protein powder, nestum and oat.	21.90	100	1	25
+P0155	Joy Ur Day	Espresso, Orange juice, Foam milk.	28.90	100	1	26
+P0156	Amour de Citrus	Espresso, Lemon, Lime, Mint.	28.90	100	1	26
+P0157	Peach on the Side	Guava, Peach, Lime, Lemon, Soda.	28.90	100	1	26
+P0158	Lovein Edelweiss	Espresso, Peach, Elderflower, Ginger Soda.	28.90	100	1	26
+P0159	Panana Shakira	Pandan, Banana, Lemon, Matcha.	28.90	100	1	26
+P0160	Organic Walnut Toufu Hua	100% VEGAN.	12.90	100	0	27
+P0161	Chocolate Toufu Hua	Milk item.	12.90	100	0	27
+P0162	Plain Toufu Hua		6.50	100	0	27
+P0163	Tiramisu Cake	Contains milk and egg.	18.90	0	1	28
+P0164	Custard Raisin Danish	Contains dairy products.	14.90	0	1	28
+P0165	Cranberry Almond Tiramisu Cake	100% vegan.	18.90	100	1	28
+P0166	Strawberry Tiramisu Cake	Contains milk and egg.	18.90	100	0	28
+P0167	Peach Oat Tiramisu Cake	Contains milk and egg.	0.00	100	1	28
