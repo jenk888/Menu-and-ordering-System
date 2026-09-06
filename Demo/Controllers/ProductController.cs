@@ -19,6 +19,26 @@ namespace Demo.Controllers
             return View(model);
         }
 
+        // GET: Product/Details/{id}
+        public IActionResult Detais(string? id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("Index");
+            }
+
+            var p = db.Products
+                .Include(x => x.Category)
+                .Include(x => x.Photos)
+                .FirstOrDefault(x => x.Id == id);
+
+            if (p == null)
+            {
+                return RedirectToAction("Index");
+            }
+            return View(p);
+        }
+
         // GET: Product/Manage
         public IActionResult Manage()
         {
@@ -33,7 +53,7 @@ namespace Demo.Controllers
 
         // AJAX Endpoint for Filtering Products
         [HttpGet]
-        public IActionResult GetProducts(int? categoryId = null)
+        public IActionResult GetProducts(int? categoryId = null, string? search = null)
         {
             var query = db.Products
                 .Where(p => p.IsAvailable);
@@ -41,6 +61,11 @@ namespace Demo.Controllers
             if (categoryId.HasValue)
             {
                 query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(p => p.Name.Contains(search));
             }
 
             var products = query.Select(p => new

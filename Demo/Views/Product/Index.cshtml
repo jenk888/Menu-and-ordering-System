@@ -113,6 +113,14 @@
 </style>
 
 <div class="container my-4">
+    <!-- Search Bar -->
+    @await Html.PartialAsync("_SearchBox", new ViewDataDictionary(ViewData) 
+    {
+        {"SearchEvent", "product:search"},
+        {"SearchPlaceholder", "Search products..."},
+        {"SearchBoxId", "products"}
+    })
+
     <!-- Category Filter Bar (Default "ALL") -->
     <div class="category-nav" id="categoryNav">
         <button class="category-btn active" data-category-id="ALL">All</button>
@@ -133,6 +141,60 @@
 
 @section foot {
     <script>
+        let currentCategoryId = "ALL";
+        let currentSearch = "";
+
+        function loadProducts(categoryId, search) {
+            if (categoryId !== undefined) currentCategoryId = categoryId;
+            if (search !== undefined) currentSearch = search;
+
+            const params = new URLSearchParams();
+            if (currentCategoryId !== "ALL") params.set("categoryId", currentCategoryId);
+            if (currentSearch) params.set("search", currentSearch);
+
+            const url = '/Product/GetProducts' + (params.toString() ? '?' + params.toString() : '');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(products => {
+                    const container = document.getElementById("productContainer");
+                    container.innerHTML = "";
+
+                    if (!products || products.length === 0) {
+                        container.innerHTML = `<div class="col-12 text-center text-muted py-5">No products found.</div>`;
+                        return;
+                    }
+
+                    products.forEach(product => {
+                        const outOfStock = product.stock <= 0;
+                        const cardHtml = `
+                            <div class="product-card">
+                                <a href="/Product/Details/${product.id}" class="product-link" style="text-decoration: none; color: inherit;">"
+                                    <div class="product-img-wrapper">
+                                        <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
+                                    </div>
+                                    <div class="product-details pt0">
+                                        <div class="product-title">${product.name}</div>
+                                        <div class="product-price">RM${product.price.toFixed(2)}</div>
+                                    </div>
+                                </a>
+                                <div class="product-details">
+                                     <button class="btn-add-cart" data-product-id="${product.id}" ${outOfStock ? "disabled" : ""}>
+                                          ${outOfStock ? "Out of Stock" : "Add to Cart"}
+                                      </button>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += cardHtml;
+                    });
+                })
+                .catch(err => console.error("Error loading products:", err));
+        }
+
+        document.addEventListener("product:search", function (e) {
+            loadProducts(undefined, e.detail.value);
+        });
+
         document.addEventListener("DOMContentLoaded", function () {
             loadProducts("ALL");
 
@@ -147,43 +209,7 @@
             });
         });
 
-        function loadProducts(categoryId) {
-            const url = categoryId === "ALL"
-                ? '/Product/GetProducts'
-                : `/Product/GetProducts?categoryId=${encodeURIComponent(categoryId)}`;
-
-            fetch(url)
-                .then(response => response.json())
-                .then(products => {
-                    const container = document.getElementById("productContainer");
-                    container.innerHTML = "";
-
-                    if (!products || products.length === 0) {
-                        container.innerHTML = `<div class="col-12 text-center text-muted py-5">No products available in this category.</div>`;
-                        return;
-                    }
-
-                    products.forEach(product => {
-                        const outOfStock = product.stock <= 0;
-                        const cardHtml = `
-                            <div class="product-card">
-                                <div class="product-img-wrapper">
-                                    <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
-                                </div>
-                                <div class="product-details">
-                                    <div class="product-title">${product.name}</div>
-                                    <div class="product-price">RM${product.price.toFixed(2)}</div>
-                                    <button class="btn-add-cart" data-product-id="${product.id}" ${outOfStock ? "disabled" : ""}>
-                                        ${outOfStock ? "Out of Stock" : "Add to Cart"}
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        container.innerHTML += cardHtml;
-                    });
-                })
-                .catch(err => console.error("Error loading products:", err));
-        }
+        
 
         document.getElementById("productContainer").addEventListener("click", function (e) {
             if (!e.target.classList.contains("btn-add-cart") || e.target.disabled) return;
