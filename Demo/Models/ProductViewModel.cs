@@ -2,7 +2,7 @@
 
 namespace Demo.Models;
 
-public class ProductInsertVM
+public class ProductInsertViewModel
 {
     public string? Id { get; set; }
 
@@ -19,7 +19,7 @@ public class ProductInsertVM
     public IFormFile Photo { get; set; } = null!;
 }
 
-public class ProductUpdateVM
+public class ProductUpdateViewModel
 {
     public string Id { get; set; } = null!;
 

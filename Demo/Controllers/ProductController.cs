@@ -93,7 +93,7 @@ namespace Demo.Controllers
         {
             ViewBag.Categories = db.Categories.ToList();
 
-            var vm = new ProductInsertVM
+            var vm = new ProductInsertViewModel
             {
                 Price = 0.01m,
             };
@@ -104,7 +104,7 @@ namespace Demo.Controllers
         // POST: Product/Insert
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult Insert(ProductInsertVM vm)
+        public IActionResult Insert(ProductInsertViewModel vm)
         {
             if (ModelState.IsValid("CategoryId") && !db.Categories.Any(c => c.Id == vm.CategoryId))
             {
@@ -136,7 +136,7 @@ namespace Demo.Controllers
                 db.SaveChanges();
 
                 TempData["Info"] = "Product inserted.";
-                return RedirectToAction("Index");
+                return RedirectToAction("Manage");
             }
 
             ViewBag.Categories = db.Categories.ToList();
@@ -154,7 +154,7 @@ namespace Demo.Controllers
                 return RedirectToAction("Index");
             }
 
-            var vm = new ProductUpdateVM
+            var vm = new ProductUpdateViewModel
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -168,7 +168,7 @@ namespace Demo.Controllers
         // POST: Product/Update
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult Update(ProductUpdateVM vm)
+        public IActionResult Update(ProductUpdateViewModel vm)
         {
             var p = db.Products.Find(vm.Id);
 

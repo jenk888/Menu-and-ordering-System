@@ -1,23 +1,12 @@
-﻿@model ProductInsertViewModel
+﻿@model ProductUpdateViewModel
 @{
-    ViewBag.Title = "Add Product";
+    ViewBag.Title = "Edit Product";
 }
 
 <div class="container my-4" style="max-width: 500px">
-    <form asp-action="Insert" method="post" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-        <div class="mb-3">
-            <label asp-for="CategoryId" class="form-label"></label>
-            <select asp-for="CategoryId" class="form-select">
-                <option value="">-- Select Category --</option>
-                @foreach (var c in (List<Category>)ViewBag.Categories)
-                        {
-                            <option value="@c.Id">@c.Name</option>
-                        }
-            </select>
-            <span asp-validation-for="CategoryId" class="text-danger"></span>
-        </div>
+    <form asp-action="Update" method="post" enctype="multipart/form-data">
+           <input type="hidden" asp-for="Id" />
+           <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <div class="mb-3">
             <label asp-for="Name" class="form-label">Name </label>
@@ -31,6 +20,15 @@
             <span asp-validation-for="Price" class="text-danger"></span>
         </div>
 
+        @if (!string.IsNullOrEmpty(Model.PhotoURL))
+            {
+                <div class="mb-3">
+                    <label class="form-label">Current Photo</label> <br>
+                    <input asp-for="Photo" type="file" accept="image/*" class="form-control" />
+                    <span asp-validation-for="Photo" class="text-danger"></span>
+                </div>
+            }
+
         <div class="mb-3">
             <label asp-for="Photo" class="form-label">Photo </label>
             <input asp-for="Photo" type="file" accept="image/*" class="form-control" />
@@ -39,5 +37,6 @@
 
         <button type="submit" class="btn btn-primary">Save</button>
         <a asp-action="Manage" class="btn btn-secondary">Cancel</a>
-    </form>
+
+        </form>
 </div>

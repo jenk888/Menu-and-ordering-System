@@ -2,7 +2,7 @@
 
 namespace Demo.Models;
 
-public class CategoryInsertVM
+public class CategoryInsertViewModel
 {
     [Required, MaxLength(100)]
     public string Name { get; set; }
@@ -11,7 +11,7 @@ public class CategoryInsertVM
     public int DisplayOrder { get; set; }
 }
 
-public class CategoryUpdateVM
+public class CategoryUpdateViewModel
 {
     public int Id { get; set; }
 

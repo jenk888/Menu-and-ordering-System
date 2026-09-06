@@ -30,7 +30,7 @@ namespace Demo.Controllers
         // POST: Category/Insert
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult Insert(CategoryInsertVM vm)
+        public IActionResult Insert(CategoryInsertViewModel vm)
         {
             if (ModelState.IsValid("Name") && db.Categories.Any(c => c.Name == vm.Name))
             {
@@ -63,7 +63,7 @@ namespace Demo.Controllers
                 return RedirectToAction("Index");
             }
 
-            var vm = new CategoryUpdateVM
+            var vm = new CategoryUpdateViewModel
             {
                 Id = c.Id,
                 Name = c.Name,
@@ -76,7 +76,7 @@ namespace Demo.Controllers
         // POST: Category/Update
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult Update(CategoryUpdateVM vm)
+        public IActionResult Update(CategoryUpdateViewModel vm)
         {
             var c = db.Categories.Find(vm.Id);
 
