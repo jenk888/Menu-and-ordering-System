@@ -88,10 +88,13 @@ public enum VoucherStatus
 public class User
 {
     [Key]
-    public string Id { get; set; } = null!;
+    public string Id { get; set; } = null!; 
 
     [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
+
+    [Required, MaxLength(20)]
+    public string Phone { get; set; } = null!;
 
     [Required, MaxLength(10)]
     public string Role { get; set; } = null!; // "Member" or "Admin"

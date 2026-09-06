@@ -381,6 +381,11 @@ namespace Demo.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("ProfilePhoto")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
