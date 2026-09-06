@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Demo.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Demo.Controllers
 {
@@ -15,6 +16,18 @@ namespace Demo.Controllers
             ViewBag.Categories = db.Categories.ToList();
 
             var model = db.Products;
+            return View(model);
+        }
+
+        // GET: Product/Manage
+        public IActionResult Manage()
+        {
+            var model = db.Products
+                .Include(p => p.Category)
+                .Include(p => p.Photos)
+                .OrderBy(p => p.Photos)
+                .ToList();
+
             return View(model);
         }
 
@@ -75,6 +88,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Insert
+        [Authorize(Roles = "Admin")]
         public IActionResult Insert()
         {
             ViewBag.Categories = db.Categories.ToList();
@@ -88,6 +102,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Insert
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(ProductInsertVM vm)
         {
@@ -129,6 +144,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Update
+        [Authorize(Roles = "Admin")]
         public IActionResult Update(string? id)
         {
             var p = db.Products.Find(id);
@@ -150,6 +166,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Update
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(ProductUpdateVM vm)
         {
@@ -199,6 +216,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Delete
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(string? id)
         {

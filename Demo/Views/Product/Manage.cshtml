@@ -1,0 +1,47 @@
+﻿@model List<Product>
+@{
+    ViewBag.Title = "Manage Products";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-action="Insert" class="btn btn-primary">Add Product</a>
+    </div>
+
+    <table class="table table-bordered table hover">
+        <thead class="table-light">
+            <tr>
+                <th>Photo</th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th style="width: 160px">Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    var photoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault();
+                    <tr>
+                        <td>
+                            <img src="@(photoUrl != null?"/photo/product/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
+                        </td>
+                        <td>@p.Id</td>
+                        <td>@p.Name</td>
+                        <td>@p.Category?.Name</td>
+                        <td>RM@(p.Price.ToString("0.00"))</td>
+                        <td>@p.Stock</td>
+                        <td>
+                            <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">&#x270F;</a>
+                            <form asp-action="Delete" asp-route-id="p.Id" method="post" style="display: inline" onsubmit="return confitm('Delete this product?');">
+                                <button typr="submit" class"btn btn-sm btn-outline-danger">&#x1F5D1;</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+    </table>
+</div>

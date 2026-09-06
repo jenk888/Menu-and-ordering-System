@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Demo.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Demo.Models;
 
 namespace Demo.Controllers
 {
@@ -20,12 +21,14 @@ namespace Demo.Controllers
 
 
         // GET: Category/Insert
+        [Authorize(Roles = "Admin")]
         public IActionResult Insert()
         {
             return View();
         }
 
         // POST: Category/Insert
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(CategoryInsertVM vm)
         {
@@ -50,7 +53,7 @@ namespace Demo.Controllers
         }
 
         // GET: Category/Update
-
+        [Authorize(Roles = "Admin")]
         public IActionResult Update(int id)
         {
             var c = db.Categories.Find(id);
@@ -71,6 +74,7 @@ namespace Demo.Controllers
         }
 
         // POST: Category/Update
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(CategoryUpdateVM vm)
         {
@@ -100,6 +104,7 @@ namespace Demo.Controllers
         }
 
         // POST: Category/Delete
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(int id)
         {
