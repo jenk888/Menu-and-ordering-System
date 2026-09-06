@@ -25,7 +25,7 @@ namespace Demo.Controllers
             var model = db.Products
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
-                .OrderBy(p => p.Photos)
+                .OrderBy(p => p.Id)
                 .ToList();
 
             return View(model);
@@ -174,7 +174,7 @@ namespace Demo.Controllers
 
             if (p == null)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Manage");
             }
 
             if (vm.Photo != null)
@@ -207,7 +207,7 @@ namespace Demo.Controllers
                 db.SaveChanges();
 
                 TempData["Info"] = "Product updated.";
-                return RedirectToAction("Index");
+                return RedirectToAction("Manage");
             }
 
             vm.PhotoURL = db.Entry(p).Collection(x => x.Photos).Query()
@@ -237,7 +237,7 @@ namespace Demo.Controllers
                 TempData["Info"] = "Product deleted.";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Manage");
         }
     }
 }

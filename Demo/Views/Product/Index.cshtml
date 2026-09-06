@@ -189,7 +189,7 @@
             if (!e.target.classList.contains("btn-add-cart") || e.target.disabled) return;
 
             const btn = e.target;
-            const productId = parseInt(btn.getAttribute("data-product-id"), 10);
+            const productId = btn.getAttribute("data-product-id");
             btn.disabled = true;
 
             fetch('/Cart/Add', {

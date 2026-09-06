@@ -8,7 +8,7 @@
         <a asp-action="Insert" class="btn btn-primary">Add Product</a>
     </div>
 
-    <table class="table table-bordered table hover">
+    <table class="table table-bordered table-hover">
         <thead class="table-light">
             <tr>
                 <th>Photo</th>
@@ -27,7 +27,7 @@
                     var photoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault();
                     <tr>
                         <td>
-                            <img src="@(photoUrl != null?"/photo/product/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
+                            <img src="@(photoUrl != null?"/photos/product/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
                         </td>
                         <td>@p.Id</td>
                         <td>@p.Name</td>
@@ -36,8 +36,8 @@
                         <td>@p.Stock</td>
                         <td>
                             <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">&#x270F;</a>
-                            <form asp-action="Delete" asp-route-id="p.Id" method="post" style="display: inline" onsubmit="return confitm('Delete this product?');">
-                                <button typr="submit" class"btn btn-sm btn-outline-danger">&#x1F5D1;</button>
+                            <form asp-action="Delete" asp-route-id="@p.Id" method="post" style="display: inline" onsubmit="return confirm('Delete this product?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">&#x1F5D1;</button>
                             </form>
                         </td>
                     </tr>

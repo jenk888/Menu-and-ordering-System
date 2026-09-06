@@ -6,7 +6,7 @@
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Category Management</h3>
-        <a asp-action="Insert" class="btn btn-primay">Add Category</a>
+        <a asp-action="Insert" class="btn btn-primary">Add Category</a>
     </div>
 
     <table class="table table-bordered table-hover">
@@ -27,9 +27,9 @@
                     <td>@c.Name</td>
                     <td>@c.DisplayOrder</td>
                     <td>
-                        <a asp-action="Update" asp-route-id="c.Id" class="btn btn-sm btn-outline-primary">&#x270F;</a>
-                        <form asp-action="Delete" asp-route-id="c.Id" method="post" style="display: inline" onsubmit="return confitm('Delete this category?');">
-                            <button typr="submit" class"btn btn-sm btn-outline-danger">&#x1F5D1;</button>
+                        <a asp-action="Update" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">&#x270F;</a>
+                        <form asp-action="Delete" asp-route-id="@c.Id" method="post" style="display: inline" onsubmit="return confirm('Delete this category?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">&#x1F5D1;</button>
                         </form>
                     </td>
                 </tr>

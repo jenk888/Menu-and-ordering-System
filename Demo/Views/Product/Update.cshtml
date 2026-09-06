@@ -24,13 +24,12 @@
             {
                 <div class="mb-3">
                     <label class="form-label">Current Photo</label> <br>
-                    <input asp-for="Photo" type="file" accept="image/*" class="form-control" />
-                    <span asp-validation-for="Photo" class="text-danger"></span>
+                    <img src="/photos/product/@Model.PhotoURL" style="width:120px; height:120px; object-fit:cover" />
                 </div>
             }
 
         <div class="mb-3">
-            <label asp-for="Photo" class="form-label">Photo </label>
+            <label asp-for="Photo" class="form-label">Replace Photo </label>
             <input asp-for="Photo" type="file" accept="image/*" class="form-control" />
             <span asp-validation-for="Photo" class="text-danger"></span>
         </div>
