@@ -1,0 +1,48 @@
+﻿@{
+    // Reusable search box.
+    var eventName = ViewData["SearchEvent"] as string ?? "app:search";
+    var placeholder = ViewData["SearchPlaceholder"] as string ?? "Search..."; 
+    var boxId = ViewData["SearchBoxId"] as string ?? "default";
+
+    var inputId = $"searchInput_{boxId}";
+    var btnId = $"searchBtn_{boxId}";
+}
+
+<div class="search-box mb-3">
+    <form class="d-flex" onsubmit="return false;">
+        <input type="search" id="@inputId" class="form-control" placeholder="@placeholder" autocomplete="off" />
+        <button type="button" id="@btnId" class="btn btn-outline-secondary">
+            Search
+        </button>
+    </form>
+</div>
+
+<script>
+    (function() {
+        const input = document.getElementById("@inputId");
+        const btn = document.getElementById("@btnId");
+        const eventName = "@eventName";
+        let debounceTimer;
+        function fireSearch() {
+            document.dispatchEvent(new CustomEvent(eventName, {
+                detail: { value: input.value.trim() }
+            }));
+        }
+        // Debounced live search while typing
+        input.addEventListener("input", function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(fireSearch, 400);
+        });
+        // Immediate search on Enter or button click
+        input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                clearTimeout(debounceTimer);
+                fireSearch();
+            }
+        });
+        btn.addEventListener("click", function() {
+            clearTimeout(debounceTimer);
+            fireSearch();
+        });
+    })();
+</script>
