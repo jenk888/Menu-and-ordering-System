@@ -122,6 +122,9 @@ namespace Demo.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("ProductId")
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<int>("SelectionType")
                         .HasColumnType("int");
 
@@ -560,6 +563,13 @@ namespace Demo.Migrations
                     b.Navigation("CartItem");
 
                     b.Navigation("ModifierOption");
+                });
+
+            modelBuilder.Entity("Demo.Models.ModifierGroup", b =>
+                {
+                    b.HasOne("Demo.Models.Product", null)
+                        .WithMany("ModifierGroups")
+                        .HasForeignKey("ProductId");
                 });
 
             modelBuilder.Entity("Demo.Models.ModifierOption", b =>

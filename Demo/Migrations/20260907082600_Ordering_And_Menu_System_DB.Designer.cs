@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Demo.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20260905133956_MenuOrdering")]
-    partial class MenuOrdering
+    [Migration("20260907082600_Ordering_And_Menu_System_DB")]
+    partial class Ordering_And_Menu_System_DB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -126,7 +126,6 @@ namespace Demo.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("SelectionType")
@@ -176,6 +175,9 @@ namespace Demo.Migrations
                     b.Property<decimal?>("AmountTendered")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal?>("ChangeGiven")
                         .HasColumnType("decimal(10,2)");
 
@@ -192,6 +194,9 @@ namespace Demo.Migrations
                     b.Property<string>("GuestPhone")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("bit");
 
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("int");
@@ -384,6 +389,11 @@ namespace Demo.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("ProfilePhoto")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -547,13 +557,9 @@ namespace Demo.Migrations
 
             modelBuilder.Entity("Demo.Models.ModifierGroup", b =>
                 {
-                    b.HasOne("Demo.Models.Product", "Product")
+                    b.HasOne("Demo.Models.Product", null)
                         .WithMany("ModifierGroups")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
+                        .HasForeignKey("ProductId");
                 });
 
             modelBuilder.Entity("Demo.Models.ModifierOption", b =>
