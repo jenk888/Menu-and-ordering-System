@@ -67,6 +67,10 @@
         object-fit: cover;
     }
 
+    .product-card.out-of-stock .product-img{
+        opacity: 0.5;
+    }
+
     .product-details {
         padding: 16px;
         text-align: center;
@@ -168,7 +172,7 @@
                     products.forEach(product => {
                         const outOfStock = product.stock <= 0;
                         const cardHtml = `
-                            <div class="product-card">
+                            <div class="product-card${outOfStock ? " out-of-stock" : ""}">
                                 <a href="/Product/Details/${product.id}" class="product-link" style="text-decoration: none; color: inherit;">
                                     <div class="product-img-wrapper">
                                         <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />

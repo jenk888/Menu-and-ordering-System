@@ -15,12 +15,19 @@
     <div class="info">@Html.Raw(TempData["Info"])</div>
 
     <header>
+        <button id="navToggle" type="button" aria-label="Toggle menu" style="background:none;border:none;font-size:24px;cursor:pointer;color:inherit;">&#9776;</button>
         <h1><a href="/">Menu and Ordering System</a></h1>
     </header>
 
-    <nav>
+    <div class="nav-backdrop" id="navBackdrop"></div>
+
+    <nav id="sideNav">
         <a href="/">Product</a>
         <a href="/Cart/Index">Cart</a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a href="/Product/Manage">Manage Products</a>
+        }
         <div></div>
         @if (User.Identity?.IsAuthenticated ?? false)
         {
@@ -63,6 +70,22 @@
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function syncHeaderHeight() {
+                var h = document.querySelector("header").offsetHeight;
+                document.documentElement.style.setProperty("--header-h", h + "px");
+        }
+        syncHeaderHeight();
+        window.addEventListener("resize", syncHeaderHeight);
+
+        document.getElementById("navToggle").addEventListener("click", function (){
+            document.body.classList.toggle("nav-open");
+        });
+
+            document.getElementById("navBackdrop").addEventListener("click", function() {
+                document.body.classList.remove("nav-open");
+            });
+    </script>
     @RenderSection("foot", false)
 </body>
 </html>
