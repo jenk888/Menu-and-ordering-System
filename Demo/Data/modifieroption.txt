@@ -1,0 +1,65 @@
+﻿Add Slice Soup Bread (2pcs)	2.00	1
+Add Mushroom	3.00	2
+Tomato Sauce	0.00	3
+Chilli Sauce	0.00	3
+Soy Fillet	0.00	4
+Add Soy Fillet	2.00	5
+Add Patty	6.90	5
+Add Slice Cheese	2.50	5
+Add Fried Egg	2.50	5
+Add Vegan Fried Egg	5.00	5
+Add Lava Cheese	5.00	5
+Fries Change to Sweet Potato Fries	3.00	6
+Add Slice Cheese	2.50	7
+Add Mozzarella Cheese	3.50	7
+Add Broccoli	2.50	8
+Add Mushroom	2.50	8
+Add Pineapple	2.50	8
+Mozzarella Cheese	0.00	9
+Change to Vegan Cheese	0.00	9
+Mozzarella Cheese Bake	3.90	10
+Change to Fusilli	0.00	11
+Add Pasta	2.50	12
+Add Veggie	2.50	13
+Add Mushroom	2.50	13
+Add Fried Egg	2.50	13
+Add Vegan Fried Egg	5.00	13
+Add Veggie Black Fish	2.50	13
+Add Sliced Snow Fish	2.50	13
+Add Tofu 3pcs	2.50	13
+Less Spicy	0.00	14
+No Spicy	0.00	14
+Extra Spicy	0.00	14
+No Bean Sprouts	0.00	15
+No Egg	0.00	15
+No Sesame Oil	0.00	15
+No Bitter Gourd	0.00	15
+No Ginger	0.00	15
+No Veggie	0.00	15
+Change to Rice	0.00	16
+Add Rice	2.50	16
+Change to Spaghetti	0.00	17
+Change to Fusilli	0.00	17
+Change to Bee Hoon	0.00	17
+Add Rice	2.50	18
+Less Spicy	0.00	19
+No Spicy	0.00	19
+No Cili Padi	0.00	19
+Add Papadum	3.00	20
+Add Satay 2sticks	4.00	20
+Add Jiggy Mushroom	6.90	20
+Add Fried Egg	2.50	20
+Add Vegan Fried Egg	5.00	20
+Add Veggie Black Fish	2.50	20
+Add Sliced Snow Fish	2.50	20
+Jiggy change to Soy Fillet	0.00	21
+Change to Big Rice	0.50	22
+Less Sugar	0.00	23
+No Sugar	0.00	23
+Add Chia Seed	2.00	24
+Regular	0.00	25
+Jumbo	0.00	25
+Less Ice	0.00	26
+No Ice	0.00	26
+Hot	0.00	27
+Cold	0.00	27
