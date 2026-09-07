@@ -173,6 +173,9 @@ namespace Demo.Migrations
                     b.Property<decimal?>("AmountTendered")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal?>("ChangeGiven")
                         .HasColumnType("decimal(10,2)");
 
@@ -189,6 +192,9 @@ namespace Demo.Migrations
                     b.Property<string>("GuestPhone")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("bit");
 
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("int");

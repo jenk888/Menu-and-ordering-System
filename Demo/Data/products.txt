@@ -54,16 +54,6 @@ P0053	Nasi Lemak Combo	100% Vegan. Spicy **. Satay sauce contains peanut....	24.
 P0054	Pumpkin Porridge	With egg. Blended pumpkin cooked with porridge, fresh broccoli, cauliflower and carrot.	17.90	100	1	10
 P0055	Green Porridge	100% Vegan. Porridge cooked with homemade green paste, fresh broccoli, cauliflower and carrot.	17.90	100	1	10
 P0056	Veggie Fish Hong Kong Porridge	100% Vegan. Porridge cooked with ginger, coriander, siao bai cai, carrot and fried slice veggie fish.	18.90	100	1	10
-P0057	Sashimi Poke Bowl	100% Vegan. Fried konjac rice/noodle, vegan sashimi, edamame, red cabbage, corn, seaweed and sesame seed.	29.90	100	1	11
-P0058	Teriyaki Poke Bowl	100% Vegan. Fried konjac rice/noodle, vegan sashimi, edamame, red cabbage, corn, seaweed, sesame seed and teriyaki patty.	28.90	100	1	11
-P0059	Avocado Poke Bowl	100% Vegan. Fried konjac rice/noodle, red cabbage, edamame, corn, seaweed, avocado and sesame seed.	36.90	100	1	11
-P0060	Katsu Don	100% Vegan. Fried rice, marinated abalone mushroom coated with oat, seaweed and salad served with homemade curry sauce.	18.90	100	1	12
-P0061	Avocado Katsu Don	100% Vegan. Fried rice, marinated abalone mushroom coated with oat, Australia avocado, seaweed and salad served with homemade...	27.90	100	1	12
-P0062	Kinoko Don	100% Vegan. Embryo rice, abalone mushrooms, shimeji mushrooms, shiitake mushroom and wakame (sauce).	18.90	100	1	12
-P0063	Quesadilla	Milk item. Grilled wrap, celery, carrot, capsicum, tomato, soy meat and cheese.	20.90	100	1	13
-P0064	Bolognese Pasta	100% Vegan. Spaghetti cooked with special homemade tomato sauce, minced soy meat, capsicum, celery and carrot. Served with cooked broccoli, scrambled eggs/tofu and juice of your kid's choice.	20.90	100	1	14
-P0065	Cheese Vacon Sandwich	Milk item. Wholemeal loaf, mozarella cheese, vacon (vegan bacon). Served with cooked broccoli, scrambled eggs/tofu and juice of your kid's choice.	20.90	100	1	14
-P0066	Pumpkin Porridge	With egg. Blended pumpkin cooked with porridge, fresh broccoli, cauliflower and carrot. Served with cooked broccoli, scrambled eggs/tofu and juice of your kid's choice.	17.90	100	1	14
 P0067	Embryo Rice		2.50	100	1	15
 P0068	Nasi Lemak Rice		3.50	100	1	15
 P0069	Beehoon (B)		3.00	100	1	15
@@ -117,51 +107,3 @@ P0116	Filter Water with Lemon		2.00	100	1	22
 P0117	Filter Water		2.00	100	1	22
 P0118	Coolberg Craberry Flavour	100% vegan.	14.90	100	1	22
 P0119	Coolberg Malt Flavour	100% vegan.	14.90	100	1	22
-P0120	Espresso -Hot	100% Vegan. Double shot espresso.	7.90	100	1	23
-P0121	Americano -Hot	100% Vegan. Double shot espresso mix with hot water.	9.90	100	1	23
-P0122	Iced Americano (L)	100% Vegan. Triple shot espresso mix with hot water and ice.	14.90	100	1	23
-P0123	Iced Berrycano (L)	100% Vegan. Triple shot espresso + blackcurrant tea mix with hot water and ice.	18.90	100	1	23
-P0124	Coffee Latte -Hot	Contains milk. Double shot espresso and steamed milk.	14.90	100	1	23
-P0125	Coffee Latte -Ice	Contains milk. Double shot espresso and full cream milk.	16.90	100	1	23
-P0126	Cappuccino -Hot	Contains milk. Double shot espresso and steamed foam milk.	14.90	100	1	23
-P0127	Cappuccino -Ice	Contains milk. Double shot espresso, foam milk and ice.	16.90	100	1	23
-P0128	Butterscotch Latte -Hot	Contains milk. Double shot espresso mix with butterscotch syrup and steamed milk.	16.90	100	1	23
-P0129	Butterscotch Latte -Ice	Contains milk. Double shot espresso mix with butterscotch syrup, full cream milk and ice.	17.90	100	1	23
-P0130	Mocha -Hot	Contains milk. Double shot espresso mix with premix choco powder (contains sugar) and steamed milk.	0.00	100	1	23
-P0131	Mocha -Ice	Contains milk. Double shot espresso mix with premix choco powder (contains sugar), foam milk and ice.	0.00	100	1	23
-P0132	Dark Mocha -Hot	Contains milk. Double shot espresso mix with extra premix choco powder (contains sugar) and steamed milk.	16.90	100	1	23
-P0133	Dark Mocha -Ice	Contains milk. Double shot espresso mix with extra premix choco powder (contains sugar), foam milk and ice.	20.90	100	1	23
-P0134	French Dark Chocolate -Hot	Contains milk. Extra premix choco powder (contains sugar) mix with hot water and steamed milk.	16.90	100	1	23
-P0135	French Dark Chocolate -Ice	Contains milk. Extra premix choco powder (contains sugar) mix with hot water, foam milk and ice.	18.90	100	1	23
-P0136	Matcha Latte -Hot	Contains milk. Premix matcha powder (contains sugar) mix with hot water and steamed milk.	16.90	100	1	23
-P0137	Matcha Latte -Ice	Contains milk. Premix matcha powder (contains sugar) mix with hot water, foam milk and ice.	17.90	100	1	23
-P0138	Matcha Mocha -Hot	Contains milk. Double shot espresso mix with premix choco powder (contains sugar) + premix matcha powder (contains sugar) with hot wate...	16.90	100	1	23
-P0139	Matcha Mocha -Ice	Contains milk. Double shot espresso mix with premix choco powder (contains sugar) + premix matcha powder (contains sugar) with hot wate...	17.90	100	1	23
-P0140	Coconut Coffee -Ice	Contains milk. Double shot espresso mix with coconut water + coconut milk.	0.00	100	1	23
-P0141	Peanut Espresso-Ice	Contains milk. Double shot espresso mix with peanut butter.	0.00	100	1	23
-P0142	Green Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
-P0143	Jasmine Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	0	24
-P0144	Peach Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
-P0145	Blackcurrant Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
-P0146	Lavender Tea (Blooming Tea)	Refillable. Serve by pax.	20.90	100	1	24
-P0147	Stevia & Hawthorn	Refillable. Serve by pax.	20.90	100	1	24
-P0148	Mixed Fruit Tea	Refillable. Serve by pax.	22.90	100	1	24
-P0149	Black Wolfberry&Chrysanthemum Tea	Refillable. Serve by pax.	22.90	100	1	24
-P0150	Berry Strawberry	Mixed of two berries, strawberry flavoured protein powder, nestum and oat.	21.90	100	1	25
-P0151	Matcha Berry	Strawberry, matcha powder, strawberry flavoured protein powder, nestum and oat.	21.90	100	1	25
-P0152	Banana Chocolate	Banana, chocolate powder, banana flavoured protein powder, nestum and oat.	21.90	100	1	25
-P0153	Cookies n Cream	Oreo, cookies crunch flavoured protein powder, nestum and oat.	21.90	100	1	25
-P0154	Peanut Espresso	Espresso, peanut butter, cookies crunch flavoured protein powder, nestum and oat.	21.90	100	1	25
-P0155	Joy Ur Day	Espresso, Orange juice, Foam milk.	28.90	100	1	26
-P0156	Amour de Citrus	Espresso, Lemon, Lime, Mint.	28.90	100	1	26
-P0157	Peach on the Side	Guava, Peach, Lime, Lemon, Soda.	28.90	100	1	26
-P0158	Lovein Edelweiss	Espresso, Peach, Elderflower, Ginger Soda.	28.90	100	1	26
-P0159	Panana Shakira	Pandan, Banana, Lemon, Matcha.	28.90	100	1	26
-P0160	Organic Walnut Toufu Hua	100% VEGAN.	12.90	100	0	27
-P0161	Chocolate Toufu Hua	Milk item.	12.90	100	0	27
-P0162	Plain Toufu Hua		6.50	100	0	27
-P0163	Tiramisu Cake	Contains milk and egg.	18.90	0	1	28
-P0164	Custard Raisin Danish	Contains dairy products.	14.90	0	1	28
-P0165	Cranberry Almond Tiramisu Cake	100% vegan.	18.90	100	1	28
-P0166	Strawberry Tiramisu Cake	Contains milk and egg.	18.90	100	0	28
-P0167	Peach Oat Tiramisu Cake	Contains milk and egg.	0.00	100	1	28
