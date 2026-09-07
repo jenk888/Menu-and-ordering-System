@@ -123,7 +123,6 @@ namespace Demo.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("SelectionType")
@@ -555,13 +554,9 @@ namespace Demo.Migrations
 
             modelBuilder.Entity("Demo.Models.ModifierGroup", b =>
                 {
-                    b.HasOne("Demo.Models.Product", "Product")
+                    b.HasOne("Demo.Models.Product", null)
                         .WithMany("ModifierGroups")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
+                        .HasForeignKey("ProductId");
                 });
 
             modelBuilder.Entity("Demo.Models.ModifierOption", b =>

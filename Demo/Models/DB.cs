@@ -474,6 +474,7 @@ public class OrderItem
 
     public List<OrderItemModifier> SelectedModifiers { get; set; } = [];
 }
+
 public class OrderItemModifier
 {
     [Key]
