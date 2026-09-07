@@ -215,10 +215,6 @@ public class ModifierGroup
 
     public bool IsRequired { get; set; }
 
-    [Required]
-    public string ProductId { get; set; } = null!;
-    public Product Product { get; set; } = null!;
-
     public List<ModifierOption> Options { get; set; } = [];
 }
 
