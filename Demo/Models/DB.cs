@@ -103,6 +103,9 @@ public class User
     [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
 
+    [Required, MaxLength(20)]
+    public string Phone { get; set; } = null!;
+
     [Required, MaxLength(10)]
     public string Role { get; set; } = null!; // "Member" or "Admin"
 
