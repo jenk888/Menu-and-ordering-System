@@ -138,9 +138,6 @@
         background-color: #0b5ed7;
     }
 </style>
-
-<h2 class="checkout-title">Checkout</h2>
-
 @if (TempData["CheckoutError"] != null)
 {
     <div class="alert alert-danger">@TempData["CheckoutError"]</div>
@@ -163,20 +160,7 @@
             }
         </div>
     </div>
-    @if (Model.IsGuest)
-    {
-        <div class="guest-details mb-3">
-            <h5>Your Details</h5>
-            <div class="mb-2">
-                <label class="form-label">Name</label>
-                <input type="text" name="guestName" class="form-control" autocomplete="name" required />
-            </div>
-            <div class="mb-2">
-                <label class="form-label">Phone Number</label>
-                <input type="tel" name="guestPhone" class="form-control" autocomplete="tel" required />
-            </div>
-        </div>
-    }
+    
     <div class="col-lg-5">
         <div class="order-summary">
             <h5>Order Summary</h5>

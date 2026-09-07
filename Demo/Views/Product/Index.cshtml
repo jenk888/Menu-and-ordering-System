@@ -67,6 +67,10 @@
         object-fit: cover;
     }
 
+    .product-card.out-of-stock .product-img{
+        opacity: 0.5;
+    }
+
     .product-details {
         padding: 16px;
         text-align: center;
@@ -165,32 +169,32 @@
                         return;
                     }
 
-                            products.forEach(product => {
-            const outOfStock = product.stock <= 0;
+                    products.forEach(product => {
+                        const outOfStock = product.stock <= 0;
 
-            // 1. Determine dynamic styles and tags based on stock
-            const cardClass = outOfStock ? 'product-card out-of-stock' : 'product-card';
-            const tag = outOfStock ? 'div' : 'a';
-            const hrefAttr = outOfStock ? '' : `href="/Product/Details/${product.id}"`;
-            const disabledStyle = outOfStock ? 'style="text-decoration: none; color: inherit; opacity: 0.5; pointer-events: none; cursor: not-allowed;"' : 'style="text-decoration: none; color: inherit;"';
+                        // 1. Determine dynamic styles and tags based on stock
+                        const cardClass = outOfStock ? 'product-card out-of-stock' : 'product-card';
+                        const tag = outOfStock ? 'div' : 'a';
+                        const hrefAttr = outOfStock ? '' : `href="/Product/Details/${product.id}"`;
+                        const disabledStyle = outOfStock ? 'style="text-decoration: none; color: inherit; opacity: 0.5; pointer-events: none; cursor: not-allowed;"' : 'style="text-decoration: none; color: inherit;"';
 
-            // 2. Build template using dynamic wrapper tag
-            const cardHtml = `
-                <div class="${cardClass}">
-                    <${tag} ${hrefAttr} class="product-link" ${disabledStyle}>
-                        <div class="product-img-wrapper">
-                            <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
-                        </div>
-                        <div class="product-details pt0">
-                            <div class="product-title">${product.name}</div>
-                            <div class="product-price">RM${product.price.toFixed(2)}</div>
-                        </div>
-                    </${tag}>
-                </div>
-            `;
+                        // 2. Build template using dynamic wrapper tag
+                        const cardHtml = `
+                            <div class="product-card${outOfStock ? " out-of-stock" : ""}">
+                                <a href="/Product/Details/${product.id}" class="product-link" style="text-decoration: none; color: inherit;">
+                                    <div class="product-img-wrapper">
+                                        <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
+                                    </div>
+                                    <div class="product-details pt0">
+                                        <div class="product-title">${product.name}</div>
+                                        <div class="product-price">RM${product.price.toFixed(2)}</div>
+                                    </div>
+                                </${tag}>
+                            </div>
+                        `;
 
-            container.innerHTML += cardHtml;
-        });
+                        container.innerHTML += cardHtml;
+                    });
                 })
                 .catch(err => console.error("Error loading products:", err));
         }

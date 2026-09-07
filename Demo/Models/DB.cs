@@ -82,13 +82,23 @@ public enum VoucherStatus
     Expired
 }
 
+// Derived, display-only status for an Order — computed from IsCancelled,
+// PaymentStatus and each OrderItem's Status (see Order.OrderStatus below).
+public enum OrderStatus
+{
+    Cancelled,
+    PendingPayment,
+    Preparing,
+    Completed
+}
+
 // ============================================================================
 // User (manual table — Role distinguishes "Member" vs "Admin"; Guests never get a row)
 // ============================================================================
 public class User
 {
     [Key]
-    public string Id { get; set; } = null!; 
+    public string Id { get; set; } = null!;
 
     [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
@@ -216,13 +226,10 @@ public class ModifierGroup
     public bool IsRequired { get; set; }
 
     [Required]
-    public string ProductId { get; set; } = null!;
-    public Product Product { get; set; } = null!;
-
     public List<ModifierOption> Options { get; set; } = [];
+    public List<Product> Products { get; set; } = [];
 }
 
-// e.g. "Large" (+RM2.00), "Extra Cheese" (+RM1.50), "Spicy" (+RM0.00)
 public class ModifierOption
 {
     [Key]
@@ -397,6 +404,11 @@ public class Order
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    // Set when a member cancels the order. Cancellation is only allowed while
+    // the order is still Unpaid — see OrderController.
+    public bool IsCancelled { get; set; }
+    public DateTime? CancelledAt { get; set; }
+
     // Null for guest orders.
     public string? UserId { get; set; }
     public User? User { get; set; }
@@ -414,6 +426,19 @@ public class Order
     // Derived, read-only: true once every line item has been served.
     [NotMapped]
     public bool IsFullyServed => OrderItems.Count > 0 && OrderItems.All(i => i.Status == OrderItemStatus.Served);
+
+    // Single source of truth for "what state is this order in", used by both the
+    // member and admin order screens instead of a separate stored status field.
+    [NotMapped]
+    public OrderStatus OrderStatus =>
+        IsCancelled ? OrderStatus.Cancelled :
+        PaymentStatus == PaymentStatus.Unpaid ? OrderStatus.PendingPayment :
+        IsFullyServed ? OrderStatus.Completed :
+        OrderStatus.Preparing;
+
+    // A member can only cancel before the order has been paid.
+    [NotMapped]
+    public bool CanBeCancelled => !IsCancelled && PaymentStatus == PaymentStatus.Unpaid;
 }
 
 public class OrderItem
