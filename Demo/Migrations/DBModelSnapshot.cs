@@ -122,16 +122,10 @@ namespace Demo.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(10)");
-
                     b.Property<int>("SelectionType")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
 
                     b.ToTable("ModifierGroups");
                 });
@@ -515,6 +509,21 @@ namespace Demo.Migrations
                     b.ToTable("VoucherRules");
                 });
 
+            modelBuilder.Entity("ModifierGroupProduct", b =>
+                {
+                    b.Property<int>("ModifierGroupsId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductsId")
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("ModifierGroupsId", "ProductsId");
+
+                    b.HasIndex("ProductsId");
+
+                    b.ToTable("ModifierGroupProduct");
+                });
+
             modelBuilder.Entity("Demo.Models.CartItem", b =>
                 {
                     b.HasOne("Demo.Models.Product", "Product")
@@ -551,17 +560,6 @@ namespace Demo.Migrations
                     b.Navigation("CartItem");
 
                     b.Navigation("ModifierOption");
-                });
-
-            modelBuilder.Entity("Demo.Models.ModifierGroup", b =>
-                {
-                    b.HasOne("Demo.Models.Product", "Product")
-                        .WithMany("ModifierGroups")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Demo.Models.ModifierOption", b =>
@@ -679,6 +677,21 @@ namespace Demo.Migrations
                     b.Navigation("VoucherRule");
                 });
 
+            modelBuilder.Entity("ModifierGroupProduct", b =>
+                {
+                    b.HasOne("Demo.Models.ModifierGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ModifierGroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Demo.Models.CartItem", b =>
                 {
                     b.Navigation("SelectedModifiers");
@@ -706,8 +719,6 @@ namespace Demo.Migrations
 
             modelBuilder.Entity("Demo.Models.Product", b =>
                 {
-                    b.Navigation("ModifierGroups");
-
                     b.Navigation("Photos");
                 });
 

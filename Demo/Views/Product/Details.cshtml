@@ -1,6 +1,6 @@
 ﻿@model Product
 @{
-    ViewBag.Title = Model.Name;
+    ViewBag.Title = "";
 }
 @{
     var photoUrls = Model.Photos != null && Model.Photos.Any()
@@ -10,6 +10,7 @@
 }
 
 <div class="container my-4">
+    <a asp-action="Index" class="btn btn-link ps-0 mb-3">&larr; Back to Products</a>
     <div class="row g-4">
         <div class="col-md-6">
             <div class="detail-photo-wrapper">
@@ -28,7 +29,7 @@
         </div>
 
         <div class="col-md-6">
-            <a asp-action="Index" class="btn btn-link ps-0 mb-3">&larr; Back to Products</a>
+            <h5>@Model.Name</h5>
             <p class="detail-desc mb-3">@Model.Description</p>
             <p class="detail-price mb-4">RM @(Model.Price.ToString("0.00"))</p>
             <p class="detail-stock mb-5">
