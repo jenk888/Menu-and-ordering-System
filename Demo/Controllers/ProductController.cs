@@ -20,7 +20,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Details/{id}
-        public IActionResult Detais(string? id)
+        public IActionResult Details(string? id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -53,7 +53,7 @@ namespace Demo.Controllers
 
         // AJAX Endpoint for Filtering Products
         [HttpGet]
-        public IActionResult GetProducts(int? categoryId = null, string? search = null)
+        public IActionResult GetProducts(int? categoryId = null, string? search = null, decimal?minPrice = null, decimal?maxPrice = null)
         {
             var query = db.Products
                 .Where(p => p.IsAvailable);
@@ -66,6 +66,17 @@ namespace Demo.Controllers
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(p => p.Name.Contains(search));
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
             }
 
             var products = query.Select(p => new
@@ -127,7 +138,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Insert
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(ProductInsertViewModel vm)
         {
@@ -169,7 +180,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Update
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult Update(string? id)
         {
             var p = db.Products.Find(id);
@@ -191,7 +202,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Update
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(ProductUpdateViewModel vm)
         {
@@ -241,7 +252,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Delete
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(string? id)
         {

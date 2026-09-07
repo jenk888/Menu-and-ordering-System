@@ -169,11 +169,11 @@
                         const outOfStock = product.stock <= 0;
                         const cardHtml = `
                             <div class="product-card">
-                                <a href="/Product/Details/${product.id}" class="product-link" style="text-decoration: none; color: inherit;">"
+                                <a href="/Product/Details/${product.id}" class="product-link" style="text-decoration: none; color: inherit;">
                                     <div class="product-img-wrapper">
                                         <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
                                     </div>
-                                    <div class="product-details pt0">
+                                    <div class="product-details pt-0">
                                         <div class="product-title">${product.name}</div>
                                         <div class="product-price">RM${product.price.toFixed(2)}</div>
                                     </div>
