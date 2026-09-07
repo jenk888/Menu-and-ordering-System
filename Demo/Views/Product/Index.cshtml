@@ -208,43 +208,5 @@
                 }
             });
         });
-
-        
-
-        document.getElementById("productContainer").addEventListener("click", function (e) {
-            if (!e.target.classList.contains("btn-add-cart") || e.target.disabled) return;
-
-            const btn = e.target;
-            const productId = btn.getAttribute("data-product-id");
-            btn.disabled = true;
-
-            fetch('/Cart/Add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId: productId })
-            })
-                .then(async response => {
-                    const data = await response.json().catch(() => null);
-                    if (!response.ok) {
-                        const message = data?.message || `Request failed (${response.status})`;
-                        throw new Error(message);
-                    }
-                    return data;
-                })
-                .then(() => {
-                    btn.textContent = "Added ✓";
-                    btn.classList.add("added");
-                    setTimeout(() => {
-                        btn.textContent = "Add to Cart";
-                        btn.classList.remove("added");
-                        btn.disabled = false;
-                    }, 1200);
-                })
-                .catch(err => {
-                    console.error("Error adding to cart:", err);
-                    btn.disabled = false;
-                    alert(err.message || "Could not add item to cart. Please try again.");
-                });
-        });
     </script>
 }
