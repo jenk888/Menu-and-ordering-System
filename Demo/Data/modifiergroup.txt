@@ -1,27 +1,27 @@
-﻿Soup Bread Add On	1	False
-Upsize	0	False
-Sauce	1	False
-Burger Patty Selection	0	False
-Burger Add On	1	False
-Side Selection	0	False
-Cheese Add On	0	False
-Pizza Add On	1	False
-Pizza Cheese	0	True
-Upgrade to Cheese Bake	0	False
-Pasta Selection	0	False
-Pasta Add On	0	False
-Extra Add On	1	False
-Spicy Remarks	0	False
-Special Remarks	1	False 
-Soup Pasta Unique Selection	1	False
-Soup Pasta Selection	0	False
-Rice Add On	0	False
-Fried Rice Spicy Remarks	0	False
-Nasi Lemak Add On	1	False
-Jiggy Selection	0	False
-Rice Size	0	False
-Sugar Level	0	False
-Beverage Add On	1	False
-Drinks Size Selection	0	True
-Ice Level	0	False
-Hot/Cold	0	True
+﻿1	Soup Bread Add On	1	False
+2	Upsize	0	False
+3	Sauce	1	False
+4	Burger Patty Selection	0	False
+5	Burger Add On	1	False
+6	Side Selection	0	False
+7	Cheese Add On	0	False
+8	Pizza Add On	1	False
+9	Pizza Cheese	0	True
+10	Upgrade to Cheese Bake	0	False
+11	Pasta Selection	0	False
+12	Pasta Add On	0	False
+13	Extra Add On	1	False
+14	Spicy Remarks	0	False
+15	Special Remarks	1	False 
+16	Soup Pasta Unique Selection	1	False
+17	Soup Pasta Selection	0	False
+18	Rice Add On	0	False
+19	Fried Rice Spicy Remarks	0	False
+20	Nasi Lemak Add On	1	False
+21	Jiggy Selection	0	False
+22	Rice Size	0	False
+23	Sugar Level	0	False
+24	Beverage Add On	1	False
+25	Drinks Size Selection	0	True
+26	Ice Level	0	False
+27	Hot/Cold	0	True
