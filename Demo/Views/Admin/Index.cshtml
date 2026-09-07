@@ -1,0 +1,66 @@
+﻿@model IEnumerable<Demo.Models.User>
+
+@{
+    ViewData["Title"] = "Member Management";
+}
+
+<!-- Include the resuable search box component -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        @{
+            ViewData["SearchPlaceHolder"] = "Search by name, ID, or email...";
+            ViewData["SearchEvent"] = "admin:memberSearch"; //custom event name for search triggering
+        }
+        <partial name="_SearchBox" />
+    </div>
+</div>
+
+<!-- Data table container used for AJAX partial view refresh -->
+<div id="memberTableContainer">
+    <partial name="_MemberListPartial" Model="Model" />
+</div>
+
+@section Scripts {
+    <script>
+        // Listen to the custom search event dispatched by the search box component
+        document.addEventListener("admin:memberSearch", function (e) {
+            const searchValue = e.detail.value;
+            loadTableData(`/Admin/Index?search=${encodeURIComponent(searchValue)}`);
+        });
+           
+        // Event delegation for sorting and pagination clicks inside the table container
+        document.getElementById("memberTableContainer").addEventListener("click", function (e) {
+            const target = e.target.closest('.sort-link, .page-btn');
+            if (!target) return;
+
+            e.preventDefault();
+
+            // Extract current search query from the search input box if available
+            const searchInput = document.getElementById("searchInput_default");
+            const searchValue = searchInput ? searchInput.value.trim() : "";
+
+            let url = `/Admin/Index?search=${encodeURIComponent(searchValue)}`;
+
+            if (target.classList.contains('sort-link')) {
+                const sortOrder = target.getAttribute('data-sort');
+                url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+            } else if (target.classList.contains('page-btn')) {
+                const page = target.getAttribute('data-page');
+                url += `&page=${page}`;
+            }
+
+            loadTableData(url);
+        });
+
+        // Helper function to perform AJAX fetch and update the table container
+        function loadTableData(url) {
+            fetch(url, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById("memberTableContainer").innerHTML = html;
+            });
+        }
+    </script>
+}

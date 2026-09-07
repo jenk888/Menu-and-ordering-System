@@ -51,6 +51,32 @@ public class RegisterVM
     public IFormFile Photo { get; set; }
 }
 
+public class AdminRegisterVm
+{
+    [Required]
+    public string Name { get; set; }
+
+    [Required, EmailAddress]
+    [Remote("CheckEmail", "User", ErrorMessage = "Duplicated Email.")]
+    public string Email { get; set; }
+
+    [Required]
+    [StringLength(100, MinimumLength = 5)]
+    [DataType(DataType.Password)]
+    public string Password { get; set; }
+
+    [Required]
+    [DataType(DataType.Password)]
+    [Compare("Password", ErrorMessage = "Passwords do not match.")]
+    public string ConfirmPassword { get; set; }
+
+    [Required]
+    public string Phone { get; set; }
+
+    [Required]
+    public IFormFile Photo { get; set; }
+}
+
 public class UpdatePasswordVM
 {
     [StringLength(100, MinimumLength = 5)]

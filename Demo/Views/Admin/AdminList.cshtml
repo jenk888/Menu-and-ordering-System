@@ -1,0 +1,70 @@
+﻿@model IEnumerable<Demo.Models.User>
+
+@{
+    ViewData["Title"] = "Administrator Management";
+}
+
+<div class="container mt-4">
+
+    <!-- Search box on left, add new admin btn on right -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div style="width: 350px;">
+            @{
+                ViewData["SearchPlaceHolder"] = "Search by name, ID, or email...";
+                ViewData["SearchEvent"] = "admin:adminSearch";
+            }
+            <partial name="_SearchBox" />
+        </div>
+        <a asp-action="AddAdmin" class="btn btn-primary">Add New Admin</a>
+    </div>
+
+    <!-- Data table container used for AJAX partial view refresh -->
+    <div id="adminTableContainer">
+        <partial name="_AdminListPartial" Model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Listen to the custom search event dispatched by the search box component
+        document.addEventListener("admin:adminSearch", function (e) {
+            const searchValue = e.detail.value;
+            loadTableData(`/Admin/AdminList?search=${encodeURIComponent(searchValue)}`);
+        });
+
+        // Event delegation for sorting and pagination clicks inside the table container
+        document.getElementById("adminTableContainer").addEventListener("click", function (e) {
+            const target = e.target.closest('.sort-link, .page-btn');
+            if (!target) return;
+
+            e.preventDefault();
+
+            // Extract current search query from the search input box if available
+            const searchInput = document.getElementById("searchInput_default");
+            const searchValue = searchInput ? searchInput.value.trim() : "";
+
+            let url = `/Admin/AdminList?search=${encodeURIComponent(searchValue)}`;
+
+            if (target.classList.contains('sort-link')) {
+                const sortOrder = target.getAttribute('data-sort');
+                url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+            } else if (target.classList.contains('page-btn')) {
+                const page = target.getAttribute('data-page');
+                url += `&page=${page}`;
+            }
+
+            loadTableData(url);
+        });
+
+        // Helper function to perform AJAX fetch and update the table container
+        function loadTableData(url) {
+            fetch(url, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById("adminTableContainer").innerHTML = html;
+            });
+        }
+    </script>
+}
