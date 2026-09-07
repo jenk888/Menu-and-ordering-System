@@ -2,7 +2,6 @@
 @{
     ViewBag.Title = Model.Name;
 }
-
 @{
     var photoUrls = Model.Photos != null && Model.Photos.Any()
         ? Model.Photos.Select(p => "/photos/product/" + p.PhotoUrl).ToList()
@@ -11,8 +10,6 @@
 }
 
 <div class="container my-4">
-    <a asp-action="Index" class="btn btn-link ps-0 mb-3">&larr; Back to Products</a>
- 
     <div class="row g-4">
         <div class="col-md-6">
             <div class="detail-photo-wrapper">
@@ -31,22 +28,13 @@
         </div>
 
         <div class="col-md-6">
-            <h2>@Model.Name</h2>
-
-            @if (Model.Category != null)
-            {
-                <p class="text-muted mb-2">@Model.Category.Name</p>
-            }
+            <a asp-action="Index" class="btn btn-link ps-0 mb-3">&larr; Back to Products</a>
             <p class="detail-desc mb-3">@Model.Description</p>
             <p class="detail-price mb-4">RM @(Model.Price.ToString("0.00"))</p>
             <p class="detail-stock mb-5">
                 @if (outOfStock)
                 {
                     <span class="text-danger">Out of Stock</span>
-                }
-                else
-                {
-                    <span>@Model.Stock in stock</span>
                 }
             </p>
             

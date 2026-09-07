@@ -167,24 +167,28 @@
 
                     products.forEach(product => {
                         const outOfStock = product.stock <= 0;
+
+                        // 1. Determine dynamic styles and tags based on stock
+                        const cardClass = outOfStock ? 'product-card out-of-stock' : 'product-card';
+                        const tag = outOfStock ? 'div' : 'a';
+                        const hrefAttr = outOfStock ? '' : `href="/Product/Details/${product.id}"`;
+                        const disabledStyle = outOfStock ? 'style="text-decoration: none; color: inherit; opacity: 0.5; pointer-events: none; cursor: not-allowed;"' : 'style="text-decoration: none; color: inherit;"';
+
+                        // 2. Build template using dynamic wrapper tag
                         const cardHtml = `
-                            <div class="product-card">
-                                <a href="/Product/Details/${product.id}" class="product-link" style="text-decoration: none; color: inherit;">
+                            <div class="${cardClass}">
+                                <${tag} ${hrefAttr} class="product-link" ${disabledStyle}>
                                     <div class="product-img-wrapper">
                                         <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
                                     </div>
-                                    <div class="product-details pt-0">
+                                    <div class="product-details pt0">
                                         <div class="product-title">${product.name}</div>
                                         <div class="product-price">RM${product.price.toFixed(2)}</div>
                                     </div>
-                                </a>
-                                <div class="product-details">
-                                     <button class="btn-add-cart" data-product-id="${product.id}" ${outOfStock ? "disabled" : ""}>
-                                          ${outOfStock ? "Out of Stock" : "Add to Cart"}
-                                      </button>
-                                </div>
+                                </${tag}>
                             </div>
                         `;
+
                         container.innerHTML += cardHtml;
                     });
                 })
