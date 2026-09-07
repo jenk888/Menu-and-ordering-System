@@ -8,7 +8,6 @@ Asian Fried Rice 炒饭	7
 Nasi Lemak 椰浆饭	8
 Porridge 粥	9
 Add On 另加	14
-Milk Tea 奶茶	15
 Ice Blended 冰沙	16
 Fresh Blended Juice 现搅果汁	17
 Fruit Juice 果汁	18

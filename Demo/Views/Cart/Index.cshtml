@@ -46,6 +46,20 @@
         font-size: 0.9rem;
     }
 
+    .cart-item-modifiers {
+        margin-top: 0.35rem;
+    }
+
+    .cart-item-modifier-line {
+        color: #b0b3bf;
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+
+    .cart-item-modifier-price {
+        margin-left: 0.35rem;
+    }
+
     .qty-control {
         display: flex;
         align-items: center;
@@ -171,23 +185,41 @@ else
         <div class="col-lg-8">
             @foreach (var item in Model.Items)
             {
-                <div class="cart-item-card" data-product-id="@item.ProductId">
+                var lineId = item.CartItemId > 0 ? item.CartItemId.ToString() : item.ProductId;
+
+                <div class="cart-item-card" data-product-id="@item.ProductId" data-id="@lineId">
                     <img class="cart-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
 
                     <div class="flex-grow-1">
                         <div class="cart-item-name">@item.ProductName</div>
                         <div class="cart-item-unit-price">RM @item.Price.ToString("0.00") each</div>
+
+                        @if (item.SelectedModifiers != null && item.SelectedModifiers.Any())
+                        {
+                            <div class="cart-item-modifiers">
+                                @foreach (var mod in item.SelectedModifiers)
+                                {
+                                    <div class="cart-item-modifier-line">
+                                        @mod.Name
+                                        @if (mod.ExtraPrice > 0)
+                                        {
+                                            <span class="cart-item-modifier-price">+RM @mod.ExtraPrice.ToString("0.00")</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
 
                     <div class="qty-control">
-                        <button type="button" class="btn-qty-decrease" data-id="@item.ProductId" @(item.Quantity <= 1 ? "disabled" : "")>−</button>
+                        <button type="button" class="btn-qty-decrease" data-id="@lineId" @(item.Quantity <= 1 ? "disabled" : "")>−</button>
                         <input type="text" class="qty-value" value="@item.Quantity" readonly />
-                        <button type="button" class="btn-qty-increase" data-id="@item.ProductId" data-stock="@item.Stock" @(item.Quantity >= item.Stock ? "disabled" : "")>+</button>
+                        <button type="button" class="btn-qty-increase" data-id="@lineId" data-stock="@item.Stock" @(item.Quantity >= item.Stock ? "disabled" : "")>+</button>
                     </div>
 
-                    <div class="cart-item-subtotal">RM @((item.Price * item.Quantity).ToString("0.00"))</div>
+                    <div class="cart-item-subtotal">RM @item.LineTotal.ToString("0.00")</div>
 
-                    <button type="button" class="btn-remove" data-id="@item.ProductId" title="Remove item">&times;</button>
+                    <button type="button" class="btn-remove" data-id="@lineId" title="Remove item">&times;</button>
                 </div>
             }
         </div>
@@ -244,6 +276,7 @@ else
             return text ? JSON.parse(text) : {};
         }
 
+        // Server returns "subtotal" already including any selected modifiers' extra price.
         function updateCardFromResponse(card, data) {
             card.querySelector('.qty-value').value = data.quantity;
             card.querySelector('.cart-item-subtotal').textContent = formatMoney(data.subtotal);
