@@ -165,28 +165,32 @@
                         return;
                     }
 
-                    products.forEach(product => {
-                        const outOfStock = product.stock <= 0;
-                        const cardHtml = `
-                            <div class="product-card">
-                                <a href="/Product/Details/${product.id}" class="product-link" style="text-decoration: none; color: inherit;">"
-                                    <div class="product-img-wrapper">
-                                        <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
-                                    </div>
-                                    <div class="product-details pt0">
-                                        <div class="product-title">${product.name}</div>
-                                        <div class="product-price">RM${product.price.toFixed(2)}</div>
-                                    </div>
-                                </a>
-                                <div class="product-details">
-                                     <button class="btn-add-cart" data-product-id="${product.id}" ${outOfStock ? "disabled" : ""}>
-                                          ${outOfStock ? "Out of Stock" : "Add to Cart"}
-                                      </button>
-                                </div>
-                            </div>
-                        `;
-                        container.innerHTML += cardHtml;
-                    });
+                            products.forEach(product => {
+            const outOfStock = product.stock <= 0;
+
+            // 1. Determine dynamic styles and tags based on stock
+            const cardClass = outOfStock ? 'product-card out-of-stock' : 'product-card';
+            const tag = outOfStock ? 'div' : 'a';
+            const hrefAttr = outOfStock ? '' : `href="/Product/Details/${product.id}"`;
+            const disabledStyle = outOfStock ? 'style="text-decoration: none; color: inherit; opacity: 0.5; pointer-events: none; cursor: not-allowed;"' : 'style="text-decoration: none; color: inherit;"';
+
+            // 2. Build template using dynamic wrapper tag
+            const cardHtml = `
+                <div class="${cardClass}">
+                    <${tag} ${hrefAttr} class="product-link" ${disabledStyle}>
+                        <div class="product-img-wrapper">
+                            <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
+                        </div>
+                        <div class="product-details pt0">
+                            <div class="product-title">${product.name}</div>
+                            <div class="product-price">RM${product.price.toFixed(2)}</div>
+                        </div>
+                    </${tag}>
+                </div>
+            `;
+
+            container.innerHTML += cardHtml;
+        });
                 })
                 .catch(err => console.error("Error loading products:", err));
         }
@@ -207,44 +211,6 @@
                     loadProducts(categoryId);
                 }
             });
-        });
-
-        
-
-        document.getElementById("productContainer").addEventListener("click", function (e) {
-            if (!e.target.classList.contains("btn-add-cart") || e.target.disabled) return;
-
-            const btn = e.target;
-            const productId = btn.getAttribute("data-product-id");
-            btn.disabled = true;
-
-            fetch('/Cart/Add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId: productId })
-            })
-                .then(async response => {
-                    const data = await response.json().catch(() => null);
-                    if (!response.ok) {
-                        const message = data?.message || `Request failed (${response.status})`;
-                        throw new Error(message);
-                    }
-                    return data;
-                })
-                .then(() => {
-                    btn.textContent = "Added ✓";
-                    btn.classList.add("added");
-                    setTimeout(() => {
-                        btn.textContent = "Add to Cart";
-                        btn.classList.remove("added");
-                        btn.disabled = false;
-                    }, 1200);
-                })
-                .catch(err => {
-                    console.error("Error adding to cart:", err);
-                    btn.disabled = false;
-                    alert(err.message || "Could not add item to cart. Please try again.");
-                });
         });
     </script>
 }

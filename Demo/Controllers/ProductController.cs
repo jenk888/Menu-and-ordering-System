@@ -20,7 +20,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Details/{id}
-        public IActionResult Detais(string? id)
+        public IActionResult Details(string? id)
         {
             if (string.IsNullOrEmpty(id))
             {
