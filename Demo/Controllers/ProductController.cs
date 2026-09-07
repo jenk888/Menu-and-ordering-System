@@ -30,6 +30,7 @@ namespace Demo.Controllers
             var p = db.Products
                 .Include(x => x.Category)
                 .Include(x => x.Photos)
+                .Include(x => x.ModifierGroups).ThenInclude(g => g.Options)
                 .FirstOrDefault(x => x.Id == id);
 
             if (p == null)
@@ -53,7 +54,7 @@ namespace Demo.Controllers
 
         // AJAX Endpoint for Filtering Products
         [HttpGet]
-        public IActionResult GetProducts(int? categoryId = null, string? search = null, decimal?minPrice = null, decimal?maxPrice = null)
+        public IActionResult GetProducts(int? categoryId = null, string? search = null, decimal? minPrice = null, decimal? maxPrice = null)
         {
             var query = db.Products
                 .Where(p => p.IsAvailable);

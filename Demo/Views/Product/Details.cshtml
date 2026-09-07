@@ -1,15 +1,18 @@
 ﻿@model Product
+@using Demo.Models
 @{
-    ViewBag.Title = Model.Name;
+    ViewBag.Title = "";
 }
 @{
     var photoUrls = Model.Photos != null && Model.Photos.Any()
         ? Model.Photos.Select(p => "/photos/product/" + p.PhotoUrl).ToList()
         : new List<string> { "/photos/no-image.jpg" };
     var outOfStock = Model.Stock <= 0;
+    var modifierGroups = Model.ModifierGroups?.OrderBy(g => g.Id).ToList() ?? new List<ModifierGroup>();
 }
 
 <div class="container my-4">
+    <a asp-action="Index" class="btn btn-link ps-0 mb-3">&larr; Back to Products</a>
     <div class="row g-4">
         <div class="col-md-6">
             <div class="detail-photo-wrapper">
@@ -28,56 +31,270 @@
         </div>
 
         <div class="col-md-6">
-            <a asp-action="Index" class="btn btn-link ps-0 mb-3">&larr; Back to Products</a>
+            <h5>@Model.Name</h5>
             <p class="detail-desc mb-3">@Model.Description</p>
-            <p class="detail-price mb-4">RM @(Model.Price.ToString("0.00"))</p>
-            <p class="detail-stock mb-5">
+            <p class="detail-price mb-3" id="basePrice" data-base-price="@Model.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                RM @(Model.Price.ToString("0.00"))
+            </p>
+            <p class="detail-stock mb-3">
                 @if (outOfStock)
                 {
                     <span class="text-danger">Out of Stock</span>
                 }
             </p>
-            
-            <button class="btn btn-primary btn-lg" id="detailAddCartBtn" data-product-id="@Model.Id" @(outOfStock ? "disabled" : "")>
-                @(outOfStock ? "Out of Stock" : "Add to Cart")
-            </button>
+
+            @if (modifierGroups.Any())
+            {
+                <div class="modifier-groups mb-4" id="modifierGroups">
+                    @foreach (var group in modifierGroups)
+                    {
+                        var isSingle = group.SelectionType == ModifierSelectionType.Single;
+                        var inputType = isSingle ? "radio" : "checkbox";
+                        var radioName = "modgroup-" + group.Id;
+
+                        <div class="modifier-group mb-3"
+                             data-group-id="@group.Id"
+                             data-required="@group.IsRequired.ToString().ToLower()">
+                            <div class="modifier-group-header d-flex justify-content-between align-items-center mb-2">
+                                <span class="modifier-group-name fw-semibold">
+                                    @group.Name
+                                    @if (group.IsRequired)
+                                    {
+                                        <span class="text-danger">*</span>
+                                    }
+                                </span>
+                                <span class="modifier-group-hint text-muted small">
+                                    @(isSingle ? "Choose 1" : "Choose any")
+                                    @(group.IsRequired ? " (Required)" : " (Optional)")
+                                </span>
+                            </div>
+
+                            <div class="modifier-options">
+                                @foreach (var option in group.Options)
+                                {
+                                    <label class="modifier-option d-flex justify-content-between align-items-center mb-1">
+                                        <span class="modifier-option-label">
+                                            <input type="@inputType"
+                                                   name="@(isSingle ? radioName : "modgroup-" + group.Id + "-opt-" + option.Id)"
+                                                   class="modifier-input form-check-input me-2"
+                                                   data-group-id="@group.Id"
+                                                   data-option-id="@option.Id"
+                                                   data-extra-price="@option.ExtraPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                            @option.Name
+                                        </span>
+                                        <span class="modifier-option-price text-muted">
+                                            @(option.ExtraPrice > 0 ? "+RM " + option.ExtraPrice.ToString("0.00") : "")
+                                        </span>
+                                    </label>
+                                }
+                            </div>
+                            <div class="modifier-group-error text-danger small d-none">
+                                Please select an option for @group.Name.
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="purchase-row d-flex align-items-center gap-3">
+                <div class="quantity-picker d-flex align-items-center" id="quantityPicker">
+                    <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" id="qtyMinus" aria-label="Decrease quantity">&minus;</button>
+                    <span id="qtyValue" class="mx-3">1</span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" id="qtyPlus" aria-label="Increase quantity">+</button>
+                </div>
+
+                <div class="subtotal fw-bold flex-grow-1" id="subtotalDisplay">
+                    RM @(Model.Price.ToString("0.00"))
+                </div>
+
+                <button class="btn btn-primary btn-lg" id="detailAddCartBtn" data-product-id="@Model.Id" @(outOfStock ? "disabled" : "")>
+                    @(outOfStock ? "Out of Stock" : "Add to Cart")
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
+<style>
+    .modifier-group {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+
+    .modifier-option {
+        cursor: pointer;
+        padding: 0.15rem 0;
+    }
+
+    .quantity-picker {
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .qty-btn {
+        width: 2rem;
+    }
+
+    .subtotal {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+</style>
+
 @section foot {
     <script>
-        document.getElementById("detailAddCartBtn")?.addEventListener("click", function() {
-            const btn = this;
-            if (btn.disabled) return;
-            const productId = btn.getAttribute("data-product-id");
-            btn.disabled = true;
+        (function () {
+            const basePrice = parseFloat(document.getElementById("basePrice")?.dataset.basePrice || "0");
+            const outOfStock = @(outOfStock ? "true" : "false");
 
-            fetch('/Cart/Add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId: productId })
-            })
-                .then(async response => {
-                    const data = await response.json().catch(() => null);
-                    if (!response.ok) {
-                        const message = data?.message || `Request failed (${response.status})`;
-                        throw new Error(message);
+            const qtyValueEl = document.getElementById("qtyValue");
+            const qtyMinusBtn = document.getElementById("qtyMinus");
+            const qtyPlusBtn = document.getElementById("qtyPlus");
+            const subtotalEl = document.getElementById("subtotalDisplay");
+            const addCartBtn = document.getElementById("detailAddCartBtn");
+            const modifierGroupEls = document.querySelectorAll(".modifier-group");
+            const modifierInputs = document.querySelectorAll(".modifier-input");
+
+            let quantity = 1;
+
+            function getSelectedOptions() {
+                return Array.from(document.querySelectorAll(".modifier-input:checked"));
+            }
+
+            function calcExtraTotal() {
+                return getSelectedOptions().reduce(
+                    (sum, el) => sum + parseFloat(el.dataset.extraPrice || "0"),
+                    0
+                );
+            }
+
+            function updateSubtotal() {
+                const total = (basePrice + calcExtraTotal()) * quantity;
+                subtotalEl.textContent = "RM " + total.toFixed(2);
+            }
+
+            // Returns true only if every required modifier group has at least one selection.
+            function validateRequiredGroups(showErrors) {
+                let allValid = true;
+
+                modifierGroupEls.forEach(group => {
+                    const isRequired = group.dataset.required === "true";
+                    const errorEl = group.querySelector(".modifier-group-error");
+                    if (!isRequired) {
+                        errorEl?.classList.add("d-none");
+                        return;
                     }
-                    return data;
-                })
-                .then(() => {
-                    btn.textContent = "Added ✓";
-                    setTimeout(() => {
-                        btn.textContent = "Add to Cart";
-                        btn.disabled = false;
-                    }, 1200);
-                })
-                .catch(err => {
-                    console.error("Error adding to cart:", err);
-                    btn.disabled = false;
-                    alert(err.message || "Could not add item to cart. Please try again.");
+
+                    const groupId = group.dataset.groupId;
+                    const checked = group.querySelectorAll(`.modifier-input[data-group-id="${groupId}"]:checked`);
+                    const groupValid = checked.length > 0;
+
+                    if (!groupValid) {
+                        allValid = false;
+                    }
+
+                    if (errorEl) {
+                        errorEl.classList.toggle("d-none", !showErrors || groupValid);
+                    }
                 });
-        });
+
+                return allValid;
+            }
+
+            function updateAddCartState() {
+                if (outOfStock) {
+                    addCartBtn.disabled = true;
+                    return;
+                }
+                addCartBtn.disabled = !validateRequiredGroups(false);
+            }
+
+            function refresh() {
+                updateSubtotal();
+                updateAddCartState();
+            }
+
+            qtyMinusBtn?.addEventListener("click", () => {
+                if (quantity > 1) {
+                    quantity--;
+                    qtyValueEl.textContent = quantity;
+                    refresh();
+                }
+            });
+
+            qtyPlusBtn?.addEventListener("click", () => {
+                quantity++;
+                qtyValueEl.textContent = quantity;
+                refresh();
+            });
+
+            modifierInputs.forEach(input => {
+                input.addEventListener("change", refresh);
+            });
+
+            // Native radio buttons can't be unchecked by clicking them again.
+            // Remember whether a radio was already checked right before the click
+            // toggles it, and if so, force it back off (a group is "Choose 1", not "Choose exactly 1").
+            document.querySelectorAll('.modifier-input[type="radio"]').forEach(radio => {
+                radio.addEventListener("pointerdown", function () {
+                    this._wasChecked = this.checked;
+                });
+                radio.addEventListener("click", function () {
+                    if (this._wasChecked) {
+                        this.checked = false;
+                        this._wasChecked = false;
+                        refresh();
+                    }
+                });
+            });
+
+            refresh();
+
+            addCartBtn?.addEventListener("click", function () {
+                const btn = this;
+                if (btn.disabled) return;
+
+                if (!validateRequiredGroups(true)) {
+                    updateAddCartState();
+                    return;
+                }
+
+                const productId = btn.getAttribute("data-product-id");
+                const modifierOptionIds = getSelectedOptions().map(el => parseInt(el.dataset.optionId, 10));
+                btn.disabled = true;
+
+                fetch("/Cart/Add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: quantity,
+                        modifierOptionIds: modifierOptionIds
+                    })
+                })
+                    .then(async response => {
+                        const data = await response.json().catch(() => null);
+                        if (!response.ok) {
+                            const message = data?.message || `Request failed (${response.status})`;
+                            throw new Error(message);
+                        }
+                        return data;
+                    })
+                    .then(() => {
+                        btn.textContent = "Added ✓";
+                        setTimeout(() => {
+                            btn.textContent = "Add to Cart";
+                            updateAddCartState();
+                        }, 1200);
+                    })
+                    .catch(err => {
+                        console.error("Error adding to cart:", err);
+                        updateAddCartState();
+                        alert(err.message || "Could not add item to cart. Please try again.");
+                    });
+            });
+        })();
     </script>
 }

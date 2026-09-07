@@ -227,9 +227,9 @@ public class ModifierGroup
 
     [Required]
     public List<ModifierOption> Options { get; set; } = [];
+    public List<Product> Products { get; set; } = [];
 }
 
-// e.g. "Large" (+RM2.00), "Extra Cheese" (+RM1.50), "Spicy" (+RM0.00)
 public class ModifierOption
 {
     [Key]

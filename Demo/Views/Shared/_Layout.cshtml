@@ -86,7 +86,8 @@
                 document.body.classList.remove("nav-open");
             });
     </script>
-    @RenderSection("foot", false)
+  @await RenderSectionAsync("Scripts", required: false)  
+  @RenderSection("foot", false)
 </body>
 </html>
  

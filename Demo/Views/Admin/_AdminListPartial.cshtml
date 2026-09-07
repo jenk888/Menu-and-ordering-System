@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Demo.Models.User>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <!-- Sorting by ID -->
+                <th>
+                    <a href="#" class="text-white text-decoration-none sort-link" data-sort="@ViewBag.IdSortParm">
+                        ID @(ViewBag.CurrentSort == "id" ? "▲" : ViewBag.CurrentSort == "id_desc" ? "▼" : "")
+                    </a>
+                </th>
+                <!-- Sorting by Name -->
+                <th>
+                    <a href="#" class="text-white text-decoration-none sort-link" data-sort="@ViewBag.NameSortParm">
+                        Name @(ViewBag.CurrentSort == "" || ViewBag.CurrentSort == null ? "▲" : ViewBag.CurrentSort == "name_desc" ? "▼" : "")
+                    </a>
+                </th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var admin in Model)
+                {
+                    <tr>
+                        <td>@admin.Id</td>
+                        <td>@admin.Name</td>
+                        <td>@admin.Email</td>
+                        <td>@admin.Phone</td>
+                        <td>
+                            @if (admin.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            <!-- Link to admin details page -->
+                            <a asp-action="AdminDetails" asp-route-id="@(admin.Id)" class="btn btn-sm btn-outline-primary">Details</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No administrators found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Controls -->
+@if (ViewBag.TotalPages > 1)
+{
+    <nav aria-label="Admin pagination">
+        <ul class="pagination justify-content-center">
+            <!-- Previous Page Button -->
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link page-btn" href="#" data-page="@(ViewBag.CurrentPage - 1)">Previous</a>
+            </li>
+
+            <!-- Page Number Links -->
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                    <a class="page-link page-btn" href="#" data-page="@i">@i</a>
+                </li>
+            }
+
+            <!-- Next Page Button -->
+            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                <a class="page-link page-btn" href="#" data-page="@(ViewBag.CurrentPage + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}

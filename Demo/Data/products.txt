@@ -78,10 +78,6 @@ P0087	Mozzarella Cheese		3.50	100	1	15
 P0088	Sour Dough 1psc		2.50	100	1	15
 P0089	Konjac Rice		10.00	100	1	15
 P0090	Add On Vacon 2pcs		6.00	100	1	15
-P0091	Hot Oolong Milk Tea		12.90	100	0	17
-P0092	Iced Oolong Milk Tea		14.90	100	0	17
-P0093	Hot Earl Grey Milk Tea		14.90	100	0	17
-P0094	Iced Earl Grey Milk Tea		16.90	100	0	17
 P0095	Lemon Island Blended	100% Vegan. Citron honey juice blended with lemon and lime wedges.	17.90	100	0	18
 P0096	Avocado Smoothie	Contains milk. Fresh avocado blended with full cream milk and condensed milk.	20.90	100	1	18
 P0097	Strawberry Yogurt	Strawberry Yogurt.	20.90	100	1	18
