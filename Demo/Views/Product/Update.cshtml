@@ -44,8 +44,13 @@
         }
 
         <div class="mb-3">
-            <label asp-for="NewPhotos" class="form-label">Add Photos</label>
-            <input asp-for="NewPhotos" type="file" accept="image/*" multiple class="form-control" />
+            <label class="form-label">Add Photos</label>
+            <div class="d-flex gap-2">
+                <button type="button" id="choosePhotosBtn" class="btn btn-outline-secondary btn-sm">Choose Photos</button>
+                <button type="button" id="takePhotoBtn" class="btn btn-outline-secondary btn-sm">Take Photo</button>
+            </div>
+            <input asp-for="NewPhotos" type="file" accept="image/*" multiple class="form-control" style="display:none" />
+            <div id="photoPreviewList" class="d-flex flex-wrap gap-2 mt-2"></div>
             <span asp-validation-for="NewPhotos" class="text-danger"></span>
         </div>
 
@@ -53,4 +58,23 @@
         <a asp-action="Manage" class="btn btn-secondary">Cancel</a>
 
         </form>
+     @await Html.PartialAsync("_PhotoEditorModal")
+     @await Html.PartialAsync("_WebcamCaptureModal")
 </div>
+
+@section head{
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+}
+
+@section foot{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>   
+    <script src="/js/photo-editor.js"></script>
+    <script>
+        initPhotoEditor({
+            fileInputId: "NewPhotos",
+            chooseButtonId: "choosePhotosBtn",
+            previewListId: "photoPreviewList",
+            webcamButtonId: "takePhotoBtn",
+        });
+    </script>
+}
