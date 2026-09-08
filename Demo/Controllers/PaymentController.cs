@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HitPayIntegration.Controllers
 {
@@ -15,12 +16,16 @@ namespace HitPayIntegration.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly DB _db;
+        private readonly ReceiptService _receiptService;
+        private readonly IMemoryCache _cache;
 
-        public PaymentController(IConfiguration configuration, IHttpClientFactory httpClientFactory, DB db)
+        public PaymentController(IConfiguration configuration, IHttpClientFactory httpClientFactory, DB db, ReceiptService receiptService, IMemoryCache cache)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _db = db;
+            _receiptService = receiptService;
+            _cache = cache;
         }
 
         // ----------------------------------------------------
@@ -157,10 +162,26 @@ namespace HitPayIntegration.Controllers
 
                 // PaymentStatus only has Unpaid/Paid (no Failed) - a failed/cancelled
                 // payment just leaves the order Unpaid, same as before it was attempted.
-                if (status.Equals("completed", StringComparison.OrdinalIgnoreCase))
+                if (status.Equals("completed", StringComparison.OrdinalIgnoreCase) && order.PaymentStatus != PaymentStatus.Paid)
                 {
                     order.PaymentStatus = PaymentStatus.Paid;
                     _db.SaveChanges();
+
+                    var fullOrder = _receiptService.GetOrderForReceipt(order.Id)!;
+
+                    // Cash orders never reach this webhook, so this path is implicitly non-cash only.
+                    string? email;
+                    if (fullOrder.UserId != null)
+                    {
+                        email = fullOrder.User?.Email;
+                    }
+                    else
+                    {
+                        _cache.TryGetValue($"guest-email-order-{order.Id}", out string? cachedEmail);
+                        email = cachedEmail;
+                    }
+
+                    _receiptService.SendReceiptEmail(fullOrder, email);
                 }
 
                 return Ok("Webhook Handled Successfully");

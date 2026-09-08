@@ -3,10 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Demo.Models;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Demo.Controllers
 {
-    public class CheckoutController(DB db, Helper hp, IConfiguration configuration, IHttpClientFactory httpClientFactory) : Controller
+    public class CheckoutController(DB db, Helper hp, IConfiguration configuration, IHttpClientFactory httpClientFactory, IMemoryCache cache) : Controller
     {
         // Malaysian mobile numbers, local format (no +60 needed), digits only:
         //   011-XXXXXXXX  → "011" + 8 digits  (11 digits total)
@@ -199,6 +200,11 @@ namespace Demo.Controllers
 
             // Save now so order.Id exists for the reference_number below.
             await db.SaveChangesAsync();
+
+            if (user == null)
+            {
+                cache.Set($"guest-email-order-{order.Id}", guestEmail!, TimeSpan.FromHours(2));
+            }
 
             var email = user?.Email ?? guestEmail!;
             var name = user?.Name ?? guestName!;
