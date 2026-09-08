@@ -39,7 +39,7 @@ namespace Demo.Controllers
             return View(vm);
         }
 
-        //POST: Checkout/PlaceOrder
+        // POST: Checkout/PlaceOrder
         [HttpPost]
         public IActionResult PlaceOrder(string paymentMethod, string? guestName, string? guestPhone, int? voucherId)
         {
@@ -65,8 +65,6 @@ namespace Demo.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Guests can never redeem a voucher — the dropdown is disabled on the
-                // client, but ignore anything sent for this field regardless.
                 voucherId = null;
             }
 
@@ -87,7 +85,8 @@ namespace Demo.Controllers
                 }
             }
 
-            var subtotal = cartItems.Sum(ci => ci.Quantity * ci.Price);
+            // FIX: Calculate subtotal using UnitPrice (Product Price + Modifiers Extra Price)
+            var subtotal = cartItems.Sum(ci => ci.Quantity * ci.UnitPrice);
 
             Voucher? voucher = null;
             var discount = 0m;
@@ -110,7 +109,6 @@ namespace Demo.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Guard against a voucher discount ever exceeding what's actually owed.
                 discount = Math.Min(voucher.VoucherRule.DiscountAmount, subtotal);
             }
 
@@ -137,20 +135,30 @@ namespace Demo.Controllers
             {
                 var product = db.Products.Find(item.ProductId)!;
 
-                order.OrderItems.Add(new OrderItem
+                var orderItem = new OrderItem
                 {
                     ProductId = product.Id,
                     ProductNameSnapshot = product.Name,
-                    UnitPriceSnapshot = product.Price,
+                    UnitPriceSnapshot = item.UnitPrice,
                     Quantity = item.Quantity,
-                    LineTotal = item.Quantity * product.Price
-                });
+                    LineTotal = item.LineTotal
+                };
 
+                // FIX: Save selected modifiers to OrderItemModifiers snapshot table
+                foreach (var mod in item.SelectedModifiers)
+                {
+                    orderItem.SelectedModifiers.Add(new OrderItemModifier
+                    {
+                        ModifierGroupNameSnapshot = mod.Name, // or Group Name if tracked
+                        ModifierOptionNameSnapshot = mod.Name,
+                        ExtraPriceSnapshot = mod.ExtraPrice
+                    });
+                }
+
+                order.OrderItems.Add(orderItem);
                 product.Stock -= item.Quantity;
             }
 
-            // Only redeem the voucher once the order is actually going through —
-            // any earlier return above leaves it untouched and still available.
             if (voucher != null)
             {
                 voucher.UsedAt = DateTime.UtcNow;
@@ -170,6 +178,65 @@ namespace Demo.Controllers
             db.SaveChanges();
 
             return RedirectToAction("Confirmation", new { id = order.Id });
+        }
+
+        private List<CartItemViewModel> GetCartItems(User? user)
+        {
+            if (user != null)
+            {
+                return db.CartItems
+                    .Include(ci => ci.Product)
+                        .ThenInclude(p => p.Photos)
+                    .Include(ci => ci.SelectedModifiers)
+                        .ThenInclude(m => m.ModifierOption)
+                    .Where(ci => ci.UserId == user.Id)
+                    .Select(ci => new CartItemViewModel
+                    {
+                        ProductId = ci.ProductId,
+                        ProductName = ci.Product.Name,
+                        Price = ci.Product.Price,
+                        Quantity = ci.Quantity,
+                        Stock = ci.Product.Stock,
+                        ImageUrl = ci.Product.Photos.FirstOrDefault() != null ? ci.Product.Photos.First().PhotoUrl : null,
+                        SelectedModifiers = ci.SelectedModifiers.Select(m => new CartItemModifierViewModel
+                        {
+                            Name = m.ModifierOption.Name,
+                            ExtraPrice = m.ModifierOption.ExtraPrice
+                        }).ToList()
+                    })
+                    .ToList();
+            }
+
+            var sessionCart = hp.GetCart();
+            if (sessionCart.Count == 0) return [];
+
+            var productIds = sessionCart.Values.Select(l => l.ProductId).Distinct().ToList();
+            var products = db.Products
+                .Include(p => p.Photos)
+                .Include(p => p.ModifierGroups).ThenInclude(g => g.Options)
+                .Where(p => productIds.Contains(p.Id))
+                .ToList();
+
+            return sessionCart
+                .Select(kv => products.FirstOrDefault(p => p.Id == kv.Value.ProductId) is { } product
+                    ? new CartItemViewModel
+                    {
+                        ProductId = product.Id,
+                        ProductName = product.Name,
+                        Price = product.Price,
+                        Quantity = kv.Value.Quantity,
+                        Stock = product.Stock,
+                        ImageUrl = product.Photos.FirstOrDefault()?.PhotoUrl,
+                        SelectedModifiers = kv.Value.ModifierOptionIds
+                            .Select(id => product.ModifierGroups.SelectMany(g => g.Options).FirstOrDefault(o => o.Id == id))
+                            .Where(o => o != null)
+                            .Select(o => new CartItemModifierViewModel { Name = o!.Name, ExtraPrice = o.ExtraPrice })
+                            .ToList()
+                    }
+                    : null)
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
         }
 
         //GET: Checkout/Confirmation/{id}
@@ -224,49 +291,6 @@ namespace Demo.Controllers
                     MinimumSpend = v.VoucherRule.MinimumSpend,
                     ExpiresAt = v.ExpiresAt
                 })
-                .ToList();
-        }
-
-        private List<CartItemViewModel> GetCartItems(User? user)
-        {
-            if (user != null)
-            {
-                return db.CartItems
-                    .Include(ci => ci.Product)
-                        .ThenInclude(p => p.Photos)
-                    .Where(ci => ci.UserId == user.Id)
-                    .Select(ci => new CartItemViewModel
-                    {
-                        ProductId = ci.ProductId,
-                        ProductName = ci.Product.Name,
-                        Price = ci.Product.Price,
-                        Quantity = ci.Quantity,
-                        Stock = ci.Product.Stock,
-                        ImageUrl = ci.Product.Photos.FirstOrDefault() != null ? ci.Product.Photos.First().PhotoUrl : null
-                    })
-                    .ToList();
-            }
-
-            var sessionCart = hp.GetCart();
-            if (sessionCart.Count == 0) return [];
-
-            var ids = sessionCart.Keys.ToList();
-            var products = db.Products.Include(p => p.Photos).Where(p => ids.Contains(p.Id)).ToList();
-
-            return sessionCart
-                .Select(kv => products.FirstOrDefault(p => p.Id == kv.Key) is { } product
-                    ? new CartItemViewModel
-                    {
-                        ProductId = product.Id,
-                        ProductName = product.Name,
-                        Price = product.Price,
-                        Quantity = kv.Value.Quantity,
-                        Stock = product.Stock,
-                        ImageUrl = product.Photos.FirstOrDefault()?.PhotoUrl
-                    }
-                    : null)
-                .Where(x => x != null)
-                .Select(x => x!)
                 .ToList();
         }
     }
