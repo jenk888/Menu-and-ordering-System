@@ -182,5 +182,83 @@ namespace Demo.Controllers
 
             return View(vm);
         }
+
+        // GET: /Admin/MemberDetails?id=26M0001
+        [HttpGet("Admin/MemberDetails")]
+        public IActionResult Details(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = db.Users.FirstOrDefault(u => u.Id == id);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        // POST: Admin/DeleteMember
+        [HttpPost("Admin/DeleteMember")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteMember(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["Error"] = "Invalid member ID.";
+                return RedirectToAction("Index");
+            }
+
+            var user = db.Users.FirstOrDefault(u => u.Id == id);
+            if (user != null)
+            {
+                db.Users.Remove(user);
+                db.SaveChanges();
+                TempData["Info"] = $"Member {id} has been deleted successfully.";
+            }
+            else
+            {
+                TempData["Error"] = "Member not found.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // GET: Admin/AdminDetails
+        [HttpGet("Admin/AdminDetails")]
+        public IActionResult AdminDetails(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var admin = db.Users.FirstOrDefault(u => u.Id == id);
+            if (admin == null) return NotFound();
+
+            return View(admin);
+        }
+
+        // POST: Admin/DeleteAdmin
+        [HttpPost("Admin/DeleteAdmin")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteAdmin(string id)
+        {
+            // get current admin id(login), to avoid deleting themselves
+            var currentAdminId = HttpContext.Session.GetString("AdminId");
+            if (id == currentAdminId)
+            {
+                TempData["Error"] = "You cannot delete your own active account!";
+                return RedirectToAction("AdminList"); // go back to admin listing page
+            }
+
+            var admin = db.Users.FirstOrDefault(u => u.Id == id);
+            if (admin != null)
+            {
+                db.Users.Remove(admin);
+                db.SaveChanges();
+                TempData["Info"] = $"Admin {id} has been deleted successfully.";
+            }
+            else
+            {
+                TempData["Error"] = "Admin not found.";
+            }
+
+            return RedirectToAction("AdminList");
+        }
     }
 }
