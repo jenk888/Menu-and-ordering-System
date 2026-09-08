@@ -4,14 +4,45 @@
 }
 
 <div class="container my-4">
-    <div class="d-flex justify-content-end mb-3">
-        <a asp-action="BatchInsert" class="btn btn-outline-primary">Batch Insert</a>
-        <a asp-action="Insert" class="btn btn-primary">Add Product</a>
+    <!-- Search Bar -->
+    @await Html.PartialAsync("_SearchBox", new ViewDataDictionary(ViewData)
+    {
+        {"SearchEvent", "product:search"},
+        {"SearchPlaceholder", "Search products..."},
+        {"SearchBoxId", "products"}
+    })
+
+    <!-- Category Filter Bar (Default "ALL") -->
+    <div class="category-nav" id="categoryNav">
+        <button class="category-btn active" data-category-id="ALL">All</button>
+        @if (ViewBag.Categories != null)
+        {
+            foreach (var category in ViewBag.Categories)
+            {
+                <button class="category-btn" data-category-id="@category.Id">@category.Name</button>
+            }
+        }
+    </div>
+
+    <!-- AJAX Product Card Container -->
+    <div class="product-grid" id="productContainer">
+        <!-- Loaded dynamically via AJAX -->
+    </div>
+    <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
+          onsubmit="return confirm('Delete all selected products?');"></form>
+    <div class="d-flex justify-content-between mb-3">
+        <button type="submit" form="batchDeleteForm" class="btn btn-outline-danger">Delete Selected</button>
+        <div class="d-flex gap-2">
+            <a asp-action="BatchUpdate" class="btn btn-outline-primary">Batch Update</a>
+            <a asp-action="BatchInsert" class="btn btn-outline-primary">Batch Insert</a>
+            <a asp-action="Insert" class="btn btn-primary">Add Product</a>
+        </div>
     </div>
 
     <table class="table table-bordered table-hover">
         <thead class="table-light">
             <tr>
+                <th></th>
                 <th>Photo</th>
                 <th>Id</th>
                 <th>Name</th>
@@ -27,6 +58,7 @@
                 {
                     var photoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault();
                     <tr>
+                        <td><input type="checkbox" name="ids" value="@p.Id" form="batchDeleteForm" /></td>
                         <td>
                             <img src="@(photoUrl != null?"/photos/product/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
                             @if (p.Photos.Count > 1)

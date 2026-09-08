@@ -160,6 +160,58 @@ namespace Demo.Controllers
             return View(vm);
         }
 
+        // GET: Category/BatchUpdate
+        [Authorize(Roles = "Admin")]
+        public IActionResult BatchUpdate()
+        {
+            return View();
+        }
+
+        // POST: Category/BatchUpdate
+        // Same tab-separated format as BatchInsert (Id, Name, DisplayOrder), but every
+        // row updates an EXISTING category matched by Id — unknown Ids are skipped.
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> BatchUpdate(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError("", "Please choose a text file.");
+                return View();
+            }
+
+            var result = await BatchImportHelper.ProcessAsync(file, expectedColumns: 3, (cols, lineNo) =>
+            {
+                if (!int.TryParse(cols[0].Trim(), out var id))
+                    return $"Line {lineNo}: invalid Id '{cols[0].Trim()}'. Skipped.";
+
+                var category = db.Categories.Find(id);
+                if (category == null)
+                    return $"Line {lineNo}: no existing category with Id {id}. Skipped (use Batch Insert for new categories).";
+
+                var name = cols[1].Trim();
+                if (string.IsNullOrEmpty(name) || name.Length > 100)
+                    return $"Line {lineNo} (Id {id}): Name is missing or longer than 100 characters. Skipped.";
+
+                if (db.Categories.Any(c => c.Name == name && c.Id != id))
+                    return $"Line {lineNo} (Id {id}): a category named '{name}' already exists. Skipped.";
+
+                if (!int.TryParse(cols[2].Trim(), out var displayOrder))
+                    return $"Line {lineNo} (Id {id}): invalid DisplayOrder '{cols[2].Trim()}'. Skipped.";
+
+                category.Name = name;
+                category.DisplayOrder = displayOrder;
+                return null;
+            });
+
+            db.SaveChanges();
+
+            TempData["Info"] = $"Batch update done: {result.Success} updated, {result.Skipped} skipped.";
+            ViewBag.Messages = result.Messages;
+            return View();
+        }
+
+
         // POST: Category/Delete
         [Authorize(Roles = "Admin")]
         [HttpPost]
@@ -183,6 +235,46 @@ namespace Demo.Controllers
 
                 TempData["Info"] = "Category deleted.";
             }
+
+            return RedirectToAction("Index");
+        }
+
+        // POST: Category/BatchDelete
+        // Deletes every checked category from the Index page — same "no products
+        // under it" rule as the single Delete action, applied per row (rows that
+        // still have products are skipped and reported instead of failing the batch).
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public IActionResult BatchDelete(List<int>? ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                TempData["Info"] = "No categories selected.";
+                return RedirectToAction("Index");
+            }
+
+            var categories = db.Categories.Where(c => ids.Contains(c.Id)).ToList();
+            var messages = new List<string>();
+            int deleted = 0;
+
+            foreach (var c in categories)
+            {
+                if (db.Products.Any(p => p.CategoryId == c.Id))
+                {
+                    messages.Add($"'{c.Name}' (Id {c.Id}) still has products under it — skipped.");
+                    continue;
+                }
+
+                db.Categories.Remove(c);
+                deleted++;
+            }
+
+            db.SaveChanges();
+
+            var summary = $"{deleted} categor{(deleted == 1 ? "y" : "ies")} deleted, {messages.Count} skipped.";
+            TempData["Info"] = messages.Count > 0
+                ? summary + "<br/>" + string.Join("<br/>", messages)
+                : summary;
 
             return RedirectToAction("Index");
         }

@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = "Batch Update Products";
+}
+
+<div class="container my-4">
+    <form method="post" enctype="multipart/form-data" class="form">
+        <label>Text File</label>
+        <section>
+            <input type="file" name="file" accept=".txt,.tsv" class="form-control" />
+            <div class="text-muted mt-1" style="font-size: 0.85rem;">
+                Same format as Batch Insert, one product per line, tab-separated:
+                <code>Id&#9;Name&#9;Description&#9;Price&#9;Stock&#9;IsAvailable(1/0)&#9;CategoryId</code>
+                <br />
+                Each row updates the <b>existing</b> product with that Id.
+                Rows whose Id doesn't already exist are skipped — use Batch Insert to add new products.
+            </div>
+        </section>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="validation-summary-errors">
+                @Html.ValidationSummary()
+            </div>
+        }
+
+        <section>
+            <button type="submit" class="btn btn-primary">Upload &amp; Update</button>
+            <a asp-action="Manage" class="btn btn-secondary">Back to Manage Page</a>
+        </section>
+    </form>
+
+    @if (ViewBag.Messages != null && ((List<string>)ViewBag.Messages).Count > 0)
+    {
+        <h5 class="mt-4">Skipped Rows</h5>
+        <ul>
+            @foreach (var msg in (List<string>)ViewBag.Messages)
+            {
+                <li class="text-danger">@msg</li>
+            }
+        </ul>
+    }
+</div>

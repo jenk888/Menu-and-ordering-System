@@ -177,9 +177,15 @@
                     <img class="checkout-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
                     <div class="flex-grow-1">
                         <div class="checkout-item-name">@item.ProductName</div>
-                        <div class="checkout-item-qty">Qty: @item.Quantity &times; RM @item.Price.ToString("0.00")</div>
+                        <div class="checkout-item-qty">Qty: @item.Quantity &times; RM @item.UnitPrice.ToString("0.00")</div>
+                        @if (item.SelectedModifiers.Any())
+                        {
+                            <div class="checkout-item-qty">
+                                @string.Join(", ", item.SelectedModifiers.Select(m => m.ExtraPrice > 0 ? $"{m.Name} +RM{m.ExtraPrice:0.00}" : m.Name))
+                            </div>
+                        }
                     </div>
-                    <div class="checkout-item-line-total">RM @((item.Price * item.Quantity).ToString("0.00"))</div>
+                    <div class="checkout-item-line-total">RM @item.LineTotal.ToString("0.00")</div>
                 </div>
             }
         </div>
@@ -221,6 +227,11 @@
                                inputmode="numeric" pattern="^\+?[0-9]{7,15}$" maxlength="16"
                                title="Enter a valid phone number (7–15 digits, optional leading +)" required />
                         <div class="form-text">Digits only, e.g. 0123456789</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="guestEmail" class="form-control" autocomplete="email" required />
+                        <div class="form-text">Needed to send your payment receipt.</div>
                     </div>
                 </div>
             }
@@ -321,6 +332,9 @@
                 }
 
                 totalEl.textContent = formatMoney(subtotal + sst - discount);
+                // Expose the current total for app.js to use when calling the payment API,
+                // instead of a hardcoded amount.
+                window.checkoutTotal = subtotal + sst - discount;
             }
 
             voucherSelect?.addEventListener('change', recalcTotal);

@@ -1,328 +1,48 @@
-﻿@model Demo.Models.CheckoutViewModel
+﻿@model List<Category>
 @{
-    ViewBag.Title = "Checkout";
+    ViewBag.Title = "Category";
 }
 
-<style>
-    .checkout-title {
-        font-weight: 700;
-        color: #1a1a2e;
-        margin-bottom: 1.5rem;
-    }
+<div class="container my-4">
+    <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
+          onsubmit="return confirm('Delete all selected categories?');"></form>
 
-    .checkout-item-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #edf0f5;
-    }
-
-        .checkout-item-row:last-child {
-            border-bottom: none;
-        }
-
-    .checkout-item-thumb {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
-        object-fit: cover;
-        background-color: #f2f4f8;
-        flex-shrink: 0;
-    }
-
-    .checkout-item-name {
-        font-weight: 600;
-        color: #1a1a2e;
-    }
-
-    .checkout-item-qty {
-        color: #8a8fa3;
-        font-size: 0.9rem;
-    }
-
-    .checkout-item-line-total {
-        font-weight: 700;
-        color: #1a1a2e;
-        min-width: 80px;
-        text-align: right;
-    }
-
-    .order-summary {
-        border: 1px solid #edf0f5;
-        border-radius: 14px;
-        padding: 1.5rem;
-    }
-
-        .order-summary h5 {
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 1.25rem;
-        }
-
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.75rem;
-        color: #4a4f5e;
-    }
-
-        .summary-row.discount-row {
-            color: #1e8e3e;
-        }
-
-    .summary-total {
-        display: flex;
-        justify-content: space-between;
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: #1a1a2e;
-        padding-top: 0.75rem;
-        border-top: 1px solid #edf0f5;
-        margin-bottom: 1.25rem;
-    }
-
-    .guest-details-panel {
-        border: 1px solid #edf0f5;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-        .guest-details-panel h5 {
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 1rem;
-        }
-
-    .voucher-panel {
-        border: 1px solid #edf0f5;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-        .voucher-panel h5 {
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 1rem;
-        }
-
-    .voucher-register-note {
-        color: #8a8fa3;
-        font-size: 0.85rem;
-        margin-top: 0.6rem;
-        margin-bottom: 0;
-    }
-
-    .payment-method-panel {
-        border: 1px solid #edf0f5;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-        .payment-method-panel h5 {
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 1rem;
-        }
-
-    .payment-option {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        border: 1px solid #e2e5ec;
-        border-radius: 10px;
-        padding: 0.65rem 1rem;
-        margin-bottom: 0.6rem;
-        cursor: pointer;
-    }
-
-        .payment-option:hover {
-            border-color: #0d6efd;
-        }
-
-        .payment-option input {
-            accent-color: #0d6efd;
-        }
-
-    .btn-place-order {
-        width: 100%;
-        border-radius: 999px;
-        background-color: #0d6efd;
-        border: none;
-        padding: 0.65rem;
-        font-weight: 600;
-        margin-top: 1rem;
-    }
-
-        .btn-place-order:hover {
-            background-color: #0b5ed7;
-        }
-</style>
-@if (TempData["CheckoutError"] != null)
-{
-    <div class="alert alert-danger">@TempData["CheckoutError"]</div>
-}
-
-<div class="row">
-    <div class="col-lg-7">
-        <div class="order-summary">
-            <h5>Order Items</h5>
-            @foreach (var item in Model.Items)
-            {
-                <div class="checkout-item-row">
-                    <img class="checkout-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
-                    <div class="flex-grow-1">
-                        <div class="checkout-item-name">@item.ProductName</div>
-                        <div class="checkout-item-qty">Qty: @item.Quantity &times; RM @item.Price.ToString("0.00")</div>
-                    </div>
-                    <div class="checkout-item-line-total">RM @((item.Price * item.Quantity).ToString("0.00"))</div>
-                </div>
-            }
+    <div class="d-flex justify-content-between mb-3">
+        <button type="submit" form="batchDeleteForm" class="btn btn-outline-danger">Delete Selected</button>
+        <div class="d-flex gap-2">
+            <a asp-action="BatchUpdate" class="btn btn-outline-primary">Batch Update</a>
+            <a asp-action="BatchInsert" class="btn btn-outline-primary">Batch Insert</a>
+            <a asp-action="Insert" class="btn btn-primary">Add Category</a>
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <div class="order-summary">
-            <h5>Order Summary</h5>
-            <div class="summary-row">
-                <span>Subtotal</span>
-                <span>RM @Model.Subtotal.ToString("0.00")</span>
-            </div>
-            <div class="summary-row">
-                <span>SST (6%)</span>
-                <span>RM @Model.SST.ToString("0.00")</span>
-            </div>
-            <div class="summary-row discount-row" id="voucherDiscountRow" style="display:none;">
-                <span>Voucher Discount</span>
-                <span id="voucherDiscountValue">-RM 0.00</span>
-            </div>
-            <div class="summary-total">
-                <span>Total</span>
-                <span id="summaryTotalValue">RM @Model.Total.ToString("0.00")</span>
-            </div>
-        </div>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Display Order</th>
+                <th style="width: 160px;">Actions</th>
+            </tr>
+        </thead>
 
-        <form asp-controller="Checkout" asp-action="PlaceOrder" method="post">
-            @if (Model.IsGuest)
+        <tbody>
+            @foreach (var c in Model)
             {
-                <div class="guest-details-panel">
-                    <h5>Your Details</h5>
-                    <div class="mb-2">
-                        <label class="form-label">Name</label>
-                        <input type="text" name="guestName" class="form-control" autocomplete="name" required />
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" name="guestPhone" id="guestPhone" class="form-control" autocomplete="tel"
-                               inputmode="numeric" pattern="^01(1[0-9]{8}|[02-9][0-9]{7})$" maxlength="11"
-                               title="Enter a valid Malaysian mobile number, e.g. 0123456789 or 01123456789" required />
-                        <div class="form-text">e.g. 0123456789 (or 01123456789 for 011 numbers) — no need for +60</div>
-                    </div>
-                </div>
+                <tr>
+                    <td><input type="checkbox" name="ids" value="@c.Id" form="batchDeleteForm" /></td>
+                    <td>@c.Id</td>
+                    <td>@c.Name</td>
+                    <td>@c.DisplayOrder</td>
+                    <td>
+                        <a asp-action="Update" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">&#x270F;</a>
+                        <form asp-action="Delete" asp-route-id="@c.Id" method="post" style="display: inline" onsubmit="return confirm('Delete this category?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">&#x1F5D1;</button>
+                        </form>
+                    </td>
+                </tr>
             }
-
-            @if (Model.ShowVoucherSection)
-            {
-                <div class="voucher-panel">
-                    <h5>Voucher</h5>
-
-                    @if (Model.IsGuest)
-                    {
-                        <select class="form-select" disabled>
-                            <option>No Voucher Selected</option>
-                        </select>
-                        <p class="voucher-register-note">Register as member for free to get voucher and enjoy member benefits</p>
-                    }
-                    else
-                    {
-                        <select class="form-select" id="voucherSelect" name="voucherId">
-                            <option value="" data-discount="0">No Voucher Selected</option>
-                            @foreach (var v in Model.AvailableVouchers)
-                            {
-                                var qualifies = Model.Subtotal >= v.MinimumSpend;
-
-                                <option value="@v.Id"
-                                        data-discount="@v.DiscountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                        disabled="@(!qualifies)">
-                                    @v.Code — RM @v.DiscountAmount.ToString("0.00") off (min. spend RM @v.MinimumSpend.ToString("0.00"))@(qualifies ? "" : " — not eligible yet")
-                                </option>
-                            }
-                        </select>
-                    }
-                </div>
-            }
-
-            <div class="payment-method-panel">
-                <h5>Payment Method</h5>
-
-                <label class="payment-option">
-                    <input type="radio" name="paymentMethod" value="CreditCard" checked />
-                    <span>Credit / Debit Card</span>
-                </label>
-
-                <label class="payment-option">
-                    <input type="radio" name="paymentMethod" value="TouchNGo" />
-                    <span>Touch 'n Go E-Wallet</span>
-                </label>
-
-                <label class="payment-option">
-                    <input type="radio" name="paymentMethod" value="Cash" />
-                    <span>Cash</span>
-                </label>
-
-                <button type="submit" class="btn btn-primary btn-place-order">Place Order</button>
-            </div>
-        </form>
-    </div>
+        </tbody>
+    </table>
 </div>
-
-@section foot {
-    <script>
-        (function () {
-            const subtotal = @Model.Subtotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            const sst = @Model.SST.ToString(System.Globalization.CultureInfo.InvariantCulture);
-
-            const voucherSelect = document.getElementById('voucherSelect');
-            const totalEl = document.getElementById('summaryTotalValue');
-            const discountRow = document.getElementById('voucherDiscountRow');
-            const discountValueEl = document.getElementById('voucherDiscountValue');
-            const guestPhoneInput = document.getElementById('guestPhone');
-
-            // Digits only — Malaysian numbers here are entered in local format
-            // (e.g. 0123456789), no country code needed.
-            guestPhoneInput?.addEventListener('input', function () {
-                this.value = this.value.replace(/\D/g, '');
-            });
-
-            function formatMoney(n) {
-                return 'RM ' + n.toFixed(2);
-            }
-
-            function recalcTotal() {
-                let discount = 0;
-
-                if (voucherSelect && voucherSelect.value) {
-                    const selectedOption = voucherSelect.selectedOptions[0];
-                    discount = parseFloat(selectedOption?.dataset.discount || '0');
-                }
-
-                if (discountRow) {
-                    discountRow.style.display = discount > 0 ? '' : 'none';
-                }
-                if (discountValueEl) {
-                    discountValueEl.textContent = '-' + formatMoney(discount);
-                }
-
-                totalEl.textContent = formatMoney(subtotal + sst - discount);
-            }
-
-            voucherSelect?.addEventListener('change', recalcTotal);
-
-            recalcTotal();
-        })();
-    </script>
-}

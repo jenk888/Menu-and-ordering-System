@@ -51,7 +51,7 @@ $('[data-uncheck]').on('click', e => {
 // Row checkable (AJAX-supported)
 $(document).on('click', '[data-checkable]', e => {
     if ($(e.target).is(':input,a')) return;
-    
+
     $(e.currentTarget)
         .find(':checkbox')
         .prop('checked', (i, v) => !v);
@@ -76,3 +76,8 @@ $('.upload input').on('change', e => {
     // Trigger input validation
     $(e.target).valid();
 });
+
+// Payment (Cash/FPX/Touch 'n Go) is now handled entirely server-side by
+// Checkout/PlaceOrder - it creates the order and, for online methods,
+// redirects straight to HitPay's hosted payment page. No client-side
+// API call needed here anymore; the form just submits normally.

@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = "Batch Update Categories";
+}
+
+<div class="container my-4">
+    <form method="post" enctype="multipart/form-data" class="form">
+        <label>Text File</label>
+        <section>
+            <input type="file" name="file" accept=".txt,.tsv" class="form-control" />
+            <div class="text-muted mt-1" style="font-size: 0.85rem;">
+                Same format as Batch Insert, one category per line, tab-separated:
+                <code>Id&#9;Name&#9;DisplayOrder</code>
+                <br />
+                Each row updates the <b>existing</b> category with that Id.
+                Rows whose Id doesn't already exist are skipped — use Batch Insert to add new categories.
+            </div>
+        </section>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="validation-summary-errors">
+                @Html.ValidationSummary()
+            </div>
+        }
+
+        <section>
+            <button type="submit" class="btn btn-primary">Upload &amp; Update</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to Categories</a>
+        </section>
+    </form>
+
+    @if (ViewBag.Messages != null && ((List<string>)ViewBag.Messages).Count > 0)
+    {
+        <h5 class="mt-4">Skipped Rows</h5>
+        <ul>
+            @foreach (var msg in (List<string>)ViewBag.Messages)
+            {
+                <li class="text-danger">@msg</li>
+            }
+        </ul>
+    }
+</div>

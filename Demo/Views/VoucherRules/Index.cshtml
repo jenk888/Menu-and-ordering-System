@@ -1,0 +1,42 @@
+﻿@model IEnumerable<Demo.Models.VoucherRule>
+@{
+    ViewBag.Title = "Voucher Rules Management";
+}
+
+<div class="container my-4">
+    <h2>Voucher Rules</h2>
+    <p>
+        <a asp-action="Insert" class="btn btn-primary">Add New Voucher Rule</a>
+    </p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Minimum Spend</th>
+                <th>Discount Amount</th>
+                <th>Expiry Days</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>RM @item.MinimumSpend.ToString("0.00")</td>
+                    <td>RM @item.DiscountAmount.ToString("0.00")</td>
+                    <td>@item.ExpiryDurationDays days</td>
+                    <td>@(item.IsActive ? "Yes" : "No")</td>
+                    <td>
+                        <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this rule?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

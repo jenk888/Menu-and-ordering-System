@@ -1,8 +1,8 @@
-﻿using Demo.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static Demo.Helper;
+using Demo.Models;
 
 namespace Demo.Controllers
 {
@@ -250,6 +250,9 @@ namespace Demo.Controllers
         }
 
         // POST: Product/BatchInsert
+        // Reads a tab-separated .txt file: Id, Name, Description, Price, Stock, IsAvailable(1/0), CategoryId
+        // — one product per line. Rows with bad data or an unknown/duplicate Id are skipped
+        // and reported, everything else is inserted.
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchInsert(IFormFile? file)
@@ -260,78 +263,34 @@ namespace Demo.Controllers
                 return View();
             }
 
-            var messages = new List<string>();
-            int inserted = 0, skipped = 0, lineNo = 0;
-
-            using var reader = new StreamReader(file.OpenReadStream());
-            string? line;
-            while ((line = await reader.ReadLineAsync()) != null)
+            var result = await BatchImportHelper.ProcessAsync(file, expectedColumns: 7, (cols, lineNo) =>
             {
-                lineNo++;
-                if (string.IsNullOrWhiteSpace(line)) continue;
-
-                var cols = line.Split('\t');
-                if (cols.Length < 7)
-                {
-                    messages.Add($"Line {lineNo}: expected 7 tab-separated columns (Id, Name, Description, Price, Stock, IsAvailable, CategoryId), got {cols.Length}. Skipped.");
-                    skipped++;
-                    continue;
-                }
-
                 var id = cols[0].Trim();
                 var name = cols[1].Trim();
                 var description = cols[2].Trim();
 
                 if (string.IsNullOrEmpty(id) || id.Length > 10)
-                {
-                    messages.Add($"Line {lineNo}: Id is missing or longer than 10 characters. Skipped.");
-                    skipped++;
-                    continue;
-                }
+                    return $"Line {lineNo}: Id is missing or longer than 10 characters. Skipped.";
 
                 if (db.Products.Any(p => p.Id == id))
-                {
-                    messages.Add($"Line {lineNo} ({id}): a product with this Id already exists. Skipped.");
-                    skipped++;
-                    continue;
-                }
+                    return $"Line {lineNo} ({id}): a product with this Id already exists. Skipped.";
 
                 if (string.IsNullOrEmpty(name) || name.Length > 100)
-                {
-                    messages.Add($"Line {lineNo} ({id}): Name is missing or longer than 100 characters. Skipped.");
-                    skipped++;
-                    continue;
-                }
+                    return $"Line {lineNo} ({id}): Name is missing or longer than 100 characters. Skipped.";
 
                 if (description.Length > 500)
-                {
-                    messages.Add($"Line {lineNo} ({id}): Description is longer than 500 characters. Skipped.");
-                    skipped++;
-                    continue;
-                }
+                    return $"Line {lineNo} ({id}): Description is longer than 500 characters. Skipped.";
 
                 if (!decimal.TryParse(cols[3].Trim(), out var price) || price <= 0)
-                {
-                    messages.Add($"Line {lineNo} ({id}): invalid Price '{cols[3].Trim()}'. Skipped.");
-                    skipped++;
-                    continue;
-                }
+                    return $"Line {lineNo} ({id}): invalid Price '{cols[3].Trim()}'. Skipped.";
 
                 if (!int.TryParse(cols[4].Trim(), out var stock) || stock < 0)
-                {
-                    messages.Add($"Line {lineNo} ({id}): invalid Stock '{cols[4].Trim()}'. Skipped.");
-                    skipped++;
-                    continue;
-                }
-
-                bool isAvailable = cols[5].Trim() == "1";
+                    return $"Line {lineNo} ({id}): invalid Stock '{cols[4].Trim()}'. Skipped.";
 
                 if (!int.TryParse(cols[6].Trim(), out var categoryId) || !db.Categories.Any(c => c.Id == categoryId))
-                {
-                    messages.Add($"Line {lineNo} ({id}): CategoryId '{cols[6].Trim()}' does not exist. Skipped.");
-                    skipped++;
-                    continue;
-                }
+                    return $"Line {lineNo} ({id}): CategoryId '{cols[6].Trim()}' does not exist. Skipped.";
+
+                bool isAvailable = cols[5].Trim() == "1";
 
                 db.Products.Add(new Product
                 {
@@ -343,16 +302,71 @@ namespace Demo.Controllers
                     IsAvailable = isAvailable,
                     CategoryId = categoryId,
                 });
-                inserted++;
-            }
+                return null;
+            });
 
             db.SaveChanges();
 
-            TempData["Info"] = $"Batch insert done: {inserted} inserted, {skipped} skipped.";
-            ViewBag.Messages = messages;
+            TempData["Info"] = $"Batch insert done: {result.Success} inserted, {result.Skipped} skipped.";
+            ViewBag.Messages = result.Messages;
             return View();
-        }        
-        
+        }
+
+        // POST: Product/BatchUpdate
+        // Same tab-separated format as BatchInsert, but every row updates an EXISTING
+        // product matched by Id — rows whose Id isn't found are skipped and reported.
+        // Photos aren't touched here; use the normal Update page for photos.
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> BatchUpdate(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError("", "Please choose a text file.");
+                return View();
+            }
+
+            var result = await BatchImportHelper.ProcessAsync(file, expectedColumns: 7, (cols, lineNo) =>
+            {
+                var id = cols[0].Trim();
+                var product = db.Products.FirstOrDefault(p => p.Id == id);
+                if (product == null)
+                    return $"Line {lineNo}: no existing product with Id '{id}'. Skipped (use Batch Insert for new products).";
+
+                var name = cols[1].Trim();
+                var description = cols[2].Trim();
+
+                if (string.IsNullOrEmpty(name) || name.Length > 100)
+                    return $"Line {lineNo} ({id}): Name is missing or longer than 100 characters. Skipped.";
+
+                if (description.Length > 500)
+                    return $"Line {lineNo} ({id}): Description is longer than 500 characters. Skipped.";
+
+                if (!decimal.TryParse(cols[3].Trim(), out var price) || price <= 0)
+                    return $"Line {lineNo} ({id}): invalid Price '{cols[3].Trim()}'. Skipped.";
+
+                if (!int.TryParse(cols[4].Trim(), out var stock) || stock < 0)
+                    return $"Line {lineNo} ({id}): invalid Stock '{cols[4].Trim()}'. Skipped.";
+
+                if (!int.TryParse(cols[6].Trim(), out var categoryId) || !db.Categories.Any(c => c.Id == categoryId))
+                    return $"Line {lineNo} ({id}): CategoryId '{cols[6].Trim()}' does not exist. Skipped.";
+
+                product.Name = name;
+                product.Description = string.IsNullOrEmpty(description) ? null : description;
+                product.Price = price;
+                product.Stock = stock;
+                product.IsAvailable = cols[5].Trim() == "1";
+                product.CategoryId = categoryId;
+                return null;
+            });
+
+            db.SaveChanges();
+
+            TempData["Info"] = $"Batch update done: {result.Success} updated, {result.Skipped} skipped.";
+            ViewBag.Messages = result.Messages;
+            return View();
+        }
+
         // GET: Product/Update
         [Authorize(Roles = "Admin")]
         public IActionResult Update(string? id)
@@ -376,6 +390,13 @@ namespace Demo.Controllers
                     .ToList(),
             };
             return View(vm);
+        }
+
+        // GET: Product/BatchUpdate
+        [Authorize(Roles = "Admin")]
+        public IActionResult BatchUpdate()
+        {
+            return View();
         }
 
         // POST: Product/Update
@@ -452,57 +473,7 @@ namespace Demo.Controllers
             return View(vm);
         }
 
-        // GET: Category/BatchUpdate
-        [Authorize(Roles = "Admin")]
-        public IActionResult BatchUpdate()
-        {
-            return View();
-        }
-
-        // POST: Category/BatchUpdate
-        // Same tab-separated format as BatchInsert (Id, Name, DisplayOrder), but every
-        // row updates an EXISTING category matched by Id — unknown Ids are skipped.
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
-        public async Task<IActionResult> BatchUpdate(IFormFile? file)
-        {
-            if (file == null || file.Length == 0)
-            {
-                ModelState.AddModelError("", "Please choose a text file.");
-                return View();
-            }
-
-            var result = await BatchImportHelper.ProcessAsync(file, expectedColumns: 3, (cols, lineNo) =>
-            {
-                if (!int.TryParse(cols[0].Trim(), out var id))
-                    return $"Line {lineNo}: invalid Id '{cols[0].Trim()}'. Skipped.";
-
-                var category = db.Categories.Find(id);
-                if (category == null)
-                    return $"Line {lineNo}: no existing category with Id {id}. Skipped (use Batch Insert for new categories).";
-
-                var name = cols[1].Trim();
-                if (string.IsNullOrEmpty(name) || name.Length > 100)
-                    return $"Line {lineNo} (Id {id}): Name is missing or longer than 100 characters. Skipped.";
-
-                if (db.Categories.Any(c => c.Name == name && c.Id != id))
-                    return $"Line {lineNo} (Id {id}): a category named '{name}' already exists. Skipped.";
-
-                if (!int.TryParse(cols[2].Trim(), out var displayOrder))
-                    return $"Line {lineNo} (Id {id}): invalid DisplayOrder '{cols[2].Trim()}'. Skipped.";
-
-                category.Name = name;
-                category.DisplayOrder = displayOrder;
-                return null;
-            });
-
-            db.SaveChanges();
-
-            TempData["Info"] = $"Batch update done: {result.Success} updated, {result.Skipped} skipped.";
-            ViewBag.Messages = result.Messages;
-            return View();
-        }
-
+        
         // POST: Product/Delete
         [Authorize(Roles = "Admin")]
         [HttpPost]
@@ -528,44 +499,36 @@ namespace Demo.Controllers
             return RedirectToAction("Manage");
         }
 
-        // POST: Category/BatchDelete
-        // Deletes every checked category from the Index page — same "no products
-        // under it" rule as the single Delete action, applied per row (rows that
-        // still have products are skipped and reported instead of failing the batch).
+        // POST: Product/BatchDelete
+        // Deletes every Product whose Id is checked on the Manage page (and their photos).
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult BatchDelete(List<int>? ids)
+        public IActionResult BatchDelete(List<string>? ids)
         {
             if (ids == null || ids.Count == 0)
             {
-                TempData["Info"] = "No categories selected.";
-                return RedirectToAction("Index");
+                TempData["Info"] = "No products selected.";
+                return RedirectToAction("Manage");
             }
 
-            var categories = db.Categories.Where(c => ids.Contains(c.Id)).ToList();
-            var messages = new List<string>();
-            int deleted = 0;
+            var products = db.Products
+                .Include(p => p.Photos)
+                .Where(p => ids.Contains(p.Id))
+                .ToList();
 
-            foreach (var c in categories)
+            foreach (var p in products)
             {
-                if (db.Products.Any(p => p.CategoryId == c.Id))
+                foreach (var photo in p.Photos)
                 {
-                    messages.Add($"'{c.Name}' (Id {c.Id}) still has products under it — skipped.");
-                    continue;
+                    hp.DeletePhoto(photo.PhotoUrl, "products");
                 }
-
-                db.Categories.Remove(c);
-                deleted++;
             }
 
+            db.Products.RemoveRange(products);
             db.SaveChanges();
 
-            var summary = $"{deleted} categor{(deleted == 1 ? "y" : "ies")} deleted, {messages.Count} skipped.";
-            TempData["Info"] = messages.Count > 0
-                ? summary + "<br/>" + string.Join("<br/>", messages)
-                : summary;
-
-            return RedirectToAction("Index");
+            TempData["Info"] = $"{products.Count} product(s) deleted.";
+            return RedirectToAction("Manage");
         }
     }
 }
