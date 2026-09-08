@@ -11,6 +11,8 @@ builder.Services.AddSqlServer<DB>($@"
 builder.Services.AddScoped<Helper>();
 builder.Services.AddAuthentication().AddCookie();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
+
 // Add session
 builder.Services.AddSession();
 
