@@ -115,6 +115,26 @@ namespace Demo.Controllers
             return View(model);
         }
 
+        // GET: Product/ViewDetails/{id}
+        // [Authorize(Roles = "Admin")]
+        public IActionResult ViewDetails(string? id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("Manage");
+            }
+            var p = db.Products
+                .Include(x => x.Category)
+                .Include(x => x.Photos)
+                .Include(x => x.ModifierGroups).ThenInclude(g => g.Options)
+                .FirstOrDefault(x => x.Id == id);
+            if (p == null)
+            {
+                return RedirectToAction("Manage");
+            }
+            return View(p);
+        }
+
         // AJAX Endpoint for Filtering Products
         [HttpGet]
         public IActionResult GetProducts(int? categoryId = null, string? search = null, decimal? minPrice = null, decimal? maxPrice = null)
@@ -150,7 +170,7 @@ namespace Demo.Controllers
                 p.Price,
                 p.Stock,
                 PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() != null
-                    ? "/photos/product/" + p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault()
+                    ? "/photos/products/" + p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault()
                     : "/photos/no-image.jpg"
             }).ToList();
 
@@ -244,7 +264,7 @@ namespace Demo.Controllers
                 {
                     p.Photos.Add(new ProductPhoto
                     {
-                        PhotoUrl = hp.SavePhoto(file, "products"),
+                        PhotoUrl = hp.SavePhoto(file, "photos/products"),
                     });
                 }
 
@@ -468,7 +488,7 @@ namespace Demo.Controllers
                     var toDelete = p.Photos.Where(ph => vm.DeletePhotoIds.Contains(ph.Id)).ToList();
                     foreach (var photo in toDelete)
                     {
-                        hp.DeletePhoto(photo.PhotoUrl, "products");
+                        hp.DeletePhoto(photo.PhotoUrl, "photos/products");
                         db.ProductPhotos.Remove(photo);
                     }
                 }
@@ -480,7 +500,7 @@ namespace Demo.Controllers
                         db.ProductPhotos.Add(new ProductPhoto
                         {
                             ProductId = p.Id,
-                            PhotoUrl = hp.SavePhoto(file, "products"),
+                            PhotoUrl = hp.SavePhoto(file, "photos/products"),
                         });
                     }
                 }
@@ -516,7 +536,7 @@ namespace Demo.Controllers
             {
                 foreach (var photo in p.Photos)
                 {
-                    hp.DeletePhoto(photo.PhotoUrl, "products");
+                    hp.DeletePhoto(photo.PhotoUrl, "photos/products");
                 }
 
                 db.Products.Remove(p);
@@ -549,7 +569,7 @@ namespace Demo.Controllers
             {
                 foreach (var photo in p.Photos)
                 {
-                    hp.DeletePhoto(photo.PhotoUrl, "products");
+                    hp.DeletePhoto(photo.PhotoUrl, "photos/products");
                 }
             }
 

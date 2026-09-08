@@ -56,7 +56,7 @@
                     <tr>
                         <td><input type="checkbox" class="rowCheck" name="ids" value="@p.Id" form="batchDeleteForm" /></td>
                         <td>
-                            <img src="@(photoUrl != null?"/photos/product/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
+                            <img src="@(photoUrl != null?"/photos/products/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
                             @if (p.Photos.Count > 1)
                             {
                                 <span class="badge bg-secondary" style="position:absolute; bottom:2px; left:2px;">+@(p.Photos.Count - 1)</span>
@@ -68,9 +68,10 @@
                         <td>RM@(p.Price.ToString("0.00"))</td>
                         <td>@p.Stock</td>
                         <td>
-                            <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">&#x270F;</a>
+                            <a asp-action="ViewDetails" asp-route-id="@p.Id" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                            <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
                             <form asp-action="Delete" asp-route-id="@p.Id" method="post" style="display: inline" onsubmit="return confirm('Delete this product?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">&#x1F5D1;</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
                     </tr>

@@ -1,0 +1,99 @@
+﻿@model Product
+@using Demo.Models
+@{
+    ViewBag.Title = "Product Detail";
+
+    var photoUrls = Model.Photos != null && Model.Photos.Any()
+        ? Model.Photos.Select(p => "/photos/products/" + p.PhotoUrl).ToList()
+        : new List<string> { "/photos/no-image.jpg" };
+
+    var modifierGroups = Model.ModifierGroups?.OrderBy(g => g.Id).ToList() ?? new List<ModifierGroup>();
+}
+
+<div class="container my-4">
+    <a asp-action="Manage" class="btn btn-link ps-0 mb-3">&larr; Back to Manage</a>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="detail-photo-wrapper">
+                <img id="main-photo" src="@photoUrls[0]" alt="@Model.Name" class="detail-photo">
+            </div>
+
+            @if (photoUrls.Count > 1)
+            {
+                <div class="detail-thumbs">
+                    @for (int i = 0; i < photoUrls.Count; i++)
+                    {
+                        <img src="@photoUrls[i]"
+                             class="detail-thumb @(i == 0 ? "active" : "")"
+                             onclick="document.getElementById('main-photo').src=this.src; document.querySelectorAll('.detail-thumb').forEach(t=>t.classList.remove('active')); this.classList.add('active');" />
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <h5>
+                @Model.Name
+                <span class="badge @(Model.IsAvailable ? "bg-success" : "bg-secondary")">
+                    @(Model.IsAvailable ? "Available" : "Hidden")
+                </span>
+            </h5>
+
+            <p class="text-muted mb-1">Id: @Model.Id &middot; Category: @Model.Category?.Name</p>
+
+            <p class="detail-desc mb-3">@(string.IsNullOrEmpty(Model.Description) ? "(No description)" : Model.Description)</p>
+
+            <p class="detail-price mb-2">RM @(Model.Price.ToString("0.00"))</p>
+
+            <p class="detail-stock mb-4">
+                Stock:
+                @if (Model.Stock <= 0)
+                {
+                    <span class="text-danger fw-bold">Out of Stock</span>
+                }
+                else
+                {
+                    <span>@Model.Stock</span>
+                }
+            </p>
+
+            @if (modifierGroups.Any())
+            {
+                <h6>Modifier Groups</h6>
+                <div class="mb-3">
+                    @foreach (var group in modifierGroups)
+                    {
+                        <div class="mb-2">
+                            <div>
+                                <strong>@group.Name</strong>
+                                <span class="text-muted small">
+                                    (@(group.SelectionType == ModifierSelectionType.Single ? "Single choice" : "Multiple choice")
+                                    &middot; @(group.IsRequired ? "Required" : "Optional"))
+                                </span>
+                            </div>
+                            <ul class="mb-0">
+                                @foreach (var option in group.Options)
+                                {
+                                    <li>
+                                        @option.Name
+                                        @if (option.ExtraPrice > 0)
+                                        {
+                                            <span class="text-muted">(+RM @option.ExtraPrice.ToString("0.00"))</span>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No modifier groups attached.</p>
+            }
+
+            <a asp-action="Update" asp-route-id="@Model.Id" class="btn btn-primary">Edit Product</a>
+        </div>
+    </div>
+</div>

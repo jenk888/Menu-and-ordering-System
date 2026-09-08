@@ -29,7 +29,7 @@
                     {
                     var photo = Model.ExistingPhotos[i];
                     <div class="text-center">
-                        <img src="/photos/product/@photo.PhotoUrl" style="width:90px; height:90px; object-fit:cover; border-radius:6px" />
+                        <img src="/photos/products/@photo.PhotoUrl" style="width:90px; height:90px; object-fit:cover; border-radius:6px" />
                         <input type="hidden" asp-for="ExistingPhotos[i].Id" />
                         <input type="hidden" asp-for="ExistingPhotos[i].PhotoUrl" />
                         <div class="form-check d-flex justify-content-center align-items-center mt-1 gap-1">
@@ -57,7 +57,7 @@
         <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <label class="form-label mb-0">Modifier Groups</label>
-                <a href="/Modifier/Create" class="btn btn-sm btn-outline-secondary">Create New Modifier Group</a>
+                <a href="/ModifierGroup/Insert" class="btn btn-sm btn-outline-secondary">Create New Modifier Group</a>
             </div>
 
             @{ var modifierGroups = (List<ModifierGroup>)ViewBag.ModifierGroups; }
