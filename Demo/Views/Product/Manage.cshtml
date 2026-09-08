@@ -54,7 +54,7 @@
                 {
                     var photoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault();
                     <tr>
-                        <td><input type="checkbox" name="ids" value="@p.Id" form="batchDeleteForm" /></td>
+                        <td><input type="checkbox" class="rowCheck" name="ids" value="@p.Id" form="batchDeleteForm" /></td>
                         <td>
                             <img src="@(photoUrl != null?"/photos/product/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
                             @if (p.Photos.Count > 1)

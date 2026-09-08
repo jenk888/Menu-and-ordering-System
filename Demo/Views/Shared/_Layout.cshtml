@@ -25,12 +25,18 @@
     <div class="nav-backdrop" id="navBackdrop"></div>
 
     <nav id="sideNav">
-        <a href="/">Product</a>
+        <a href="/">Menu</a>
         <a href="/Cart/Index">Cart</a>
-        
-            <a href="/Product/Manage">Manage Products</a>
-        <a href="/Category/Index">Manage Categories</a>
-       
+        <a href="/Order/Index">Orders</a>
+
+        <!-- Admin pages -->
+            <a href="/Dashboard/Index">Dashboard</a>
+            <a href="/Product/Manage">Products</a>
+            <a href="/Category/Index">Categories</a>
+            <a href="/Admin/Index">Users</a>
+            <a href="/Modifier/Index">Modifiers</a>
+
+
         <div></div>
         @if (User.Identity?.IsAuthenticated ?? false)
         {
