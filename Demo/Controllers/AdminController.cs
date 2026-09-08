@@ -194,6 +194,23 @@ namespace Demo.Controllers
             var user = db.Users.FirstOrDefault(u => u.Id == id);
             if (user == null) return NotFound();
 
+            // Check the list of vouchers for member
+            var userVouchers = db.Vouchers
+                .Where(v => v.UserId == user.Id)
+                .Select(v => new ProfileVoucherVM
+                {
+                    Code = v.Code,
+                    RuleName = v.VoucherRule.Name,
+                    DiscountAmount = v.VoucherRule.DiscountAmount,
+                    MinimumSpend = v.VoucherRule.MinimumSpend,
+                    ExpiresAt = v.ExpiresAt ?? DateTime.Now,
+                    Status = v.Status.ToString()
+                })
+                .ToList();
+
+            // Passed to the backend member details page via ViewBag
+            ViewBag.UserVouchers = userVouchers;
+
             return View(user);
         }
 

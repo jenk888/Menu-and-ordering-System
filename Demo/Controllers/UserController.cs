@@ -66,7 +66,7 @@ namespace Demo.Controllers
             {
                 vm.Phone = vm.Phone?.Replace("-", "").Trim() ?? "";
 
-                db.Users.Add(new()
+                var newUser = new User
                 {
                     Id = GenerateMemberId(),
                     Email = vm.Email,
@@ -77,7 +77,28 @@ namespace Demo.Controllers
                     ProfilePhoto = hp.SavePhoto(vm.Photo, "photos"),
                     IsActive = true,
                     FailedLoginCount = 0,
-                });
+                };
+
+                db.Users.Add(newUser);
+
+                // give a voucher to new register member
+                var welcomeRule = db.VoucherRules
+                    .FirstOrDefault(r => r.Name == "New Member Welcome Voucher" && r.IsActive);
+
+                if (welcomeRule != null)
+                {
+                    var voucher = new Voucher
+                    {
+                        UserId = newUser.Id,
+                        VoucherRuleId = welcomeRule.Id,
+                        Code = "NEW" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(), // generate a random n unique voucher code
+                        IssuedAt = DateTime.Now,
+                        ExpiresAt = DateTime.Now.AddDays((double)(welcomeRule.ExpiryDurationDays ?? 30))
+                    };
+                    db.Vouchers.Add(voucher);
+                }
+
+                // submit & save
                 db.SaveChanges();
 
                 TempData["Info"] = "Register successfully. Please login";
@@ -115,9 +136,22 @@ namespace Demo.Controllers
         //[Authorize]
         public IActionResult Profile()
         {
-            string email = "aaron@gmail.com";      // User.Identity!.Name!
+            string email = "membertest2@gmail.com";      // User.Identity!.Name!
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
+
+            var userVouchers = db.Vouchers
+                .Where(v => v.UserId == user.Id)
+                .Select(v => new ProfileVoucherVM
+                {
+                    Code = v.Code,
+                    RuleName = v.VoucherRule.Name,
+                    DiscountAmount = v.VoucherRule.DiscountAmount,
+                    MinimumSpend = v.VoucherRule.MinimumSpend,
+                    ExpiresAt = v.ExpiresAt ?? DateTime.Now,
+                    Status = v.Status.ToString()
+                })
+                .ToList();
 
             var vm = new UpdateProfileVM
             {
@@ -125,7 +159,8 @@ namespace Demo.Controllers
                 Name = user.Name,
                 Email = user.Email,
                 Phone = user.Phone,
-                PhotoURL = user.ProfilePhoto
+                PhotoURL = user.ProfilePhoto,
+                Vouchers = GetUserVouchers(user.Id)
             };
 
             ViewBag.Id = user.Id;
@@ -140,7 +175,7 @@ namespace Demo.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Profile(UpdateProfileVM vm)
         {
-            string email = "aaron@gmail.com";      // User.Identity!.Name!
+            string email = "membertest2@gmail.com";      // User.Identity!.Name!
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
 
@@ -180,6 +215,7 @@ namespace Demo.Controllers
 
             //ViewBag.Id = user.Id;
             vm.PhotoURL = user.ProfilePhoto;
+            vm.Vouchers = GetUserVouchers(user.Id);
             return View(vm);
         }
 
@@ -189,7 +225,7 @@ namespace Demo.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult ChangePassword(UpdatePasswordVM passwordVm)
         {
-            string email = "aaron@gmail.com";      // User.Identity!.Name!
+            string email = "membertest2@gmail.com";      // User.Identity!.Name!
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
 
@@ -231,14 +267,31 @@ namespace Demo.Controllers
                 Name = user.Name,
                 Email = user.Email,
                 Phone = user.Phone,
-                PhotoURL = user.ProfilePhoto
+                PhotoURL = user.ProfilePhoto,
+                Vouchers = GetUserVouchers(user.Id)
             };
 
             // If failed
             ViewBag.ShowPasswordModal = true;
             TempData["Error"] = "Failed to update password. Please check your inputs.";
-            
+
             return View("Profile", profileVm);
+        }
+
+            private List<ProfileVoucherVM> GetUserVouchers(string userId)
+        {
+            return db.Vouchers
+                .Where(v => v.UserId == userId)
+                .Select(v => new ProfileVoucherVM
+                {
+                    Code = v.Code,
+                    RuleName = v.VoucherRule.Name,
+                    DiscountAmount = v.VoucherRule.DiscountAmount,
+                    MinimumSpend = v.VoucherRule.MinimumSpend,
+                    ExpiresAt = v.ExpiresAt ?? DateTime.Now,
+                    Status = v.Status.ToString()
+                })
+                .ToList();
         }
     }
 }
