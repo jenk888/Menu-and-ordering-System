@@ -16,7 +16,7 @@ public class ProductInsertViewModel
     public decimal Price { get; set; }
 
     [Required(ErrorMessage = "Please select a photo.")]
-    public IFormFile Photo { get; set; } = null!;
+    public List<IFormFile> Photos { get; set; } = [];
 }
 
 public class ProductUpdateViewModel
@@ -29,7 +29,19 @@ public class ProductUpdateViewModel
     [Required, Range(0.01, 100000, ErrorMessage = "Price must be between 0.01 and 100000.")]
     public decimal Price { get; set; }
 
-    public string? PhotoURL { get; set; }
+    // Photo already saved against this product, rendered with checkbox
+    // tick ones to remove on save
+    public List<ExistingPhotoViewModel> ExistingPhotos { get; set; } = [];
 
-    public IFormFile? Photo { get; set; }
+    // ProductPhoto.Id values the admin ticked for removal
+    public List<int> DeletePhotoIds { get; set; } = [];
+
+    // New selected photos to add to this product
+    public List<IFormFile> NewPhotos { get; set; } = [];
+}
+
+public class ExistingPhotoViewModel
+{
+    public int Id { get; set; }
+    public string PhotoUrl { get; set; } = null!;
 }

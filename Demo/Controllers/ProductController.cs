@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Demo.Models;
+﻿using Demo.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using static Demo.Helper;
 
 namespace Demo.Controllers
 {
@@ -139,7 +140,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Insert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(ProductInsertViewModel vm)
         {
@@ -148,10 +149,22 @@ namespace Demo.Controllers
                 ModelState.AddModelError("CategoryId", "Invalid category.");
             }
 
-            if (ModelState.IsValid("Photo"))
+            // [Required] doesn't fire on an empty (non-null) list, so check explicitly.
+            if (vm.Photos == null || vm.Photos.Count == 0)
             {
-                var e = hp.ValidatePhoto(vm.Photo);
-                if (e != "") ModelState.AddModelError("Photo", e);
+                ModelState.AddModelError("Photos", "Please select at least one photo.");
+            }
+            else if (ModelState.IsValid("Photos"))
+            {
+                foreach (var file in vm.Photos)
+                {
+                    var e = hp.ValidatePhoto(file);
+                    if (e != "")
+                    {
+                        ModelState.AddModelError("Photos", e);
+                        break;
+                    }
+                }
             }
 
             if (ModelState.IsValid)
@@ -164,10 +177,13 @@ namespace Demo.Controllers
                     CategoryId = vm.CategoryId,
                 };
 
-                p.Photos.Add(new ProductPhoto
+                foreach (var file in vm.Photos)
                 {
-                    PhotoUrl = hp.SavePhoto(vm.Photo, "products"),
-                });
+                    p.Photos.Add(new ProductPhoto
+                    {
+                        PhotoUrl = hp.SavePhoto(file, "products"),
+                    });
+                }
 
                 db.Products.Add(p);
                 db.SaveChanges();
@@ -180,11 +196,124 @@ namespace Demo.Controllers
             return View(vm);
         }
 
+        // GET: Product/BatchInsert
+        [Authorize(Roles = "Admin")]
+        public IActionResult BatchInsert()
+        {
+            return View();
+        }
+
+        // POST: Product/BatchInsert
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> BatchInsert(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError("", "Please choose a text file.");
+                return View();
+            }
+
+            var messages = new List<string>();
+            int inserted = 0, skipped = 0, lineNo = 0;
+
+            using var reader = new StreamReader(file.OpenReadStream());
+            string? line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lineNo++;
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var cols = line.Split('\t');
+                if (cols.Length < 7)
+                {
+                    messages.Add($"Line {lineNo}: expected 7 tab-separated columns (Id, Name, Description, Price, Stock, IsAvailable, CategoryId), got {cols.Length}. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                var id = cols[0].Trim();
+                var name = cols[1].Trim();
+                var description = cols[2].Trim();
+
+                if (string.IsNullOrEmpty(id) || id.Length > 10)
+                {
+                    messages.Add($"Line {lineNo}: Id is missing or longer than 10 characters. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                if (db.Products.Any(p => p.Id == id))
+                {
+                    messages.Add($"Line {lineNo} ({id}): a product with this Id already exists. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(name) || name.Length > 100)
+                {
+                    messages.Add($"Line {lineNo} ({id}): Name is missing or longer than 100 characters. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                if (description.Length > 500)
+                {
+                    messages.Add($"Line {lineNo} ({id}): Description is longer than 500 characters. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                if (!decimal.TryParse(cols[3].Trim(), out var price) || price <= 0)
+                {
+                    messages.Add($"Line {lineNo} ({id}): invalid Price '{cols[3].Trim()}'. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                if (!int.TryParse(cols[4].Trim(), out var stock) || stock < 0)
+                {
+                    messages.Add($"Line {lineNo} ({id}): invalid Stock '{cols[4].Trim()}'. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                bool isAvailable = cols[5].Trim() == "1";
+
+                if (!int.TryParse(cols[6].Trim(), out var categoryId) || !db.Categories.Any(c => c.Id == categoryId))
+                {
+                    messages.Add($"Line {lineNo} ({id}): CategoryId '{cols[6].Trim()}' does not exist. Skipped.");
+                    skipped++;
+                    continue;
+                }
+
+                db.Products.Add(new Product
+                {
+                    Id = id,
+                    Name = name,
+                    Description = string.IsNullOrEmpty(description) ? null : description,
+                    Price = price,
+                    Stock = stock,
+                    IsAvailable = isAvailable,
+                    CategoryId = categoryId,
+                });
+                inserted++;
+            }
+
+            db.SaveChanges();
+
+            TempData["Info"] = $"Batch insert done: {inserted} inserted, {skipped} skipped.";
+            ViewBag.Messages = messages;
+            return View();
+        }        
+        
         // GET: Product/Update
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Update(string? id)
         {
-            var p = db.Products.Find(id);
+            var p = db.Products
+                .Include(x => x.Photos)
+                .FirstOrDefault(x => x.Id == id);
 
             if (p == null)
             {
@@ -196,28 +325,46 @@ namespace Demo.Controllers
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                PhotoURL = db.Entry(p).Collection(x => x.Photos).Query()
-                             .Select(ph => ph.PhotoUrl).FirstOrDefault(),
+                ExistingPhotos = p.Photos
+                    .Select(ph => new ExistingPhotoViewModel { Id = ph.Id, PhotoUrl = ph.PhotoUrl })
+                    .ToList(),
             };
             return View(vm);
         }
 
         // POST: Product/Update
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(ProductUpdateViewModel vm)
         {
-            var p = db.Products.Find(vm.Id);
+            var p = db.Products
+                .Include(x => x.Photos)
+                .FirstOrDefault(x => x.Id == vm.Id);
 
             if (p == null)
             {
                 return RedirectToAction("Manage");
             }
 
-            if (vm.Photo != null)
+            if (vm.NewPhotos != null)
             {
-                var e = hp.ValidatePhoto(vm.Photo);
-                if (e != "") ModelState.AddModelError("Photo", e);
+                foreach (var file in vm.NewPhotos)
+                {
+                    var e = hp.ValidatePhoto(file);
+                    if (e != "")
+                    {
+                        ModelState.AddModelError("NewPhotos", e);
+                        break;
+                    }
+                }
+            }
+
+            // A product must keep at least one photo after removals + additions.
+            int remainingCount = p.Photos.Count(ph => !vm.DeletePhotoIds.Contains(ph.Id))
+                                  + (vm.NewPhotos?.Count ?? 0);
+            if (remainingCount == 0)
+            {
+                ModelState.AddModelError("DeletePhotoIds", "A product must have at least one photo.");
             }
 
             if (ModelState.IsValid)
@@ -225,35 +372,93 @@ namespace Demo.Controllers
                 p.Name = vm.Name;
                 p.Price = vm.Price;
 
-                if (vm.Photo != null)
+                if (vm.DeletePhotoIds.Count > 0)
                 {
-                    var existing = db.Entry(p).Collection(x => x.Photos).Query().FirstOrDefault();
-
-                    if (existing != null)
+                    var toDelete = p.Photos.Where(ph => vm.DeletePhotoIds.Contains(ph.Id)).ToList();
+                    foreach (var photo in toDelete)
                     {
-                        hp.DeletePhoto(existing.PhotoUrl, "products");
-                        db.ProductPhotos.Remove(existing);
+                        hp.DeletePhoto(photo.PhotoUrl, "products");
+                        db.ProductPhotos.Remove(photo);
                     }
-
-                    db.ProductPhotos.Add(new ProductPhoto
-                    {
-                        ProductId = p.Id,
-                        PhotoUrl = hp.SavePhoto(vm.Photo, "products"),
-                    });
                 }
+
+                if (vm.NewPhotos != null)
+                {
+                    foreach (var file in vm.NewPhotos)
+                    {
+                        db.ProductPhotos.Add(new ProductPhoto
+                        {
+                            ProductId = p.Id,
+                            PhotoUrl = hp.SavePhoto(file, "products"),
+                        });
+                    }
+                }
+
                 db.SaveChanges();
 
                 TempData["Info"] = "Product updated.";
                 return RedirectToAction("Manage");
             }
 
-            vm.PhotoURL = db.Entry(p).Collection(x => x.Photos).Query()
-                             .Select(ph => ph.PhotoUrl).FirstOrDefault();
+            vm.ExistingPhotos = p.Photos
+                .Select(ph => new ExistingPhotoViewModel { Id = ph.Id, PhotoUrl = ph.PhotoUrl })
+                .ToList();
             return View(vm);
         }
 
+        // GET: Category/BatchUpdate
+        [Authorize(Roles = "Admin")]
+        public IActionResult BatchUpdate()
+        {
+            return View();
+        }
+
+        // POST: Category/BatchUpdate
+        // Same tab-separated format as BatchInsert (Id, Name, DisplayOrder), but every
+        // row updates an EXISTING category matched by Id — unknown Ids are skipped.
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> BatchUpdate(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError("", "Please choose a text file.");
+                return View();
+            }
+
+            var result = await BatchImportHelper.ProcessAsync(file, expectedColumns: 3, (cols, lineNo) =>
+            {
+                if (!int.TryParse(cols[0].Trim(), out var id))
+                    return $"Line {lineNo}: invalid Id '{cols[0].Trim()}'. Skipped.";
+
+                var category = db.Categories.Find(id);
+                if (category == null)
+                    return $"Line {lineNo}: no existing category with Id {id}. Skipped (use Batch Insert for new categories).";
+
+                var name = cols[1].Trim();
+                if (string.IsNullOrEmpty(name) || name.Length > 100)
+                    return $"Line {lineNo} (Id {id}): Name is missing or longer than 100 characters. Skipped.";
+
+                if (db.Categories.Any(c => c.Name == name && c.Id != id))
+                    return $"Line {lineNo} (Id {id}): a category named '{name}' already exists. Skipped.";
+
+                if (!int.TryParse(cols[2].Trim(), out var displayOrder))
+                    return $"Line {lineNo} (Id {id}): invalid DisplayOrder '{cols[2].Trim()}'. Skipped.";
+
+                category.Name = name;
+                category.DisplayOrder = displayOrder;
+                return null;
+            });
+
+            db.SaveChanges();
+
+            TempData["Info"] = $"Batch update done: {result.Success} updated, {result.Skipped} skipped.";
+            ViewBag.Messages = result.Messages;
+            return View();
+        }
+
         // POST: Product/Delete
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(string? id)
         {
@@ -275,6 +480,46 @@ namespace Demo.Controllers
             }
 
             return RedirectToAction("Manage");
+        }
+
+        // POST: Category/BatchDelete
+        // Deletes every checked category from the Index page — same "no products
+        // under it" rule as the single Delete action, applied per row (rows that
+        // still have products are skipped and reported instead of failing the batch).
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public IActionResult BatchDelete(List<int>? ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                TempData["Info"] = "No categories selected.";
+                return RedirectToAction("Index");
+            }
+
+            var categories = db.Categories.Where(c => ids.Contains(c.Id)).ToList();
+            var messages = new List<string>();
+            int deleted = 0;
+
+            foreach (var c in categories)
+            {
+                if (db.Products.Any(p => p.CategoryId == c.Id))
+                {
+                    messages.Add($"'{c.Name}' (Id {c.Id}) still has products under it — skipped.");
+                    continue;
+                }
+
+                db.Categories.Remove(c);
+                deleted++;
+            }
+
+            db.SaveChanges();
+
+            var summary = $"{deleted} categor{(deleted == 1 ? "y" : "ies")} deleted, {messages.Count} skipped.";
+            TempData["Info"] = messages.Count > 0
+                ? summary + "<br/>" + string.Join("<br/>", messages)
+                : summary;
+
+            return RedirectToAction("Index");
         }
     }
 }

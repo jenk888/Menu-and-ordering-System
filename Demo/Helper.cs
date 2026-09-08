@@ -207,4 +207,53 @@ public class Helper(IWebHostEnvironment en,
             ct.HttpContext!.Session.Set("Cart", dict);
         }
     }
+
+    // ------------------------------------------------------------------------
+    // Batch Import Helper Functions
+    // ------------------------------------------------------------------------
+    public class BatchImportResult
+    {
+        public int Success { get; set; }
+        public int Skipped { get; set; }
+        public List<string> Messages { get; set; } = [];
+    }
+
+    public static class BatchImportHelper
+    {
+        public static async Task<BatchImportResult> ProcessAsync(IFormFile file, int expectedColumns, Func<string[], int, string?> processRow)
+        {
+            var result = new BatchImportResult();
+           
+            using var reader = new StreamReader(file.OpenReadStream());
+            string? line;
+            int lineNo = 0;
+
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lineNo++;
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var cols = line.Split('\t');
+                if (cols.Length < expectedColumns)
+                {
+                    result.Messages.Add($"Line {lineNo}: expected {expectedColumns} tab-separated columns, got {cols.Length}. Skipped.");
+                    result.Skipped++;
+                    continue;
+                }
+               
+                var error = processRow(cols, lineNo);
+                if (error != null)
+                {
+                    result.Messages.Add(error);
+                    result.Skipped++;
+                }
+                else
+                {
+                    result.Success++;
+
+                }
+            }
+            return result;
+        }
+    }
 }

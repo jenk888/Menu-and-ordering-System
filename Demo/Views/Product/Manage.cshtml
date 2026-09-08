@@ -5,6 +5,7 @@
 
 <div class="container my-4">
     <div class="d-flex justify-content-end mb-3">
+        <a asp-action="BatchInsert" class="btn btn-outline-primary">Batch Insert</a>
         <a asp-action="Insert" class="btn btn-primary">Add Product</a>
     </div>
 
@@ -28,6 +29,10 @@
                     <tr>
                         <td>
                             <img src="@(photoUrl != null?"/photos/product/"+ photoUrl :"/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
+                            @if (p.Photos.Count > 1)
+                            {
+                                <span class="badge bg-secondary" style="position:absolute; bottom:2px; left:2px;">+@(p.Photos.Count - 1)</span>
+                            }
                         </td>
                         <td>@p.Id</td>
                         <td>@p.Name</td>

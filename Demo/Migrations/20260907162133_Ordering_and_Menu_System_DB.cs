@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Demo.Migrations
 {
     /// <inheritdoc />
-    public partial class Ordering_And_Menu_System_DB : Migration
+    public partial class Ordering_and_Menu_System_DB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,6 +23,21 @@ namespace Demo.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ModifierGroups",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    SelectionType = table.Column<int>(type: "int", nullable: false),
+                    IsRequired = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ModifierGroups", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -82,6 +97,27 @@ namespace Demo.Migrations
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ModifierOptions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ExtraPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    ModifierGroupId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ModifierOptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ModifierOptions_ModifierGroups_ModifierGroupId",
+                        column: x => x.ModifierGroupId,
+                        principalTable: "ModifierGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -168,24 +204,27 @@ namespace Demo.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ModifierGroups",
+                name: "ModifierGroupProduct",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    SelectionType = table.Column<int>(type: "int", nullable: false),
-                    IsRequired = table.Column<bool>(type: "bit", nullable: false),
-                    ProductId = table.Column<string>(type: "nvarchar(10)", nullable: true)
+                    ModifierGroupsId = table.Column<int>(type: "int", nullable: false),
+                    ProductsId = table.Column<string>(type: "nvarchar(10)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ModifierGroups", x => x.Id);
+                    table.PrimaryKey("PK_ModifierGroupProduct", x => new { x.ModifierGroupsId, x.ProductsId });
                     table.ForeignKey(
-                        name: "FK_ModifierGroups_Products_ProductId",
-                        column: x => x.ProductId,
+                        name: "FK_ModifierGroupProduct_ModifierGroups_ModifierGroupsId",
+                        column: x => x.ModifierGroupsId,
+                        principalTable: "ModifierGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ModifierGroupProduct_Products_ProductsId",
+                        column: x => x.ProductsId,
                         principalTable: "Products",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -246,24 +285,31 @@ namespace Demo.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ModifierOptions",
+                name: "CartItemModifiers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ExtraPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    ModifierGroupId = table.Column<int>(type: "int", nullable: false)
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPriceSnapshot = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    CartItemId = table.Column<int>(type: "int", nullable: false),
+                    ModifierOptionId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ModifierOptions", x => x.Id);
+                    table.PrimaryKey("PK_CartItemModifiers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ModifierOptions_ModifierGroups_ModifierGroupId",
-                        column: x => x.ModifierGroupId,
-                        principalTable: "ModifierGroups",
+                        name: "FK_CartItemModifiers_CartItems_CartItemId",
+                        column: x => x.CartItemId,
+                        principalTable: "CartItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CartItemModifiers_ModifierOptions_ModifierOptionId",
+                        column: x => x.ModifierOptionId,
+                        principalTable: "ModifierOptions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -301,34 +347,6 @@ namespace Demo.Migrations
                         column: x => x.VoucherId,
                         principalTable: "Vouchers",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CartItemModifiers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    UnitPriceSnapshot = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    CartItemId = table.Column<int>(type: "int", nullable: false),
-                    ModifierOptionId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CartItemModifiers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CartItemModifiers_CartItems_CartItemId",
-                        column: x => x.CartItemId,
-                        principalTable: "CartItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CartItemModifiers_ModifierOptions_ModifierOptionId",
-                        column: x => x.ModifierOptionId,
-                        principalTable: "ModifierOptions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -380,9 +398,9 @@ namespace Demo.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ModifierGroups_ProductId",
-                table: "ModifierGroups",
-                column: "ProductId");
+                name: "IX_ModifierGroupProduct_ProductsId",
+                table: "ModifierGroupProduct",
+                column: "ProductsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ModifierOptions_ModifierGroupId",
@@ -456,6 +474,9 @@ namespace Demo.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CartItemModifiers");
+
+            migrationBuilder.DropTable(
+                name: "ModifierGroupProduct");
 
             migrationBuilder.DropTable(
                 name: "OrderItemModifiers");

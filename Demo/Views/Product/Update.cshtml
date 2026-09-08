@@ -20,18 +20,33 @@
             <span asp-validation-for="Price" class="text-danger"></span>
         </div>
 
-        @if (!string.IsNullOrEmpty(Model.PhotoURL))
-            {
-                <div class="mb-3">
-                    <label class="form-label">Current Photo</label> <br>
-                    <img src="/photos/product/@Model.PhotoURL" style="width:120px; height:120px; object-fit:cover" />
+        @if (Model.ExistingPhotos.Any())
+         {
+            <div class="mb-3">
+                <label class="form-label">Current Photos<small class="text-muted">(tick to remove)</small></label>
+                <div class="d-flex flex-wrap gap-3">
+                    @for (int i = 0; i < Model.ExistingPhotos.Count; i++)
+                    {
+                    var photo = Model.ExistingPhotos[i];
+                    <div class="text-center">
+                        <img src="/photos/product/@photo.PhotoUrl" style="width:90px; height:90px; object-fit:cover; border-radius:6px" />
+                        <input type="hidden" asp-for="ExistingPhotos[i].Id" />
+                        <input type="hidden" asp-for="ExistingPhotos[i].PhotoUrl" />
+                        <div class="form-check d-flex justify-content-center align-items-center mt-1 gap-1">
+                            <input class="form-check-input" type="checkbox" name="DeletePhotoIds" value="@photo.Id" id="del-@photo.Id" />
+                            <label class="form-check-label small" for="del-@photo.Id">Remove</label>
+                        </div>
+                    </div>
+                    }
                 </div>
-            }
+                <span asp-validation-for="DeletePhotoIds" class="text-danger d-block mt-1"></span>
+            </div>
+        }
 
         <div class="mb-3">
-            <label asp-for="Photo" class="form-label">Replace Photo </label>
-            <input asp-for="Photo" type="file" accept="image/*" class="form-control" />
-            <span asp-validation-for="Photo" class="text-danger"></span>
+            <label asp-for="NewPhotos" class="form-label">Add <Photos></Photos> </label>
+            <input asp-for="NewPhotos" type="file" accept="image/*" multiple class="form-control" />
+            <span asp-validation-for="NewPhotos" class="text-danger"></span>
         </div>
 
         <button type="submit" class="btn btn-primary">Save</button>

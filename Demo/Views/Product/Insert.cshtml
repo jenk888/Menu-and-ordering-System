@@ -32,9 +32,9 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="Photo" class="form-label">Photo </label>
-            <input asp-for="Photo" type="file" accept="image/*" class="form-control" />
-            <span asp-validation-for="Photo" class="text-danger"></span>
+            <label asp-for="Photos" class="form-label">Photos</label>
+            <input asp-for="Photos" type="file" accept="image/*" multiple class="form-control" />
+            <span asp-validation-for="Photos" class="text-danger"></span>
         </div>
 
         <button type="submit" class="btn btn-primary">Save</button>
