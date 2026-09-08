@@ -19,7 +19,9 @@
     <table class="table table-bordered table-hover">
         <thead class="table-light">
             <tr>
-                <th></th>
+                <th style="width: 30px">
+                    <input type="checkbox" onclick="document.querySelectorAll('.rowCheck').forEach(c => c.checked = this.checked)" />
+                </th>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Display Order</th>
@@ -31,7 +33,7 @@
             @foreach (var c in Model)
             {
                 <tr>
-                    <td><input type="checkbox" name="ids" value="@c.Id" form="batchDeleteForm" /></td>
+                    <td><input type="checkbox" class="rowCheck" name="ids" value="@c.Id" form="batchDeleteForm" /></td>
                     <td>@c.Id</td>
                     <td>@c.Name</td>
                     <td>@c.DisplayOrder</td>

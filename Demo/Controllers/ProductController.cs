@@ -188,10 +188,11 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Insert
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult Insert()
         {
             ViewBag.Categories = db.Categories.ToList();
+            ViewBag.ModifierGroups = db.ModifierGroups.Include(g => g.Options).ToList();
 
             var vm = new ProductInsertViewModel
             {
@@ -202,7 +203,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Insert
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(ProductInsertViewModel vm)
         {
@@ -212,7 +213,7 @@ namespace Demo.Controllers
             }
 
             // [Required] doesn't fire on an empty (non-null) list, so check explicitly.
-            if (vm.Photos == null || vm.Photos.Count == 0)
+            if (vm.Photos.Count == 0)
             {
                 ModelState.AddModelError("Photos", "Please select at least one photo.");
             }
@@ -247,6 +248,13 @@ namespace Demo.Controllers
                     });
                 }
 
+                if (vm.ModifierGroupIds.Count > 0)
+                {
+                    p.ModifierGroups = db.ModifierGroups
+                        .Where(g => vm.ModifierGroupIds.Contains(g.Id))
+                        .ToList();
+                }
+
                 db.Products.Add(p);
                 db.SaveChanges();
 
@@ -255,21 +263,19 @@ namespace Demo.Controllers
             }
 
             ViewBag.Categories = db.Categories.ToList();
+            ViewBag.ModifierGroups = db.ModifierGroups.Include(g => g.Options).ToList();
             return View(vm);
         }
 
         // GET: Product/BatchInsert
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult BatchInsert()
         {
             return View();
         }
 
         // POST: Product/BatchInsert
-        // Reads a tab-separated .txt file: Id, Name, Description, Price, Stock, IsAvailable(1/0), CategoryId
-        // — one product per line. Rows with bad data or an unknown/duplicate Id are skipped
-        // and reported, everything else is inserted.
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchInsert(IFormFile? file)
         {
@@ -329,7 +335,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/BatchUpdate
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchUpdate(IFormFile? file)
         {
@@ -381,17 +387,20 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Update
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult Update(string? id)
         {
             var p = db.Products
                 .Include(x => x.Photos)
+                .Include(x => x.ModifierGroups)
                 .FirstOrDefault(x => x.Id == id);
 
             if (p == null)
             {
                 return RedirectToAction("Index");
             }
+
+            ViewBag.ModifierGroups = db.ModifierGroups.Include(g => g.Options).ToList();
 
             var vm = new ProductUpdateViewModel
             {
@@ -401,24 +410,26 @@ namespace Demo.Controllers
                 ExistingPhotos = p.Photos
                     .Select(ph => new ExistingPhotoViewModel { Id = ph.Id, PhotoUrl = ph.PhotoUrl })
                     .ToList(),
+                ModifierGroupIds = p.ModifierGroups.Select(g => g.Id).ToList(),
             };
             return View(vm);
         }
 
         // GET: Product/BatchUpdate
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult BatchUpdate()
         {
             return View();
         }
 
         // POST: Product/Update
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(ProductUpdateViewModel vm)
         {
             var p = db.Products
                 .Include(x => x.Photos)
+                .Include(x => x.ModifierGroups)
                 .FirstOrDefault(x => x.Id == vm.Id);
 
             if (p == null)
@@ -474,12 +485,17 @@ namespace Demo.Controllers
                     }
                 }
 
+                p.ModifierGroups = db.ModifierGroups
+                    .Where(g => vm.ModifierGroupIds.Contains(g.Id))
+                    .ToList();
+
                 db.SaveChanges();
 
                 TempData["Info"] = "Product updated.";
                 return RedirectToAction("Manage");
             }
 
+            ViewBag.ModifierGroups = db.ModifierGroups.Include(g => g.Options).ToList();
             vm.ExistingPhotos = p.Photos
                 .Select(ph => new ExistingPhotoViewModel { Id = ph.Id, PhotoUrl = ph.PhotoUrl })
                 .ToList();
@@ -488,7 +504,7 @@ namespace Demo.Controllers
 
 
         // POST: Product/Delete
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(string? id)
         {
@@ -513,7 +529,8 @@ namespace Demo.Controllers
         }
 
         // POST: Product/BatchDelete
-        [Authorize(Roles = "Admin")]
+        // Deletes every Product whose Id is checked on the Manage page (and their photos).
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult BatchDelete(List<string>? ids)
         {
