@@ -9,9 +9,7 @@
             <input type="file" name="file" accept=".txt,.tsv" class="form-control" />
             <div class="text-muted mt-1" style="font-size: 0.85rem;">
                 One category per line, tab-separated:
-                <code>Id&#9;Name&#9;Description</code>
-                <br />
-                <code>Description</code> can be left empty.
+                <code>Id&#9;Name&#9;DisplayOrder</code>
             </div>
         </section>
 
@@ -24,7 +22,7 @@
 
         <section>
             <button type="submit" class="btn btn-primary">Upload &amp; Insert</button>
-            <a asp-action="Manage" class="btn btn-secondary">Back to Manage</a>
+            <a asp-action="Index" class="btn btn-secondary">Back to Categories</a>
         </section>
     </form>
 
