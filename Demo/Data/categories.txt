@@ -7,8 +7,8 @@
 7	Asian Fried Rice 炒饭	7
 8	Nasi Lemak 椰浆饭	8
 9	Porridge 粥	9
-14	Add On 另加	10
-16	Ice Blended 冰沙	11
-17	Fresh Blended Juice 现搅果汁	12
-18	Fruit Juice 果汁	13
-19	Others 其他饮品	14
+10	Add On 另加	10
+11	Ice Blended 冰沙	11
+12	Fresh Blended Juice 现搅果汁	12
+13	Fruit Juice 果汁	13
+14	Others 其他饮品	14
