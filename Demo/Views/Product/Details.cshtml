@@ -3,6 +3,7 @@
 @{
     ViewBag.Title = "";
 }
+
 @{
     var photoUrls = Model.Photos != null && Model.Photos.Any()
         ? Model.Photos.Select(p => "/photos/product/" + p.PhotoUrl).ToList()

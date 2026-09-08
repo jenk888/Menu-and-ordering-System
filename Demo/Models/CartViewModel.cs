@@ -1,4 +1,5 @@
-﻿namespace Demo.Models
+﻿
+namespace Demo.Models
 {
     public class CartItemModifierViewModel
     {

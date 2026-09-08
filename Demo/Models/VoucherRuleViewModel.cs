@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+
 namespace Demo.Models
 {
     public class VoucherRuleInsertViewModel

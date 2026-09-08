@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
 namespace Demo.Controllers
+
 {
     public class UserController(DB db,
                                IWebHostEnvironment en,
