@@ -139,6 +139,8 @@ namespace Demo.Controllers
 
             if (ModelState.IsValid)
             {
+                vm.Phone = vm.Phone?.Replace("-", "").Trim() ?? "";
+
                 // Generate admin id (2xA00001)
                 string yearPrefix = DateTime.Now.ToString("yy") + "A";
     
