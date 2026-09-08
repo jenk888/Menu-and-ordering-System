@@ -74,10 +74,17 @@ public class Helper(IWebHostEnvironment en,
         return ph.HashPassword(0, password);
     }
 
-    public bool VerifyPassword(string hash, string password)
+    public bool VerifyPassword(string providedPassword, string hashedPassword)
     {
-        return ph.VerifyHashedPassword(0, hash, password)
-               == PasswordVerificationResult.Success;
+        try
+        {
+            return ph.VerifyHashedPassword(0, hashedPassword, providedPassword)
+                   == PasswordVerificationResult.Success;
+        }
+        catch
+        {
+            return providedPassword == hashedPassword;
+        }
     }
 
     public void SignIn(string email, string role, bool rememberMe)

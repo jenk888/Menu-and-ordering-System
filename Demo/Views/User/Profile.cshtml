@@ -1,0 +1,146 @@
+﻿@model Demo.Models.UpdateProfileVM
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container d-flex justify-content-center align-items-center mt-5 mb-5">
+    <div class="card shadow-sm p-4" style="width: 750px; border-radius: 15px;">
+        <h3 class="mb-4 text-center">Profile Details</h3>
+
+        @if (TempData["Info"] != null)
+        {
+            <div class="alert alert-success">@TempData["Info"]</div>
+        }
+
+        <form asp-action="Profile" method="post" enctype="multipart/form-data">
+            <!-- Hidden field to keep track of user ID -->
+            <input type="hidden" asp-for="Id" />
+
+            <div class="row align-items-center">
+
+                <!-- Left side: Profile picture preview and upload button -->
+                <div class="col-md-4 text-center border-end">
+                    <div class="mb-3">
+                        <img id="avatarPreview" src="/photos/@(Model.PhotoURL ?? "default.jpg")" class="rounded-circle shadow" style="width: 130px; height: 130px; object-fit: cover;" alt="Avatar" />
+                    </div>
+                    <div class="mb-2">
+                        <!-- Label 'for' attribute must match the input 'id' -->
+                        <label for="photoInput" class="btn btn-outline-secondary btn-sm mb-0" style="cursor: pointer;">
+                            Change Avatar
+                        </label>
+                        <!-- Single file input with correct id for both binding and script -->
+                        <input asp-for="Photo" id="photoInput" class="d-none" accept="image/*" />
+                        <span asp-validation-for="Photo" class="text-danger d-block small"></span>
+                    </div>
+                </div>
+
+                <!-- Right side: User details -->
+                <div class="col-md-8 ps-md-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Account ID:</label>
+                        <input type="text" class="form-control-plaintext bg-light px-2 rounded" value="@Model.Id" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-bold"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label fw-bold"></label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <!-- Action buttons -->
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-dark px-4">Save Changes</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    Change Password
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change password modal window -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ChangePassword" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="@(new Demo.Models.UpdatePasswordVM().Current)" class="form-label">Current Password</label>
+                        <input asp-for="@(new Demo.Models.UpdatePasswordVM().Current)" name="Current" type="password" class="form-control" />
+                        <span asp-validation-for="@(new Demo.Models.UpdatePasswordVM().Current)" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="@(new Demo.Models.UpdatePasswordVM().New)" class="form-label">New Password</label>
+                        <input asp-for="@(new Demo.Models.UpdatePasswordVM().New)" name="New" type="password" class="form-control" />
+                        <span asp-validation-for="@(new Demo.Models.UpdatePasswordVM().New)" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="@(new Demo.Models.UpdatePasswordVM().Confirm)" class="form-label">Confirm New Password</label>
+                        <input asp-for="@(new Demo.Models.UpdatePasswordVM().Confirm)" name="Confirm" type="password" class="form-control" />
+                        <span asp-validation-for="@(new Demo.Models.UpdatePasswordVM().Confirm)" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 1. Real-time avatar preview script upon file selection
+        document.getElementById('photoInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+    @* 2. Automatically re-open the Change Password modal if validation failed on server-side *@
+    @if (ViewBag.ShowPasswordModal != null && (bool)ViewBag.ShowPasswordModal)
+    {
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+                var passwordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+                passwordModal.show();
+            });
+        </script>
+    }
+
+}

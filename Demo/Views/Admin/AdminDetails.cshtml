@@ -1,0 +1,58 @@
+﻿@model Demo.Models.User
+
+@{
+    ViewData["Title"] = "Admin Details";
+}
+
+<div class="container d-flex justify-content-center align-items-center mt-5 mb-5">
+    <div class="card shadow-sm p-4" style="width: 750px; border-radius: 15px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Profile Details</h3>
+            <a asp-action="AdminList" class="btn btn-outline-secondary btn-sm">Back to List</a>
+        </div>
+
+        <div class="row align-items-center">
+
+            <!-- Profile pic (Read-only) -->
+            <div class="col-md-4 text-center border-end">
+                <div class="mb-3">
+                    <img src="/photos/@(Model.ProfilePhoto ?? "default.jpg")" class="rounded-circle shadow" style="width: 130px; height: 130px; object-fit: cover;" alt="Avatar" />
+                </div>
+                <span class="badge bg-primary">Administrator</span>
+            </div>
+
+            <!-- Admin details (Read-only) -->
+            <div class="col-md-8 ps-md-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Admin ID:</label>
+                    <input type="text" class="form-control-plaintext bg-light px-2 rounded" value="@Model.Id" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Name:</label>
+                    <input type="text" class="form-control-plaintext bg-light px-2 rounded" value="@Model.Name" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email:</label>
+                    <input type="text" class="form-control-plaintext bg-light px-2 rounded" value="@Model.Email" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Phone:</label>
+                    <input type="text" class="form-control-plaintext bg-light px-2 rounded" value="@Model.Phone" readonly />
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- delete admin (with Confirmatin msg) -->
+        <div class="d-flex justify-content-end">
+            <form asp-action="DeleteAdmin" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('WARNING: Are you sure you want to delete this administrator account?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger px-4">Delete Admin Account</button>
+            </form>
+        </div>
+    </div>
+</div>
