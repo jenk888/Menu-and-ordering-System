@@ -2,15 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Demo.Models;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Demo.Controllers
 {
-    public class CheckoutController(DB db, Helper hp) : Controller
+    public class CheckoutController(DB db, Helper hp, IConfiguration configuration, IHttpClientFactory httpClientFactory, IMemoryCache cache) : Controller
     {
         // Malaysian mobile numbers, local format (no +60 needed), digits only:
         //   011-XXXXXXXX  → "011" + 8 digits  (11 digits total)
         //   01X-XXXXXXX   → "01" + any digit other than 1 + 7 digits (10 digits total)
         private static readonly Regex GuestPhonePattern = new(@"^01(1\d{8}|[02-9]\d{7})$", RegexOptions.Compiled);
+
+        // Deliberately simple - just enough to catch obvious typos, not full RFC 5322.
+        private static readonly Regex GuestEmailPattern = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
 
         private User? CurrentUser =>
             User.Identity?.IsAuthenticated == true
@@ -41,7 +46,7 @@ namespace Demo.Controllers
 
         // POST: Checkout/PlaceOrder
         [HttpPost]
-        public IActionResult PlaceOrder(string paymentMethod, string? guestName, string? guestPhone, int? voucherId)
+        public async Task<IActionResult> PlaceOrder(string paymentMethod, string? guestName, string? guestPhone, string? guestEmail, int? voucherId)
         {
             if (!Enum.TryParse<PaymentMethod>(paymentMethod, ignoreCase: true, out var method))
             {
@@ -53,15 +58,21 @@ namespace Demo.Controllers
 
             if (user == null)
             {
-                if (string.IsNullOrWhiteSpace(guestName) || string.IsNullOrWhiteSpace(guestPhone))
+                if (string.IsNullOrWhiteSpace(guestName) || string.IsNullOrWhiteSpace(guestPhone) || string.IsNullOrWhiteSpace(guestEmail))
                 {
-                    TempData["CheckoutError"] = "Please enter your name and phone number.";
+                    TempData["CheckoutError"] = "Please enter your name, phone number, and email.";
                     return RedirectToAction("Index");
                 }
 
                 if (!GuestPhonePattern.IsMatch(guestPhone.Trim()))
                 {
                     TempData["CheckoutError"] = "Please enter a valid Malaysian mobile number (e.g. 0123456789 or 01123456789).";
+                    return RedirectToAction("Index");
+                }
+
+                if (!GuestEmailPattern.IsMatch(guestEmail.Trim()))
+                {
+                    TempData["CheckoutError"] = "Please enter a valid email address.";
                     return RedirectToAction("Index");
                 }
 
@@ -115,20 +126,22 @@ namespace Demo.Controllers
             var sst = Math.Round(subtotal * 0.06m, 2);
             var total = subtotal + sst - discount;
 
-            var paymentStatus = method == PaymentMethod.Cash ? PaymentStatus.Unpaid : PaymentStatus.Paid;
-
+            // Every order starts Unpaid. Cash gets marked Paid manually at pickup.
+            // FPX/Touch 'n Go get flipped to Paid by the HitPay webhook once payment
+            // actually completes - we never mark it Paid just because the order was
+            // placed, since at this point nothing has actually been charged yet.
             var order = new Order
             {
                 UserId = user?.Id,
                 GuestName = user == null ? guestName : null,
                 GuestPhone = user == null ? guestPhone : null,
                 PaymentMethod = method,
-                PaymentStatus = paymentStatus,
+                PaymentStatus = PaymentStatus.Unpaid,
                 Subtotal = subtotal,
                 DiscountAmount = discount,
                 VoucherId = voucher?.Id,
                 Total = total,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.ToMalaysiaTime()
             };
 
             foreach (var item in cartItems)
@@ -166,18 +179,99 @@ namespace Demo.Controllers
 
             db.Orders.Add(order);
 
+            // Wrapped in a transaction: for online payment methods we need the real,
+            // database-generated order.Id before we can ask HitPay to create a payment
+            // session (it becomes the reference_number HitPay hands back on the webhook).
+            // If HitPay initiation fails, we roll back the order and the stock
+            // deduction above, rather than leaving an unpayable "ghost" order behind.
+            using var transaction = await db.Database.BeginTransactionAsync();
+
+            if (method == PaymentMethod.Cash)
+            {
+                if (user != null)
+                    db.CartItems.RemoveRange(db.CartItems.Where(ci => ci.UserId == user.Id));
+                else
+                    hp.SetCart(null);
+
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return RedirectToAction("Confirmation", new { id = order.Id });
+            }
+
+            // Save now so order.Id exists for the reference_number below.
+            await db.SaveChangesAsync();
+
+            if (user == null)
+            {
+                cache.Set($"guest-email-order-{order.Id}", guestEmail!, TimeSpan.FromHours(2));
+            }
+
+            var email = user?.Email ?? guestEmail!;
+            var name = user?.Name ?? guestName!;
+
+            var (success, hitPayRedirectUrl, error) = await InitiateHitPayPaymentAsync(order, email, name);
+
+            if (!success)
+            {
+                await transaction.RollbackAsync();
+                TempData["CheckoutError"] = $"Payment initiation failed: {error}";
+                return RedirectToAction("Index");
+            }
+
             if (user != null)
-            {
                 db.CartItems.RemoveRange(db.CartItems.Where(ci => ci.UserId == user.Id));
-            }
             else
-            {
                 hp.SetCart(null);
+
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Redirect(hitPayRedirectUrl);
+        }
+
+        // Creates a HitPay payment request for an already-saved order and returns the
+        // hosted payment page URL to redirect the browser to. reference_number is the
+        // real Order.Id, so the webhook can look the order back up and mark it Paid.
+        private async Task<(bool Success, string RedirectUrl, string Error)> InitiateHitPayPaymentAsync(Order order, string email, string name)
+        {
+            var apiKey = configuration["HitPay:ApiKey"];
+            var baseUrl = configuration["HitPay:BaseUrl"];
+            var redirectUrl = configuration["HitPay:RedirectUrl"];
+            var webhookUrl = configuration["HitPay:WebhookUrl"];
+
+            var methodCode = order.PaymentMethod == PaymentMethod.TouchNGo ? "touch_n_go" : "card";
+
+            var formData = new Dictionary<string, string>
+            {
+                { "amount", order.Total.ToString("0.00") },
+                { "currency", "MYR" },
+                { "email", email },
+                { "name", name },
+                { "reference_number", order.Id.ToString() },
+                { "redirect_url", redirectUrl ?? string.Empty },
+                { "webhook", webhookUrl ?? string.Empty },
+                { "payment_methods[0]", methodCode }
+            };
+
+            var client = httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-BUSINESS-API-KEY", apiKey);
+
+            var response = await client.PostAsync($"{baseUrl}/payment-requests", new FormUrlEncodedContent(formData));
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, string.Empty, responseString);
             }
 
-            db.SaveChanges();
+            var result = JsonConvert.DeserializeObject<HitPayIntegration.Models.HitPayCreatePaymentResponse>(responseString);
 
-            return RedirectToAction("Confirmation", new { id = order.Id });
+            if (result == null || string.IsNullOrEmpty(result.url))
+            {
+                return (false, string.Empty, "HitPay did not return a payment URL.");
+            }
+
+            return (true, result.url, string.Empty);
         }
 
         private List<CartItemViewModel> GetCartItems(User? user)

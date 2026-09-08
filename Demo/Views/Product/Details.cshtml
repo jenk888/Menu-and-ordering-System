@@ -289,10 +289,7 @@
                         return data;
                     })
                     .then(() => {
-                        btn.textContent = isEdit ? "Updated ✓" : "Added ✓";
-                        setTimeout(() => {
-                            window.location.href = isEdit ? "/Cart/Index" : "/Product/Index";
-                        }, 1200);
+                        window.location.href = isEdit ? "/Cart/Index" : "/Product/Index";
                     })
                     .catch(err => {
                         console.error("Error saving cart item:", err);

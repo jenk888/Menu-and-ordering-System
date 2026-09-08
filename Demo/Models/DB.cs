@@ -416,6 +416,7 @@ public class Order
     // Members only; always null for guest orders.
     public int? VoucherId { get; set; }
     public Voucher? Voucher { get; set; }
+    public int? TableNumber { get; set; }
 
     public List<OrderItem> OrderItems { get; set; } = [];
 
