@@ -141,7 +141,7 @@ namespace Demo.Controllers
                 DiscountAmount = discount,
                 VoucherId = voucher?.Id,
                 Total = total,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.ToMalaysiaTime()
             };
 
             foreach (var item in cartItems)
