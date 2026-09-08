@@ -27,9 +27,15 @@
     <nav id="sideNav">
         <a href="/">Product</a>
         <a href="/Cart/Index">Cart</a>
+        <a href="/Order/History">My Orders</a>
         
-            <a href="/Product/Manage">Manage Products</a>
+        <a href="/Product/Manage">Manage Products</a>
         <a href="/Category/Index">Manage Categories</a>
+        <a href="/ModifierGroup/Index">Manage Modifier Groups</a>
+        <a href="/Admin/Index">Manage Member</a>
+        <a href="/Admin/AdminList">Manage Admin</a>
+        <a href="/VoucherRules/Index">Manage Voucher</a>
+
        
         <div></div>
         @if (User.Identity?.IsAuthenticated ?? false)

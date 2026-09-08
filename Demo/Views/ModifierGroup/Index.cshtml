@@ -1,0 +1,51 @@
+﻿@model List<Demo.Models.ModifierGroup>
+@{
+    ViewBag.Title = "Modifier Groups";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a asp-action="Insert" class="btn btn-primary">+ New Modifier Group</a>
+    </div>
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info">@Html.Raw(TempData["Info"])</div>
+    }
+
+    <table class="table table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Selection Type</th>
+                <th>Required</th>
+                <th># Options</th>
+                <th># Products Using It</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in Model)
+            {
+                <tr>
+                    <td>@g.Name</td>
+                    <td>@(g.SelectionType == Demo.Models.ModifierSelectionType.Single ? "Single (radio)" : "Multi (checkbox)")</td>
+                    <td>@(g.IsRequired ? "Required" : "Optional")</td>
+                    <td>@g.Options.Count</td>
+                    <td>@g.Products.Count</td>
+                    <td>
+                        <a asp-action="Update" asp-route-id="@g.Id" class="btn btn-sm btn-outline-primary">Manage</a>
+                        <form asp-action="Delete" asp-route-id="@g.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Delete modifier group \'@g.Name\'? This also removes all its options and unlinks it from any products. This cannot be undone.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6" class="text-center text-muted">No modifier groups yet.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
