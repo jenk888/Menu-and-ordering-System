@@ -64,6 +64,8 @@ namespace Demo.Controllers
 
             if (ModelState.IsValid)
             {
+                vm.Phone = vm.Phone?.Replace("-", "").Trim() ?? "";
+
                 db.Users.Add(new()
                 {
                     Id = GenerateMemberId(),
@@ -160,6 +162,8 @@ namespace Demo.Controllers
 
             if (ModelState.IsValid)
             {
+                vm.Phone = vm.Phone?.Replace("-", "").Trim() ?? "";
+
                 user.Name = vm.Name;
                 user.Email = vm.Email;
                 user.Phone = vm.Phone;
