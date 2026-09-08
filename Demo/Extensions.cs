@@ -25,6 +25,12 @@ public static class Extensions
         return TimeOnly.FromDateTime(dt);
     }
 
+    public static DateTime ToMalaysiaTime(this DateTime utc)
+    {
+        // Malaysia Standard Time is UTC+8 year-round — no DST to worry about.
+        return DateTime.SpecifyKind(utc, DateTimeKind.Utc).AddHours(8);
+    }
+
 
 
     // ------------------------------------------------------------------------
