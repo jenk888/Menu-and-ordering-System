@@ -98,10 +98,24 @@ public class UpdatePasswordVM
 
 public class UpdateProfileVM
 {
-    public string? Email { get; set; }
+    public string Id { get; set; }
 
+    [Required(ErrorMessage = "Email is required.")]
     [StringLength(100)]
+    [RegularExpression(@"^.+@gmail\.com$", ErrorMessage = "Only @gmail.com format is allowed.")]
+    [Remote("CheckEmail", "User", AdditionalFields = "Id", ErrorMessage = "Duplicated Email.")]
+    [DisplayName("Email Address")]
+    public string Email { get; set; }
+
+    [Required(ErrorMessage = "Name is required.")]
+    [StringLength(100)]
+    [DisplayName("Name")]
     public string Name { get; set; }
+
+    [Required(ErrorMessage = "Phone number is required.")]
+    [RegularExpression(@"01[0-9]-[0-9]{7,8}$", ErrorMessage = "Invalid format.")]
+    [DisplayName("Phone No.")]
+    public string Phone { get; set; }
 
     public string? PhotoURL { get; set; }
 
