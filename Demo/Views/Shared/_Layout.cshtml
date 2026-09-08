@@ -27,10 +27,10 @@
     <nav id="sideNav">
         <a href="/">Product</a>
         <a href="/Cart/Index">Cart</a>
-        @if (User.IsInRole("Admin"))
-        {
+        
             <a href="/Product/Manage">Manage Products</a>
-        }
+        <a href="/Category/Index">Manage Categories</a>
+       
         <div></div>
         @if (User.Identity?.IsAuthenticated ?? false)
         {

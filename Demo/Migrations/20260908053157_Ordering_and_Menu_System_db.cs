@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Demo.Migrations
 {
     /// <inheritdoc />
-    public partial class Ordering_and_Menu_System_DB : Migration
+    public partial class Ordering_and_Menu_System_db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
