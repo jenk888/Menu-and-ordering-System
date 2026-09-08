@@ -31,7 +31,7 @@
     <label class="upload">
         <small>Select Photo...</small>
         <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-        <img src="/images/photo.jpg">
+        <img src="/photos/adminprofile/default.jpg" alt="Preview" id="adminPhotoPreview">
     </label>
     <span asp-validation-for="Photo"></span>
 
@@ -44,5 +44,16 @@
 @section foot {
     <script>
         $.validator.setDefaults({ ignore: '' });
+
+        document.querySelector('input[name="Photo"]').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    document.querySelector('.upload img').src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
     </script>
 }

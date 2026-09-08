@@ -170,7 +170,7 @@ namespace Demo.Controllers
                     Email = vm.Email,
                     Password = hp.HashPassword(vm.Password),
                     Phone = vm.Phone,
-                    ProfilePhoto = hp.SavePhoto(vm.Photo, "photos"),
+                    ProfilePhoto = hp.SavePhoto(vm.Photo, "photos/profile"),
                     Role = "Admin",
                     IsActive = true,
                     FailedLoginCount = 0
