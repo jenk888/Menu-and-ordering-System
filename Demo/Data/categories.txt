@@ -1,14 +1,14 @@
-Soup 浓汤	1
-Appetizer 小吃	2
-Janxden Special 店里招牌	3
-Pizza 披萨	4
-Pasta 意大利面	5
-Soup Noodle 汤面		6
-Asian Fried Rice 炒饭	7
-Nasi Lemak 椰浆饭	8
-Porridge 粥	9
-Add On 另加	14
-Ice Blended 冰沙	16
-Fresh Blended Juice 现搅果汁	17
-Fruit Juice 果汁	18
-Others 其他饮品	19
+1	Soup 浓汤	1
+2	Appetizer 小吃	2
+3	Janxden Special 店里招牌	3
+4	Pizza 披萨	4
+5	Pasta 意大利面	5
+6	Soup Noodle 汤面	6
+7	Asian Fried Rice 炒饭	7
+8	Nasi Lemak 椰浆饭	8
+9	Porridge 粥	9
+14	Add On 另加	10
+16	Ice Blended 冰沙	11
+17	Fresh Blended Juice 现搅果汁	12
+18	Fruit Juice 果汁	13
+19	Others 其他饮品	14

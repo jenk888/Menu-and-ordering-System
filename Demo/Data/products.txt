@@ -51,55 +51,55 @@ P0050	Kimchi Fried Rice	100% Vegan. Spicy **. Cooked embryo rice stir fried with
 P0051	Janxden Fried Rice	100% Vegan. Spicy **. Our signature fried rice.	18.90	100	1	7
 P0052	Satay Rice	100% Vegan. Spicy *. Satay sauce contains peanut.	23.90	100	1	8
 P0053	Nasi Lemak Combo	100% Vegan. Spicy **. Satay sauce contains peanut....	24.90	100	1	8
-P0054	Pumpkin Porridge	With egg. Blended pumpkin cooked with porridge, fresh broccoli, cauliflower and carrot.	17.90	100	1	10
-P0055	Green Porridge	100% Vegan. Porridge cooked with homemade green paste, fresh broccoli, cauliflower and carrot.	17.90	100	1	10
-P0056	Veggie Fish Hong Kong Porridge	100% Vegan. Porridge cooked with ginger, coriander, siao bai cai, carrot and fried slice veggie fish.	18.90	100	1	10
-P0067	Embryo Rice		2.50	100	1	15
-P0068	Nasi Lemak Rice		3.50	100	1	15
-P0069	Beehoon (B)		3.00	100	1	15
-P0070	Fried Egg	Comes with 1 pcs.	2.50	100	1	15
-P0071	Vegan Fried Egg	100% Vegan. Made from soy products.	5.00	100	0	15
-P0072	Seaweed		2.50	100	1	15
-P0073	Fried Tofu 6pcs		3.50	100	1	15
-P0074	Satay 7sticks	100% Vegan.	15.40	100	1	15
-P0075	Satay 10sticks	100% Vegan.	20.00	100	1	15
-P0076	Satay Sauce	100% Vegan.	2.50	100	1	15
-P0077	Veggie Black Fish 1pcs		2.50	100	1	15
-P0078	Veggie Sliced Snow Fish 2pcs		2.50	100	1	15
-P0079	Veggie Fish 4pcs		4.90	100	1	15
-P0080	Pasembur Fritters		6.90	100	1	15
-P0081	Papadum		3.00	100	1	15
-P0082	Pasembur Sauce		2.50	100	1	15
-P0083	Soup Bread 2nos		2.50	100	1	15
-P0084	Teriyaki Mushroom Patty		7.00	100	0	15
-P0085	Jiggy Mushroom		6.90	100	1	15
-P0086	Mushroom Chop 1pcs		8.00	100	0	15
-P0087	Mozzarella Cheese		3.50	100	1	15
-P0088	Sour Dough 1psc		2.50	100	1	15
-P0089	Konjac Rice		10.00	100	1	15
-P0090	Add On Vacon 2pcs		6.00	100	1	15
-P0095	Lemon Island Blended	100% Vegan. Citron honey juice blended with lemon and lime wedges.	17.90	100	0	18
-P0096	Avocado Smoothie	Contains milk. Fresh avocado blended with full cream milk and condensed milk.	20.90	100	1	18
-P0097	Strawberry Yogurt	Strawberry Yogurt.	20.90	100	1	18
-P0098	Green Expressions	100% Vegan. Apple + Cucumber.	14.90	100	1	19
-P0099	Pink Summer	100% Vegan. Watermelon + Lychee + Strawberry + Mint leaves.	14.90	100	1	19
-P0100	Purple Valentine	100% Vegan. Apple + Beetroot + Celery.	14.90	100	1	19
-P0101	Bittersweet Memory	100% Vegan. Bittergourd + Honey + Lemon.	14.90	100	1	19
-P0102	Applejito	100% Vegan. Apple + Lemon + Lime + Mint Leaves.	14.90	100	1	19
-P0103	Peachmelon	100% Vegan. Watermelon + Peach.	14.90	100	1	19
-P0104	Lemonade		11.90	100	1	19
-P0105	Fresh Orange Juice	100% Vegan.	12.90	100	1	19
-P0106	Guava Juice	100% Vegan. Served with cold. Contains sugar.	12.90	100	1	21
-P0107	Mango Juice	100% Vegan. Served with cold. Contains sugar.	12.90	100	1	21
-P0108	Fruit Punch	100% Vegan. Served with cold. Contains sugar.	14.90	100	1	21
-P0109	Lemon Roselle Juice	100% Vegan. It is rich in vitamin C, which is important for immune function, and may help lower blood pressure and cholesterol levels.	12.90	100	1	21
-P0110	Kombucha Lemon Ginger	100% Vegan. Kombucha tea is a fermented drink made with tea, sugar, bacteria and yeast.	13.90	100	1	22
-P0111	Raw Honey Lemon		12.90	100	1	22
-P0112	Citron Honey Tea		12.90	100	0	22
-P0113	Organic Soya Milk	100% Vegan. No sugar.	12.90	100	0	22
-P0114	Jia Duo Bao Herbal Tea		6.90	100	0	22
-P0115	Coca-Cola		6.90	100	0	22
-P0116	Filter Water with Lemon		2.00	100	1	22
-P0117	Filter Water		2.00	100	1	22
-P0118	Coolberg Craberry Flavour	100% vegan.	14.90	100	1	22
-P0119	Coolberg Malt Flavour	100% vegan.	14.90	100	1	22
+P0054	Pumpkin Porridge	With egg. Blended pumpkin cooked with porridge, fresh broccoli, cauliflower and carrot.	17.90	100	1	9
+P0055	Green Porridge	100% Vegan. Porridge cooked with homemade green paste, fresh broccoli, cauliflower and carrot.	17.90	100	1	9
+P0056	Veggie Fish Hong Kong Porridge	100% Vegan. Porridge cooked with ginger, coriander, siao bai cai, carrot and fried slice veggie fish.	18.90	100	1	9
+P0067	Embryo Rice		2.50	100	1	10
+P0068	Nasi Lemak Rice		3.50	100	1	10
+P0069	Beehoon (B)		3.00	100	1	10
+P0070	Fried Egg	Comes with 1 pcs.	2.50	100	1	10
+P0071	Vegan Fried Egg	100% Vegan. Made from soy products.	5.00	100	0	10
+P0072	Seaweed		2.50	100	1	10
+P0073	Fried Tofu 6pcs		3.50	100	1	10
+P0074	Satay 7sticks	100% Vegan.	15.40	100	1	10
+P0075	Satay 10sticks	100% Vegan.	20.00	100	1	10
+P0076	Satay Sauce	100% Vegan.	2.50	100	1	10
+P0077	Veggie Black Fish 1pcs		2.50	100	1	10
+P0078	Veggie Sliced Snow Fish 2pcs		2.50	100	1	10
+P0079	Veggie Fish 4pcs		4.90	100	1	10
+P0080	Pasembur Fritters		6.90	100	1	10
+P0081	Papadum		3.00	100	1	10
+P0082	Pasembur Sauce		2.50	100	1	10
+P0083	Soup Bread 2nos		2.50	100	1	10
+P0084	Teriyaki Mushroom Patty		7.00	100	0	10
+P0085	Jiggy Mushroom		6.90	100	1	10
+P0086	Mushroom Chop 1pcs		8.00	100	0	10
+P0087	Mozzarella Cheese		3.50	100	1	10
+P0088	Sour Dough 1psc		2.50	100	1	10
+P0089	Konjac Rice		10.00	100	1	10
+P0090	Add On Vacon 2pcs		6.00	100	1	10
+P0095	Lemon Island Blended	100% Vegan. Citron honey juice blended with lemon and lime wedges.	17.90	100	0	11
+P0096	Avocado Smoothie	Contains milk. Fresh avocado blended with full cream milk and condensed milk.	20.90	100	1	11
+P0097	Strawberry Yogurt	Strawberry Yogurt.	20.90	100	1	11
+P0098	Green Expressions	100% Vegan. Apple + Cucumber.	14.90	100	1	12
+P0099	Pink Summer	100% Vegan. Watermelon + Lychee + Strawberry + Mint leaves.	14.90	100	1	12
+P0100	Purple Valentine	100% Vegan. Apple + Beetroot + Celery.	14.90	100	1	12
+P0101	Bittersweet Memory	100% Vegan. Bittergourd + Honey + Lemon.	14.90	100	1	12
+P0102	Applejito	100% Vegan. Apple + Lemon + Lime + Mint Leaves.	14.90	100	1	12
+P0103	Peachmelon	100% Vegan. Watermelon + Peach.	14.90	100	1	12
+P0104	Lemonade		11.90	100	1	12
+P0105	Fresh Orange Juice	100% Vegan.	12.90	100	1	12
+P0106	Guava Juice	100% Vegan. Served with cold. Contains sugar.	12.90	100	1	13
+P0107	Mango Juice	100% Vegan. Served with cold. Contains sugar.	12.90	100	1	13
+P0108	Fruit Punch	100% Vegan. Served with cold. Contains sugar.	14.90	100	1	13
+P0109	Lemon Roselle Juice	100% Vegan. It is rich in vitamin C, which is important for immune function, and may help lower blood pressure and cholesterol levels.	12.90	100	1	13
+P0110	Kombucha Lemon Ginger	100% Vegan. Kombucha tea is a fermented drink made with tea, sugar, bacteria and yeast.	13.90	100	1	14
+P0111	Raw Honey Lemon		12.90	100	1	14
+P0112	Citron Honey Tea		12.90	100	0	14
+P0113	Organic Soya Milk	100% Vegan. No sugar.	12.90	100	0	14
+P0114	Jia Duo Bao Herbal Tea		6.90	100	0	14
+P0115	Coca-Cola		6.90	100	0	14
+P0116	Filter Water with Lemon		2.00	100	1	14
+P0117	Filter Water		2.00	100	1	14
+P0118	Coolberg Craberry Flavour	100% vegan.	14.90	100	1	14
+P0119	Coolberg Malt Flavour	100% vegan.	14.90	100	1	14

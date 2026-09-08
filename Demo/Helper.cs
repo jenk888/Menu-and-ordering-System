@@ -191,12 +191,12 @@ public class Helper(IWebHostEnvironment en,
     // Shopping Cart Helper Functions
     // ------------------------------------------------------------------------
 
-    public Dictionary<string, int> GetCart()
+    public Dictionary<string, GuestCartLine> GetCart()
     {
-        return ct.HttpContext!.Session.Get<Dictionary<string, int>>("Cart") ?? [];
+        return ct.HttpContext!.Session.Get<Dictionary<string, GuestCartLine>>("Cart") ?? [];
     }
 
-    public void SetCart(Dictionary<string, int>? dict = null)
+    public void SetCart(Dictionary<string, GuestCartLine>? dict = null)
     {
         if (dict == null)
         {

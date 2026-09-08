@@ -8,6 +8,11 @@ namespace Demo.Controllers
 {
     public class ProductController(DB db, Helper hp) : Controller
     {
+        private User? CurrentUser =>
+            User.Identity?.IsAuthenticated == true
+                ? db.Users.FirstOrDefault(u => u.Email == User.Identity!.Name)
+                : null;
+
         // GET: Product/Index
         [Route("")]
         [Route("Product")]
@@ -21,7 +26,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Details/{id}
-        public IActionResult Details(string? id)
+        public IActionResult Details(string? id, string? editCartItemId)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -38,6 +43,47 @@ namespace Demo.Controllers
             {
                 return RedirectToAction("Index");
             }
+
+            // Arrived from the cart's "edit" flow. editCartItemId is the CartItem.Id (as string)
+            // for members, or the composite GuestCartLine key for guests — see GuestCartLine.MakeKey.
+            if (!string.IsNullOrEmpty(editCartItemId))
+            {
+                var user = CurrentUser;
+
+                if (user != null)
+                {
+                    if (int.TryParse(editCartItemId, out int cartItemId))
+                    {
+                        var cartItem = db.CartItems
+                            .Include(ci => ci.SelectedModifiers)
+                            .FirstOrDefault(ci => ci.Id == cartItemId && ci.UserId == user.Id && ci.ProductId == id);
+
+                        if (cartItem != null)
+                        {
+                            ViewBag.EditCartItem = new CartItemEditInfo
+                            {
+                                LineId = cartItem.Id.ToString(),
+                                Quantity = cartItem.Quantity,
+                                SelectedOptionIds = cartItem.SelectedModifiers.Select(m => m.ModifierOptionId).ToList()
+                            };
+                        }
+                    }
+                }
+                else
+                {
+                    var cart = hp.GetCart();
+                    if (cart.TryGetValue(editCartItemId, out var line) && line.ProductId == id)
+                    {
+                        ViewBag.EditCartItem = new CartItemEditInfo
+                        {
+                            LineId = editCartItemId,
+                            Quantity = line.Quantity,
+                            SelectedOptionIds = line.ModifierOptionIds
+                        };
+                    }
+                }
+            }
+
             return View(p);
         }
 
