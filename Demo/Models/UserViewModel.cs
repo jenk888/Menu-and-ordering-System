@@ -122,6 +122,17 @@ public class UpdateProfileVM
     public string? PhotoURL { get; set; }
 
     public IFormFile? Photo { get; set; }
+    public List<ProfileVoucherVM> Vouchers { get; set; } = [];
+}
+
+public class ProfileVoucherVM
+{
+    public string Code { get; set; } = "";
+    public string RuleName { get; set; } = "";
+    public decimal DiscountAmount { get; set; }
+    public decimal MinimumSpend { get; set; }
+    public DateTime ExpiresAt { get; set; }
+    public string Status { get; set; } = "";
 }
 
 public class ResetPasswordVM
