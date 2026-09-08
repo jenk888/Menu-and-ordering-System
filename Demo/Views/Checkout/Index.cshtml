@@ -19,9 +19,9 @@
         border-bottom: 1px solid #edf0f5;
     }
 
-    .checkout-item-row:last-child {
-        border-bottom: none;
-    }
+        .checkout-item-row:last-child {
+            border-bottom: none;
+        }
 
     .checkout-item-thumb {
         width: 48px;
@@ -55,11 +55,11 @@
         padding: 1.5rem;
     }
 
-    .order-summary h5 {
-        font-weight: 700;
-        color: #1a1a2e;
-        margin-bottom: 1.25rem;
-    }
+        .order-summary h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1.25rem;
+        }
 
     .summary-row {
         display: flex;
@@ -67,6 +67,10 @@
         margin-bottom: 0.75rem;
         color: #4a4f5e;
     }
+
+        .summary-row.discount-row {
+            color: #1e8e3e;
+        }
 
     .summary-total {
         display: flex;
@@ -86,10 +90,30 @@
         margin-bottom: 1.5rem;
     }
 
-    .guest-details-panel h5 {
-        font-weight: 700;
-        color: #1a1a2e;
-        margin-bottom: 1rem;
+        .guest-details-panel h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+
+    .voucher-panel {
+        border: 1px solid #edf0f5;
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+        .voucher-panel h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+
+    .voucher-register-note {
+        color: #8a8fa3;
+        font-size: 0.85rem;
+        margin-top: 0.6rem;
+        margin-bottom: 0;
     }
 
     .payment-method-panel {
@@ -99,11 +123,11 @@
         margin-top: 1.5rem;
     }
 
-    .payment-method-panel h5 {
-        font-weight: 700;
-        color: #1a1a2e;
-        margin-bottom: 1rem;
-    }
+        .payment-method-panel h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
 
     .payment-option {
         display: flex;
@@ -116,13 +140,13 @@
         cursor: pointer;
     }
 
-    .payment-option:hover {
-        border-color: #0d6efd;
-    }
+        .payment-option:hover {
+            border-color: #0d6efd;
+        }
 
-    .payment-option input {
-        accent-color: #0d6efd;
-    }
+        .payment-option input {
+            accent-color: #0d6efd;
+        }
 
     .btn-place-order {
         width: 100%;
@@ -134,9 +158,9 @@
         margin-top: 1rem;
     }
 
-    .btn-place-order:hover {
-        background-color: #0b5ed7;
-    }
+        .btn-place-order:hover {
+            background-color: #0b5ed7;
+        }
 </style>
 @if (TempData["CheckoutError"] != null)
 {
@@ -160,7 +184,7 @@
             }
         </div>
     </div>
-    
+
     <div class="col-lg-5">
         <div class="order-summary">
             <h5>Order Summary</h5>
@@ -172,9 +196,13 @@
                 <span>SST (6%)</span>
                 <span>RM @Model.SST.ToString("0.00")</span>
             </div>
+            <div class="summary-row discount-row" id="voucherDiscountRow" style="display:none;">
+                <span>Voucher Discount</span>
+                <span id="voucherDiscountValue">-RM 0.00</span>
+            </div>
             <div class="summary-total">
                 <span>Total</span>
-                <span>RM @Model.Total.ToString("0.00")</span>
+                <span id="summaryTotalValue">RM @Model.Total.ToString("0.00")</span>
             </div>
         </div>
 
@@ -189,8 +217,42 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Phone Number</label>
-                        <input type="tel" name="guestPhone" class="form-control" autocomplete="tel" required />
+                        <input type="tel" name="guestPhone" id="guestPhone" class="form-control" autocomplete="tel"
+                               inputmode="numeric" pattern="^\+?[0-9]{7,15}$" maxlength="16"
+                               title="Enter a valid phone number (7–15 digits, optional leading +)" required />
+                        <div class="form-text">Digits only, e.g. 0123456789</div>
                     </div>
+                </div>
+            }
+
+            @if (Model.ShowVoucherSection)
+            {
+                <div class="voucher-panel">
+                    <h5>Voucher</h5>
+
+                    @if (Model.IsGuest)
+                    {
+                        <select class="form-select" disabled>
+                            <option>No Voucher Selected</option>
+                        </select>
+                        <p class="voucher-register-note">Register as member for FREE to enjoy member benefits!</p>
+                    }
+                    else
+                    {
+                        <select class="form-select" id="voucherSelect" name="voucherId">
+                            <option value="" data-discount="0">No Voucher Selected</option>
+                            @foreach (var v in Model.AvailableVouchers)
+                            {
+                                var qualifies = Model.Subtotal >= v.MinimumSpend;
+
+                                <option value="@v.Id"
+                                        data-discount="@v.DiscountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                        disabled="@(!qualifies)">
+                                    @v.Code — RM @v.DiscountAmount.ToString("0.00") off (min. spend RM @v.MinimumSpend.ToString("0.00"))@(qualifies ? "" : " — not eligible yet")
+                                </option>
+                            }
+                        </select>
+                    }
                 </div>
             }
 
@@ -217,3 +279,53 @@
         </form>
     </div>
 </div>
+
+@section foot {
+    <script>
+        (function () {
+            const subtotal = @Model.Subtotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            const sst = @Model.SST.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            const voucherSelect = document.getElementById('voucherSelect');
+            const totalEl = document.getElementById('summaryTotalValue');
+            const discountRow = document.getElementById('voucherDiscountRow');
+            const discountValueEl = document.getElementById('voucherDiscountValue');
+            const guestPhoneInput = document.getElementById('guestPhone');
+
+            // Strip anything that isn't a digit (a leading + is allowed) as the
+            // user types — the pattern attribute alone only blocks submission,
+            // it doesn't stop letters from being typed in the first place.
+            guestPhoneInput?.addEventListener('input', function () {
+                const hasLeadingPlus = this.value.startsWith('+');
+                const digitsOnly = this.value.replace(/\D/g, '');
+                this.value = (hasLeadingPlus ? '+' : '') + digitsOnly;
+            });
+
+            function formatMoney(n) {
+                return 'RM ' + n.toFixed(2);
+            }
+
+            function recalcTotal() {
+                let discount = 0;
+
+                if (voucherSelect && voucherSelect.value) {
+                    const selectedOption = voucherSelect.selectedOptions[0];
+                    discount = parseFloat(selectedOption?.dataset.discount || '0');
+                }
+
+                if (discountRow) {
+                    discountRow.style.display = discount > 0 ? '' : 'none';
+                }
+                if (discountValueEl) {
+                    discountValueEl.textContent = '-' + formatMoney(discount);
+                }
+
+                totalEl.textContent = formatMoney(subtotal + sst - discount);
+            }
+
+            voucherSelect?.addEventListener('change', recalcTotal);
+
+            recalcTotal();
+        })();
+    </script>
+}

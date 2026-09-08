@@ -59,6 +59,10 @@
         color: #4a4f5e;
     }
 
+        .summary-row.discount-row {
+            color: #1e8e3e;
+        }
+
     .summary-total {
         display: flex;
         justify-content: space-between;
@@ -107,6 +111,13 @@
             <span>Payment Status</span>
             <span>@Model.PaymentStatus</span>
         </div>
+        @if (!string.IsNullOrEmpty(Model.VoucherCode))
+        {
+            <div class="meta-row">
+                <span>Voucher Applied</span>
+                <span>@Model.VoucherCode</span>
+            </div>
+        }
 
         <hr />
 
@@ -128,6 +139,13 @@
             <span>SST (6%)</span>
             <span>RM @Model.SST.ToString("0.00")</span>
         </div>
+        @if (Model.DiscountAmount > 0)
+        {
+            <div class="summary-row discount-row">
+                <span>Voucher Discount</span>
+                <span>-RM @Model.DiscountAmount.ToString("0.00")</span>
+            </div>
+        }
         <div class="summary-total">
             <span>Total</span>
             <span>RM @Model.Total.ToString("0.00")</span>

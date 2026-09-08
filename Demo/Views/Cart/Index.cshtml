@@ -19,12 +19,13 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
+        cursor: pointer;
         transition: box-shadow .15s ease;
     }
 
-    .cart-item-card:hover {
-        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    }
+        .cart-item-card:hover {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
 
     .cart-item-thumb {
         width: 64px;
@@ -68,32 +69,32 @@
         overflow: hidden;
     }
 
-    .qty-control button {
-        background: #fff;
-        border: none;
-        width: 32px;
-        height: 32px;
-        font-weight: 600;
-        color: #0d6efd;
-        cursor: pointer;
-    }
+        .qty-control button {
+            background: #fff;
+            border: none;
+            width: 32px;
+            height: 32px;
+            font-weight: 600;
+            color: #0d6efd;
+            cursor: pointer;
+        }
 
-    .qty-control button:hover {
-        background: #f0f6ff;
-    }
+            .qty-control button:hover {
+                background: #f0f6ff;
+            }
 
-    .qty-control button:disabled {
-        color: #c7cbd6;
-        cursor: not-allowed;
-    }
+            .qty-control button:disabled {
+                color: #c7cbd6;
+                cursor: not-allowed;
+            }
 
-    .qty-control input {
-        width: 36px;
-        border: none;
-        text-align: center;
-        font-weight: 600;
-        pointer-events: none;
-    }
+        .qty-control input {
+            width: 36px;
+            border: none;
+            text-align: center;
+            font-weight: 600;
+            pointer-events: none;
+        }
 
     .cart-item-subtotal {
         font-weight: 700;
@@ -111,9 +112,9 @@
         cursor: pointer;
     }
 
-    .btn-remove:hover {
-        color: #a5301f;
-    }
+        .btn-remove:hover {
+            color: #a5301f;
+        }
 
     .order-summary {
         border: 1px solid #edf0f5;
@@ -123,17 +124,59 @@
         top: 1rem;
     }
 
-    .order-summary h5 {
-        font-weight: 700;
-        color: #1a1a2e;
-        margin-bottom: 1.25rem;
+        .order-summary h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1.25rem;
+        }
+
+    .summary-items {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
     }
 
-    .summary-row {
+    .summary-item-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 0.75rem;
-        color: #4a4f5e;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.9rem;
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 0.25rem 0.35rem;
+        margin-left: -0.35rem;
+        margin-right: -0.35rem;
+        transition: background-color .15s ease;
+    }
+
+        .summary-item-row:hover {
+            background-color: #f5f8ff;
+        }
+
+        .summary-item-row:last-child {
+            margin-bottom: 0;
+        }
+
+    .summary-item-name {
+        font-weight: 500;
+        color: #1a1a2e;
+    }
+
+    .summary-item-qty {
+        color: #8a8fa3;
+        font-weight: 400;
+    }
+
+    .summary-item-modifiers {
+        color: #b0b3bf;
+        font-size: 0.78rem;
+        margin-top: 0.1rem;
+    }
+
+    .summary-item-amount {
+        font-weight: 600;
+        color: #1a1a2e;
+        white-space: nowrap;
     }
 
     .summary-total {
@@ -156,9 +199,9 @@
         font-weight: 600;
     }
 
-    .btn-checkout:hover {
-        background-color: #0b5ed7;
-    }
+        .btn-checkout:hover {
+            background-color: #0b5ed7;
+        }
 
     .empty-cart {
         text-align: center;
@@ -167,7 +210,7 @@
     }
 </style>
 
-@if (TempData["CheckoutError"] != null)
+@if (TempData["CheckoutError"] != null && (Model == null || Model.Items == null || !Model.Items.Any()))
 {
     <div class="alert alert-danger">@TempData["CheckoutError"]</div>
 }
@@ -185,7 +228,7 @@ else
         <div class="col-lg-8">
             @foreach (var item in Model.Items)
             {
-                var lineId = item.CartItemId > 0 ? item.CartItemId.ToString() : item.ProductId;
+                var lineId = item.CartItemId > 0 ? item.CartItemId.ToString() : item.GuestLineKey;
 
                 <div class="cart-item-card" data-product-id="@item.ProductId" data-id="@lineId">
                     <img class="cart-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
@@ -227,12 +270,27 @@ else
         <div class="col-lg-4">
             <div class="order-summary">
                 <h5>Order Summary</h5>
-                <div class="summary-row">
-                    <span>Subtotal</span>
-                    <span id="summarySubtotal">RM @Model.Subtotal.ToString("0.00")</span>
+
+                <div class="summary-items" id="summaryItems">
+                    @foreach (var item in Model.Items)
+                    {
+                        var lineId = item.CartItemId > 0 ? item.CartItemId.ToString() : item.GuestLineKey;
+
+                        <div class="summary-item-row" data-id="@lineId" data-product-id="@item.ProductId">
+                            <div>
+                                <div class="summary-item-name">@item.ProductName <span class="summary-item-qty">x@(item.Quantity)</span></div>
+                                @if (item.SelectedModifiers != null && item.SelectedModifiers.Any())
+                                {
+                                    <div class="summary-item-modifiers">@string.Join(", ", item.SelectedModifiers.Select(m => m.Name))</div>
+                                }
+                            </div>
+                            <span class="summary-item-amount">RM @item.LineTotal.ToString("0.00")</span>
+                        </div>
+                    }
                 </div>
+
                 <div class="summary-total">
-                    <span>Total</span>
+                    <span>Total (exclude SST)</span>
                     <span id="summaryTotal">RM @Model.Total.ToString("0.00")</span>
                 </div>
                 <button type="button" class="btn btn-primary btn-checkout" id="btnCheckout">Proceed to Checkout</button>
@@ -248,14 +306,13 @@ else
         }
 
         function recalcOrderTotal() {
-            let subtotal = 0;
-            document.querySelectorAll('.cart-item-card').forEach(card => {
-                const text = card.querySelector('.cart-item-subtotal').textContent.replace('RM', '').trim();
-                subtotal += parseFloat(text) || 0;
+            let total = 0;
+            document.querySelectorAll('.summary-item-row').forEach(row => {
+                const text = row.querySelector('.summary-item-amount').textContent.replace('RM', '').trim();
+                total += parseFloat(text) || 0;
             });
 
-            document.getElementById('summarySubtotal').textContent = formatMoney(subtotal);
-            document.getElementById('summaryTotal').textContent = formatMoney(subtotal);
+            document.getElementById('summaryTotal').textContent = formatMoney(total);
 
             if (document.querySelectorAll('.cart-item-card').length === 0) {
                 window.location.reload();
@@ -278,6 +335,8 @@ else
 
         // Server returns "subtotal" already including any selected modifiers' extra price.
         function updateCardFromResponse(card, data) {
+            const id = card.dataset.id;
+
             card.querySelector('.qty-value').value = data.quantity;
             card.querySelector('.cart-item-subtotal').textContent = formatMoney(data.subtotal);
 
@@ -288,33 +347,61 @@ else
             increaseBtn.disabled = data.quantity >= stock;
             decreaseBtn.disabled = data.quantity <= 1;
 
+            const summaryRow = document.querySelector(`.summary-item-row[data-id="${id}"]`);
+            if (summaryRow) {
+                summaryRow.querySelector('.summary-item-qty').textContent = `x${data.quantity}`;
+                summaryRow.querySelector('.summary-item-amount').textContent = formatMoney(data.subtotal);
+            }
+
             recalcOrderTotal();
         }
 
         document.querySelectorAll('.btn-qty-increase').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
                 const id = btn.dataset.id;
-                const data = await postJson(`/Cart/Increase/${id}`);
+                const data = await postJson(`/Cart/Increase/${encodeURIComponent(id)}`);
                 if (data) updateCardFromResponse(btn.closest('.cart-item-card'), data);
             });
         });
 
         document.querySelectorAll('.btn-qty-decrease').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
                 const id = btn.dataset.id;
-                const data = await postJson(`/Cart/Decrease/${id}`);
+                const data = await postJson(`/Cart/Decrease/${encodeURIComponent(id)}`);
                 if (data) updateCardFromResponse(btn.closest('.cart-item-card'), data);
             });
         });
 
         document.querySelectorAll('.btn-remove').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
                 const id = btn.dataset.id;
-                const data = await postJson(`/Cart/Remove/${id}`);
+                const data = await postJson(`/Cart/Remove/${encodeURIComponent(id)}`);
                 if (data !== null) {
                     btn.closest('.cart-item-card').remove();
+                    document.querySelector(`.summary-item-row[data-id="${id}"]`)?.remove();
                     recalcOrderTotal();
                 }
+            });
+        });
+
+        // Click a cart row (but not its qty controls or remove button) to go edit that
+        // item's modifier selections on the product page.
+        document.querySelectorAll('.cart-item-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const productId = card.dataset.productId;
+                const cartItemId = card.dataset.id;
+                window.location.href = `/Product/Details/${productId}?editCartItemId=${encodeURIComponent(cartItemId)}`;
+            });
+        });
+
+        document.querySelectorAll('.summary-item-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const productId = row.dataset.productId;
+                const cartItemId = row.dataset.id;
+                window.location.href = `/Product/Details/${productId}?editCartItemId=${encodeURIComponent(cartItemId)}`;
             });
         });
 

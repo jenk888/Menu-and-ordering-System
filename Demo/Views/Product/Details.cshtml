@@ -9,6 +9,12 @@
         : new List<string> { "/photos/no-image.jpg" };
     var outOfStock = Model.Stock <= 0;
     var modifierGroups = Model.ModifierGroups?.OrderBy(g => g.Id).ToList() ?? new List<ModifierGroup>();
+    var editInfo = ViewBag.EditCartItem as CartItemEditInfo;
+    var editSelectedOptionIds = editInfo?.SelectedOptionIds ?? new List<int>();
+    var editQuantity = editInfo?.Quantity ?? 1;
+    var editLineIdJson = editInfo != null
+    ? System.Text.Json.JsonSerializer.Serialize(editInfo.LineId)
+    : "null";
 }
 
 <div class="container my-4">
@@ -79,7 +85,8 @@
                                                    class="modifier-input form-check-input me-2"
                                                    data-group-id="@group.Id"
                                                    data-option-id="@option.Id"
-                                                   data-extra-price="@option.ExtraPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                                   data-extra-price="@option.ExtraPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                            @(editSelectedOptionIds.Contains(option.Id) ? "checked" : "") />
                                             @option.Name
                                         </span>
                                         <span class="modifier-option-price text-muted">
@@ -99,7 +106,7 @@
             <div class="purchase-row d-flex align-items-center gap-3">
                 <div class="quantity-picker d-flex align-items-center" id="quantityPicker">
                     <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" id="qtyMinus" aria-label="Decrease quantity">&minus;</button>
-                    <span id="qtyValue" class="mx-3">1</span>
+                    <span id="qtyValue" class="mx-3">@editQuantity</span>
                     <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" id="qtyPlus" aria-label="Increase quantity">+</button>
                 </div>
 
@@ -108,7 +115,7 @@
                 </div>
 
                 <button class="btn btn-primary btn-lg" id="detailAddCartBtn" data-product-id="@Model.Id" @(outOfStock ? "disabled" : "")>
-                    @(outOfStock ? "Out of Stock" : "Add to Cart")
+                    @(outOfStock ? "Out of Stock" : (editInfo != null ? "Update Cart" : "Add to Cart"))
                 </button>
             </div>
         </div>
@@ -148,6 +155,7 @@
         (function () {
             const basePrice = parseFloat(document.getElementById("basePrice")?.dataset.basePrice || "0");
             const outOfStock = @(outOfStock ? "true" : "false");
+            const editLineId = @Html.Raw(editLineIdJson);
 
             const qtyValueEl = document.getElementById("qtyValue");
             const qtyMinusBtn = document.getElementById("qtyMinus");
@@ -157,7 +165,7 @@
             const modifierGroupEls = document.querySelectorAll(".modifier-group");
             const modifierInputs = document.querySelectorAll(".modifier-input");
 
-            let quantity = 1;
+            let quantity = @editQuantity;
 
             function getSelectedOptions() {
                 return Array.from(document.querySelectorAll(".modifier-input:checked"));
@@ -175,7 +183,6 @@
                 subtotalEl.textContent = "RM " + total.toFixed(2);
             }
 
-            // Returns true only if every required modifier group has at least one selection.
             function validateRequiredGroups(showErrors) {
                 let allValid = true;
 
@@ -234,9 +241,6 @@
                 input.addEventListener("change", refresh);
             });
 
-            // Native radio buttons can't be unchecked by clicking them again.
-            // Remember whether a radio was already checked right before the click
-            // toggles it, and if so, force it back off (a group is "Choose 1", not "Choose exactly 1").
             document.querySelectorAll('.modifier-input[type="radio"]').forEach(radio => {
                 radio.addEventListener("pointerdown", function () {
                     this._wasChecked = this.checked;
@@ -265,14 +269,16 @@
                 const modifierOptionIds = getSelectedOptions().map(el => parseInt(el.dataset.optionId, 10));
                 btn.disabled = true;
 
-                fetch("/Cart/Add", {
+                const isEdit = editLineId !== null;
+                const url = isEdit ? "/Cart/UpdateItem" : "/Cart/Add";
+                const payload = isEdit
+                    ? { id: editLineId, productId: productId, quantity: quantity, modifierOptionIds: modifierOptionIds }
+                    : { productId: productId, quantity: quantity, modifierOptionIds: modifierOptionIds };
+
+                fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        productId: productId,
-                        quantity: quantity,
-                        modifierOptionIds: modifierOptionIds
-                    })
+                    body: JSON.stringify(payload)
                 })
                     .then(async response => {
                         const data = await response.json().catch(() => null);
@@ -283,16 +289,16 @@
                         return data;
                     })
                     .then(() => {
-                        btn.textContent = "Added ✓";
+                        btn.textContent = isEdit ? "Updated ✓" : "Added ✓";
                         setTimeout(() => {
-                            btn.textContent = "Add to Cart";
-                            updateAddCartState();
+                            window.location.href = isEdit ? "/Cart/Index" : "/Product/Index";
                         }, 1200);
                     })
                     .catch(err => {
-                        console.error("Error adding to cart:", err);
+                        console.error("Error saving cart item:", err);
+                        btn.disabled = false;
                         updateAddCartState();
-                        alert(err.message || "Could not add item to cart. Please try again.");
+                        alert(err.message || "Could not save cart item. Please try again.");
                     });
             });
         })();

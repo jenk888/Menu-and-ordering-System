@@ -12,7 +12,10 @@
     @RenderSection("head", false)
 </head>
 <body>
-    <div class="info">@Html.Raw(TempData["Info"])</div>
+    @if (TempData["Info"] != null)
+    {
+        <div class="info" id="infoToast">@Html.Raw(TempData["Info"])</div>
+    }
 
     <header>
         <button id="navToggle" type="button" aria-label="Toggle menu" style="background:none;border:none;font-size:24px;cursor:pointer;color:inherit;">&#9776;</button>
@@ -75,6 +78,13 @@
                 var h = document.querySelector("header").offsetHeight;
                 document.documentElement.style.setProperty("--header-h", h + "px");
         }
+        const infoToast = document.getElementById("infoToast");
+            if (infoToast) {
+            setTimeout(() => {
+            infoToast.style.opacity = "0";
+            setTimeout(() => infoToast.remove(), 400);
+            }, 3000);
+        }
         syncHeaderHeight();
         window.addEventListener("resize", syncHeaderHeight);
 
@@ -82,9 +92,9 @@
             document.body.classList.toggle("nav-open");
         });
 
-            document.getElementById("navBackdrop").addEventListener("click", function() {
-                document.body.classList.remove("nav-open");
-            });
+        document.getElementById("navBackdrop").addEventListener("click", function() {
+            document.body.classList.remove("nav-open");
+        });
     </script>
   @await RenderSectionAsync("Scripts", required: false)  
   @RenderSection("foot", false)

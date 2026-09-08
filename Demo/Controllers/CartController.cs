@@ -18,11 +18,16 @@ namespace Demo.Controllers
             return View(vm);
         }
 
+        // Sum of a guest cart line's selected modifiers' extra price.
+        private static decimal GuestLineExtraPrice(Product product, GuestCartLine line)
+        {
+            var options = product.ModifierGroups.SelectMany(g => g.Options).ToDictionary(o => o.Id);
+            return line.ModifierOptionIds.Sum(id => options.TryGetValue(id, out var o) ? o.ExtraPrice : 0);
+        }
+
         // POST: Cart/Increase/{id}
-        // For members, id is the CartItem's own Id (a product can now appear more than
-        // once in the cart with different modifier selections, so ProductId alone is no
-        // longer a unique key). For guests, id is still the ProductId — the session cart
-        // doesn't track modifiers.
+        // For members, id is the CartItem's own Id. For guests, id is the composite
+        // GuestCartLine key (product + modifier selection) — see GuestCartLine.MakeKey.
         [HttpPost]
         public IActionResult Increase(string id)
         {
@@ -49,19 +54,22 @@ namespace Demo.Controllers
             }
             else
             {
-                var product = db.Products.Find(id);
+                var cart = hp.GetCart();
+                if (!cart.TryGetValue(id, out var line)) return NotFound();
+
+                var product = db.Products
+                    .Include(p => p.ModifierGroups).ThenInclude(g => g.Options)
+                    .FirstOrDefault(p => p.Id == line.ProductId);
                 if (product == null) return NotFound();
 
-                var cart = hp.GetCart();
-                if (!cart.ContainsKey(id)) return NotFound();
-
-                if (cart[id] < product.Stock)
+                if (line.Quantity < product.Stock)
                 {
-                    cart[id]++;
+                    line.Quantity++;
                     hp.SetCart(cart);
                 }
 
-                return Ok(new { quantity = cart[id], subtotal = cart[id] * product.Price });
+                var unitPrice = product.Price + GuestLineExtraPrice(product, line);
+                return Ok(new { quantity = line.Quantity, subtotal = line.Quantity * unitPrice });
             }
         }
 
@@ -92,19 +100,22 @@ namespace Demo.Controllers
             }
             else
             {
-                var product = db.Products.Find(id);
+                var cart = hp.GetCart();
+                if (!cart.TryGetValue(id, out var line)) return NotFound();
+
+                var product = db.Products
+                    .Include(p => p.ModifierGroups).ThenInclude(g => g.Options)
+                    .FirstOrDefault(p => p.Id == line.ProductId);
                 if (product == null) return NotFound();
 
-                var cart = hp.GetCart();
-                if (!cart.ContainsKey(id)) return NotFound();
-
-                if (cart[id] > 1)
+                if (line.Quantity > 1)
                 {
-                    cart[id]--;
+                    line.Quantity--;
                     hp.SetCart(cart);
                 }
 
-                return Ok(new { quantity = cart[id], subtotal = cart[id] * product.Price });
+                var unitPrice = product.Price + GuestLineExtraPrice(product, line);
+                return Ok(new { quantity = line.Quantity, subtotal = line.Quantity * unitPrice });
             }
         }
 
@@ -146,14 +157,12 @@ namespace Demo.Controllers
             var quantity = request.Quantity < 1 ? 1 : request.Quantity;
             var requestedOptionIds = (request.ModifierOptionIds ?? new List<int>()).Distinct().ToList();
 
-            // Every requested option must actually belong to one of this product's modifier groups.
             var validOptionIds = product.ModifierGroups.SelectMany(g => g.Options).Select(o => o.Id).ToHashSet();
             if (requestedOptionIds.Any(id => !validOptionIds.Contains(id)))
             {
                 return BadRequest(new { message = "Invalid modifier selection." });
             }
 
-            // Every required modifier group must have at least one selected option.
             foreach (var group in product.ModifierGroups.Where(g => g.IsRequired))
             {
                 if (!group.Options.Any(o => requestedOptionIds.Contains(o.Id)))
@@ -167,8 +176,6 @@ namespace Demo.Controllers
 
             if (user != null)
             {
-                // Same product with the same exact modifier selection merges into one row;
-                // a different selection (e.g. Large vs Small) becomes its own cart item.
                 var existingItem = db.CartItems
                     .Include(ci => ci.SelectedModifiers)
                     .Where(ci => ci.UserId == user.Id && ci.ProductId == request.ProductId)
@@ -218,21 +225,21 @@ namespace Demo.Controllers
                 db.SaveChanges();
 
                 var cartItemCount = db.CartItems.Where(ci => ci.UserId == user.Id).Sum(ci => ci.Quantity);
+                TempData["Info"] = "Item added successfully";
                 return Ok(new { success = true, cartItemCount });
             }
             else
             {
-                // NOTE: the guest session cart only stores ProductId -> quantity, so modifier
-                // selections aren't preserved for guests yet — this mirrors prior behavior.
                 var cart = hp.GetCart();
+                var key = GuestCartLine.MakeKey(product.Id, sortedOptionIds);
 
-                if (cart.ContainsKey(product.Id))
+                if (cart.TryGetValue(key, out var existingLine))
                 {
-                    if (cart[product.Id] + quantity > product.Stock)
+                    if (existingLine.Quantity + quantity > product.Stock)
                     {
                         return BadRequest(new { message = "No more stock available." });
                     }
-                    cart[product.Id] += quantity;
+                    existingLine.Quantity += quantity;
                 }
                 else
                 {
@@ -240,12 +247,143 @@ namespace Demo.Controllers
                     {
                         return BadRequest(new { message = "Product is out of stock." });
                     }
-                    cart[product.Id] = quantity;
+
+                    cart[key] = new GuestCartLine
+                    {
+                        ProductId = product.Id,
+                        Quantity = quantity,
+                        ModifierOptionIds = sortedOptionIds
+                    };
                 }
 
                 hp.SetCart(cart);
 
-                return Ok(new { success = true, cartItemCount = cart.Values.Sum() });
+                TempData["Info"] = "Item added successfully";
+                return Ok(new { success = true, cartItemCount = cart.Values.Sum(l => l.Quantity) });
+            }
+        }
+
+        // POST: Cart/UpdateItem
+        // Edits an existing line's quantity/modifiers, for both members and guests now.
+        // request.Id is the CartItem.Id (member) or the current composite guest key (guest).
+        [HttpPost]
+        public IActionResult UpdateItem([FromBody] UpdateCartItemRequest request)
+        {
+            var product = db.Products
+                .Include(p => p.ModifierGroups).ThenInclude(g => g.Options)
+                .FirstOrDefault(p => p.Id == request.ProductId);
+            if (product == null) return NotFound(new { message = "Product not found." });
+
+            var quantity = request.Quantity < 1 ? 1 : request.Quantity;
+            var requestedOptionIds = (request.ModifierOptionIds ?? new List<int>()).Distinct().ToList();
+
+            var validOptionIds = product.ModifierGroups.SelectMany(g => g.Options).Select(o => o.Id).ToHashSet();
+            if (requestedOptionIds.Any(id => !validOptionIds.Contains(id)))
+            {
+                return BadRequest(new { message = "Invalid modifier selection." });
+            }
+
+            foreach (var group in product.ModifierGroups.Where(g => g.IsRequired))
+            {
+                if (!group.Options.Any(o => requestedOptionIds.Contains(o.Id)))
+                {
+                    return BadRequest(new { message = $"Please select an option for {group.Name}." });
+                }
+            }
+
+            if (product.Stock < quantity)
+            {
+                return BadRequest(new { message = "Not enough stock available." });
+            }
+
+            var sortedOptionIds = requestedOptionIds.OrderBy(x => x).ToList();
+            var user = CurrentUser;
+
+            if (user != null)
+            {
+                if (!int.TryParse(request.Id, out int cartItemId)) return NotFound();
+
+                var item = db.CartItems
+                    .Include(ci => ci.SelectedModifiers)
+                    .FirstOrDefault(ci => ci.Id == cartItemId && ci.UserId == user.Id);
+                if (item == null) return NotFound();
+
+                var duplicate = db.CartItems
+                    .Include(ci => ci.SelectedModifiers)
+                    .Where(ci => ci.UserId == user.Id && ci.ProductId == item.ProductId && ci.Id != item.Id)
+                    .AsEnumerable()
+                    .FirstOrDefault(ci => ci.SelectedModifiers
+                        .Select(m => m.ModifierOptionId)
+                        .OrderBy(x => x)
+                        .SequenceEqual(sortedOptionIds));
+
+                if (duplicate != null)
+                {
+                    if (duplicate.Quantity + quantity > product.Stock)
+                    {
+                        return BadRequest(new { message = "No more stock available." });
+                    }
+                    duplicate.Quantity += quantity;
+                    db.CartItems.Remove(item);
+                }
+                else
+                {
+                    item.Quantity = quantity;
+
+                    db.CartItemModifiers.RemoveRange(item.SelectedModifiers);
+                    item.SelectedModifiers.Clear();
+
+                    foreach (var optionId in sortedOptionIds)
+                    {
+                        var option = product.ModifierGroups.SelectMany(g => g.Options).First(o => o.Id == optionId);
+                        item.SelectedModifiers.Add(new CartItemModifier
+                        {
+                            ModifierOptionId = optionId,
+                            Quantity = quantity,
+                            UnitPriceSnapshot = option.ExtraPrice
+                        });
+                    }
+                }
+
+                db.SaveChanges();
+
+                var cartItemCount = db.CartItems.Where(ci => ci.UserId == user.Id).Sum(ci => ci.Quantity);
+                TempData["Info"] = "Cart updated successfully";
+                return Ok(new { success = true, cartItemCount });
+            }
+            else
+            {
+                var cart = hp.GetCart();
+                if (!cart.ContainsKey(request.Id)) return NotFound();
+
+                var newKey = GuestCartLine.MakeKey(product.Id, sortedOptionIds);
+
+                // If the new selection now matches a different existing line for this
+                // product, fold into that line instead of leaving two lines behind.
+                if (newKey != request.Id && cart.TryGetValue(newKey, out var duplicateLine))
+                {
+                    if (duplicateLine.Quantity + quantity > product.Stock)
+                    {
+                        return BadRequest(new { message = "No more stock available." });
+                    }
+                    duplicateLine.Quantity += quantity;
+                    cart.Remove(request.Id);
+                }
+                else
+                {
+                    cart.Remove(request.Id);
+                    cart[newKey] = new GuestCartLine
+                    {
+                        ProductId = product.Id,
+                        Quantity = quantity,
+                        ModifierOptionIds = sortedOptionIds
+                    };
+                }
+
+                hp.SetCart(cart);
+
+                TempData["Info"] = "Cart updated successfully";
+                return Ok(new { success = true, cartItemCount = cart.Values.Sum(l => l.Quantity) });
             }
         }
 
@@ -283,20 +421,30 @@ namespace Demo.Controllers
             var sessionCart = hp.GetCart();
             if (sessionCart.Count == 0) return [];
 
-            var ids = sessionCart.Keys.ToList();
-            var products = db.Products.Include(p => p.Photos).Where(p => ids.Contains(p.Id)).ToList();
+            var productIds = sessionCart.Values.Select(l => l.ProductId).Distinct().ToList();
+            var products = db.Products
+                .Include(p => p.Photos)
+                .Include(p => p.ModifierGroups).ThenInclude(g => g.Options)
+                .Where(p => productIds.Contains(p.Id))
+                .ToList();
 
             return sessionCart
-                .Select(kv => products.FirstOrDefault(p => p.Id == kv.Key) is { } product
+                .Select(kv => products.FirstOrDefault(p => p.Id == kv.Value.ProductId) is { } product
                     ? new CartItemViewModel
                     {
                         CartItemId = 0,
+                        GuestLineKey = kv.Key,
                         ProductId = product.Id,
                         ProductName = product.Name,
                         Price = product.Price,
-                        Quantity = kv.Value,
+                        Quantity = kv.Value.Quantity,
                         Stock = product.Stock,
-                        ImageUrl = product.Photos.FirstOrDefault()?.PhotoUrl
+                        ImageUrl = product.Photos.FirstOrDefault()?.PhotoUrl,
+                        SelectedModifiers = kv.Value.ModifierOptionIds
+                            .Select(id => product.ModifierGroups.SelectMany(g => g.Options).FirstOrDefault(o => o.Id == id))
+                            .Where(o => o != null)
+                            .Select(o => new CartItemModifierViewModel { Name = o!.Name, ExtraPrice = o.ExtraPrice })
+                            .ToList()
                     }
                     : null)
                 .Where(x => x != null)
@@ -307,6 +455,14 @@ namespace Demo.Controllers
 
     public class AddToCartRequest
     {
+        public string ProductId { get; set; } = null!;
+        public int Quantity { get; set; } = 1;
+        public List<int>? ModifierOptionIds { get; set; }
+    }
+
+    public class UpdateCartItemRequest
+    {
+        public string Id { get; set; } = null!;
         public string ProductId { get; set; } = null!;
         public int Quantity { get; set; } = 1;
         public List<int>? ModifierOptionIds { get; set; }
