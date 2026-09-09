@@ -2,10 +2,20 @@
 @using X.PagedList.Mvc.Core
 @model IPagedList<Category>
 
+@* Sorting *@
+@Html.Hidden("sort", (string?)ViewBag.Sort, new { form = "f" })
+@Html.Hidden("dir", (string?)ViewBag.Dir, new { form = "f" })
+
 <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
       onsubmit="return confirm('Delete all selected categories?');"></form>
 
 <p class="text-muted">@Model.TotalItemCount categor@(Model.TotalItemCount == 1 ? "y" : "ies") found &middot; page @Model.PageNumber of @Model.PageCount</p>
+
+@{
+    // Small local helper so each sortable header link only needs one line below.
+    string SortClass(string col) => (string)ViewBag.Sort == col ? ((string)ViewBag.Dir == "desc" ? "des" : "asc") : "";
+    string NextDir(string col) => (string)ViewBag.Sort == col && (string)ViewBag.Dir != "desc" ? "desc" : "asc";
+}
 
 <table class="table table-bordered table-hover">
     <thead class="table-light">
@@ -13,9 +23,18 @@
             <th style="width: 30px">
                 <input type="checkbox" onclick="document.querySelectorAll('.rowCheck').forEach(c => c.checked = this.checked)" />
             </th>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Display Order</th>
+            <th>
+                <a asp-action="Index" asp-route-search="@ViewBag.Search" asp-route-sort="id" asp-route-dir="@NextDir("id")"
+                   class="@SortClass("id")" data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader">ID</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-search="@ViewBag.Search" asp-route-sort="name" asp-route-dir="@NextDir("name")"
+                   class="@SortClass("name")" data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader">Name</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-search="@ViewBag.Search" asp-route-sort="displayorder" asp-route-dir="@NextDir("displayorder")"
+                   class="@SortClass("displayorder")" data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader">Display Order</a>
+            </th>
             <th style="width: 160px;">Actions</th>
         </tr>
     </thead>
@@ -56,5 +75,5 @@
 
 @Html.PagedListPager(
     Model,
-    p => Url.Action("Index", new { page = p, search = ViewBag.Search }),
+    p => Url.Action("Index", new { page = p, search = ViewBag.Search, sort = ViewBag.Sort, dir = ViewBag.Dir }),
     PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions))

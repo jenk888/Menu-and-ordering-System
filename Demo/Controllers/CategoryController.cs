@@ -12,11 +12,11 @@ namespace Demo.Controllers
     {
 
         // GET: Category/Index
-        public IActionResult Index(string? search, int page = 1)
+        public IActionResult Index(string? search, string? sort, string? dir,int page = 1)
         {
             if (page < 1)
             {
-                return RedirectToAction("Index", new { search, page = 1 });
+                return RedirectToAction("Index", new { search, sort, dir, page = 1 });
             }
 
             var query = db.Categories.AsQueryable();
@@ -26,26 +26,35 @@ namespace Demo.Controllers
                 query = query.Where(c => c.Name.Contains(search));
             }
 
-            var model = query
-                .OrderBy(c => c.DisplayOrder)
-                .ThenBy(c => c.Name)
-                .ToPagedList(page, 10);
+            // Apply sorting
+            bool desc = dir == "desc";
+
+            query = sort switch
+            {
+                "id" => desc ? query.OrderByDescending(c => c.Id) : query.OrderBy(c => c.Id),
+                "name" => desc ? query.OrderByDescending(c => c.Name) : query.OrderBy(c => c.Name),
+                "displayorder" => desc ? query.OrderByDescending(c => c.DisplayOrder) : query.OrderBy(c => c.DisplayOrder),
+                _ => query.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name),
+            };
+
+            var model = query.ToPagedList(page, 10);
 
             if (page > model.PageCount && model.PageCount > 0)
             {
-                return RedirectToAction("Index", new { search, page = model.PageCount });
+                return RedirectToAction("Index", new { search, sort, dir, page = model.PageCount });
             }
 
             ViewBag.Search = search;
+            ViewBag.Sort = sort;
+            ViewBag.Dir = dir;
 
-            if(Request.IsAjax())
+            if (Request.IsAjax())
             {
                 return PartialView("_ManageCategoriesTable", model);
             }
 
             return View(model);
         }
-
 
         // GET: Category/Insert
         //[Authorize(Roles = "Admin")]
