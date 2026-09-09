@@ -180,11 +180,15 @@
                         // 2. Build template using the dynamic wrapper tag consistently for
                         //    both the opening and closing tag, so out-of-stock cards don't
                         //    end up with a mismatched </div> closing an <a>.
+                        const imagesrc = product.photoUrl!="/photos/product/" ?
+                            `<img src="${product.photoUrl}" alt="${product.name}" class="product-img" />` :
+                            `<img src="/photos/no-image.jpg" alt="${product.name}" class="product-img" />`;
+                        
                         const cardHtml = `
                             <div class="product-card${outOfStock ? " out-of-stock" : ""}">
                                 <${tag} ${hrefAttr} class="product-link" style="text-decoration: none; color: inherit;">
                                     <div class="product-img-wrapper">
-                                        <img src="${product.photoUrl}" alt="${product.name}" class="product-img" />
+                                        ${imagesrc}
                                     </div>
                                     <div class="product-details pt-0">
                                         <div class="product-title">${product.name}</div>
