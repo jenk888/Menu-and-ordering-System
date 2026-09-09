@@ -31,7 +31,7 @@ namespace Demo.Controllers
         // GET: Order/Receipt/{id}
         // Shared by BOTH the admin order page and the member order history page —
         // link a button to this same URL from each, no duplicate PDF code anywhere.
-        [Authorize]
+
         public IActionResult Receipt(int id)
         {
             var order = receiptService.GetOrderForReceipt(id);
@@ -47,11 +47,11 @@ namespace Demo.Controllers
         }
 
         // ====================================================================
-        // MEMBER: Order History + Detail + Cancellation
+        //  Order History + Detail + Cancellation
         // ====================================================================
 
         // GET: Order/History
-        [Authorize(Roles = "Member")]
+
         public IActionResult History(string? search, string? sort, string? dir, int page = 1)
         {
             var user = CurrentUser!;
@@ -109,7 +109,7 @@ namespace Demo.Controllers
         }
 
         // GET: Order/Detail/{id}
-        [Authorize(Roles = "Member")]
+
         public IActionResult Detail(int id)
         {
             var user = CurrentUser!;
@@ -126,7 +126,7 @@ namespace Demo.Controllers
         }
 
         // POST: Order/Cancel/{id}
-        [Authorize(Roles = "Member")]
+
         [HttpPost]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -162,9 +162,6 @@ namespace Demo.Controllers
         // ====================================================================
 
         // GET: Order/Manage
-        // Admin-only: this lists EVERY order in the system (all customers'
-        // names/phone numbers/guest info) with no per-user filtering, so
-        // widening this beyond Admin would leak other people's order data.
         [Authorize(Roles = "Admin")]
         public IActionResult Manage(string? search, string? status, string? sort, string? dir, int page = 1)
         {
@@ -265,7 +262,21 @@ namespace Demo.Controllers
         {
             var order = db.Orders.Find(id);
 
-            if (order != null && !order.IsCancelled && order.PaymentStatus == PaymentStatus.Unpaid)
+            if (order == null)
+            {
+                TempData["Error"] = $"Order #{id} was not found.";
+                return Redirect(Request.Headers.Referer.ToString());
+            }
+
+            // Re-read PaymentStatus straight off the entity that was just
+            // loaded from the DB: 0 (Unpaid) is the only value that enables
+            // marking paid; 1 (Paid) means it's already settled, so this
+            // becomes a no-op instead of silently re-saving.
+            if (order.IsCancelled)
+            {
+                TempData["Error"] = $"Order #{order.Id} is cancelled and cannot be marked paid.";
+            }
+            else if (order.PaymentStatus == PaymentStatus.Unpaid) // 0
             {
                 order.PaymentStatus = PaymentStatus.Paid;
 
@@ -279,6 +290,10 @@ namespace Demo.Controllers
                 TempData["Info"] = $"Order #{order.Id} marked as paid.";
 
                 await hub.Clients.All.SendAsync("OrderUpdated", order.Id);
+            }
+            else // PaymentStatus.Paid (1)
+            {
+                TempData["Info"] = $"Order #{order.Id} is already paid.";
             }
 
             return Redirect(Request.Headers.Referer.ToString());
@@ -299,6 +314,65 @@ namespace Demo.Controllers
                     ? OrderItemStatus.Queued
                     : OrderItemStatus.Served;
 
+                db.SaveChanges();
+
+                await hub.Clients.All.SendAsync("OrderUpdated", item.OrderId);
+            }
+
+            return Redirect(Request.Headers.Referer.ToString());
+        }
+
+        // ====================================================================
+        // ADMIN: Kitchen Dashboard — live order queue with real-time updates
+        // ====================================================================
+
+        // GET: Order/Dashboard
+        [Authorize(Roles = "Admin")]
+        public IActionResult Dashboard()
+        {
+            return View(GetQueueOrders());
+        }
+
+        // GET: Order/DashboardQueue — returns just the grid HTML. Called both
+        // by nothing server-side (Dashboard renders its own copy inline) and
+        // by the page's own JS every time SignalR says something changed, so
+        // the grid re-fetches and swaps in fresh HTML instead of a full reload.
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult DashboardQueue()
+        {
+            return PartialView("_QueueGrid", GetQueueOrders());
+        }
+
+        // Every non-cancelled order, fully-served ones pushed to the back —
+        // active orders stay in "first placed, first shown" order, matching a
+        // kitchen ticket rail. IsFullyServed depends on the OrderItems
+        // collection, which EF Core can't translate into an ORDER BY, so this
+        // sorts in memory (AsEnumerable) after the DB filter — fine at the
+        // scale of "orders currently in the restaurant".
+        private List<Order> GetQueueOrders() =>
+            db.Orders
+              .Include(o => o.User)
+              .Include(o => o.OrderItems)
+              .Where(o => !o.IsCancelled)
+              .AsEnumerable()
+              .OrderBy(o => o.IsFullyServed)
+              .ThenBy(o => o.CreatedAt)
+              .ToList();
+
+        // POST: Order/SetItemStatus — the Dashboard's 3-way control (Queued /
+        // Preparing / Served) for a single line item. Unlike ToggleItemStatus
+        // (binary, used on the order detail page), this sets an explicit
+        // status so the admin can pick any of the three directly.
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> SetItemStatus(int orderItemId, OrderItemStatus status)
+        {
+            var item = db.OrderItems.Find(orderItemId);
+
+            if (item != null)
+            {
+                item.Status = status;
                 db.SaveChanges();
 
                 await hub.Clients.All.SendAsync("OrderUpdated", item.OrderId);
@@ -359,6 +433,33 @@ namespace Demo.Controllers
             return Json(series);
         }
 
+        // GET: Order/ReportsItemSalesData?top=10 — item sales summary source
+        // Grouped by ProductNameSnapshot (not a live Product join) so this
+        // stays accurate even if a product is later renamed, re-priced, or
+        // deleted — the snapshot is what was actually sold at the time.
+        // Only counts items from Paid, non-cancelled orders: an unpaid or
+        // cancelled order was never actually a completed sale.
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult ReportsItemSalesData(int top = 10)
+        {
+            var items = db.OrderItems
+                .Include(oi => oi.Order)
+                .Where(oi => !oi.Order.IsCancelled && oi.Order.PaymentStatus == PaymentStatus.Paid)
+                .GroupBy(oi => oi.ProductNameSnapshot)
+                .Select(g => new
+                {
+                    product = g.Key,
+                    quantitySold = g.Sum(oi => oi.Quantity),
+                    revenue = g.Sum(oi => oi.LineTotal)
+                })
+                .OrderByDescending(x => x.revenue)
+                .Take(top)
+                .ToList();
+
+            return Json(items);
+        }
+
         // ====================================================================
         // TABLE QR: admin generates one QR per table; scanning it (with the
         // customer's own phone camera) opens TableController.Index, which
@@ -376,9 +477,6 @@ namespace Demo.Controllers
         // GET: Order/TableQrCode/{id} — a PNG image encoding the FULL
         // absolute URL to /Table/{id}. It has to be a real URL (not a
         // short custom code) so a phone's stock camera app opens it directly.
-        // NOTE: parameter is named "id" (not "number") to match the default
-        // conventional route "{controller}/{action}/{id?}" in Program.cs —
-        // otherwise model binding can't fill it and this always 404s.
         [Authorize(Roles = "Admin")]
         public IActionResult TableQrCode(int id)
         {

@@ -115,6 +115,10 @@ namespace HitPayIntegration.Controllers
             try
             {
                 var salt = _configuration["HitPay:Salt"];
+                if (string.IsNullOrEmpty(salt))
+                {
+                    return StatusCode(500, "HitPay:Salt is missing in configuration.");
+                }
                 var form = Request.Form;
 
                 var dict = new Dictionary<string, string>();
