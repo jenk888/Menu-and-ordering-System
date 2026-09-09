@@ -1,0 +1,25 @@
+@{
+    ViewBag.Title = "Table QR Codes";
+    int count = ViewBag.Count;
+}
+
+<div class="container my-4">
+    <a asp-action="Manage" class="btn btn-outline-secondary btn-sm mb-3">&larr; Back to Orders</a>
+
+    <p class="text-muted">Print each card and place it on the matching table. Customers scan it with
+        their own phone camera to start ordering for that table.</p>
+
+    <div class="row row-cols-2 row-cols-md-4 g-3">
+        @for (int n = 1; n <= count; n++)
+        {
+            <div class="col">
+                <div class="card text-center">
+                    <img src="/Order/TableQrCode/@n" class="card-img-top p-2" alt="Table @n QR code" />
+                    <div class="card-body py-2">
+                        <span class="fw-bold">Table @n</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

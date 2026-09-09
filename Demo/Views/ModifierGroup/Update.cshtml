@@ -1,0 +1,80 @@
+﻿@model Demo.Models.ModifierGroupUpdateViewModel
+@{
+    ViewBag.Title = "Manage Modifier Group";
+    var options = ViewBag.Options as List<Demo.Models.ModifierOption> ?? new();
+}
+
+<div class="container my-4" style="max-width: 700px;">
+    <a asp-action="Index" class="btn btn-link ps-0 mb-2">&larr; Back to Modifier Groups</a>
+    <h4 class="mb-3">Manage Modifier Group</h4>
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info">@Html.Raw(TempData["Info"])</div>
+    }
+
+    <form asp-action="Update" method="post" class="mb-4">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Selection Type</label>
+            <select asp-for="SelectionType" class="form-select"
+                    asp-items="Html.GetEnumSelectList<Demo.Models.ModifierSelectionType>()"></select>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="IsRequired" class="form-check-input" />
+            <label asp-for="IsRequired" class="form-check-label">Required</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Group Details</button>
+    </form>
+
+    <hr />
+
+    <h5 class="mb-3">Options</h5>
+
+    @if (options.Any())
+    {
+        <div class="d-flex fw-semibold text-muted small mb-2">
+            <div class="flex-grow-1">Name</div>
+            <div style="width:140px;">Extra Price (RM)</div>
+            <div style="width:170px;"></div>
+        </div>
+
+        @foreach (var o in options)
+        {
+            <form asp-action="UpdateOption" method="post" class="d-flex align-items-center gap-2 mb-2">
+                <input type="hidden" name="id" value="@o.Id" />
+                <input type="text" name="name" value="@o.Name" class="form-control form-control-sm flex-grow-1" required maxlength="100" />
+                <input type="number" name="extraPrice" value="@o.ExtraPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)" step="0.01" min="0" class="form-control form-control-sm" style="width:140px;" />
+                <button type="submit" class="btn btn-sm btn-outline-primary" style="width:80px;">Save</button>
+                <button type="submit" formaction="@Url.Action("DeleteOption")" formnovalidate
+                        class="btn btn-sm btn-outline-danger" style="width:80px;"
+                        onclick="return confirm('Delete option &quot;@o.Name&quot;? This cannot be undone.');">
+                    Delete
+                </button>
+            </form>
+        }
+    }
+    else
+    {
+        <p class="text-muted">No options yet — add one below.</p>
+    }
+
+    <hr />
+
+    <h6 class="mb-2">Add New Option</h6>
+    <form asp-action="AddOption" method="post" class="d-flex align-items-center gap-2">
+        <input type="hidden" name="modifierGroupId" value="@Model.Id" />
+        <input type="text" name="name" class="form-control form-control-sm flex-grow-1" placeholder="Option name" required maxlength="100" />
+        <input type="number" name="extraPrice" value="0.00" step="0.01" min="0" class="form-control form-control-sm" style="width:140px;" />
+        <button type="submit" class="btn btn-sm btn-primary" style="width:80px;">Add</button>
+    </form>
+</div>

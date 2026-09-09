@@ -1,0 +1,38 @@
+@model Order
+
+@{
+    ViewBag.Title = $"Order #{Model.Id}";
+    ViewBag.ShowCancel = true;
+}
+
+<div class="container my-4">
+    <a asp-action="History" class="btn btn-outline-secondary btn-sm mb-3">&larr; Back to My Orders</a>
+
+    @if (!Model.IsCancelled)
+    {
+        <div class="card mb-3" style="max-width: 220px">
+            <img src="/Order/QrCode/@Model.Id" class="card-img-top" alt="Pickup QR code" />
+            <div class="card-body text-center py-2">
+                <small class="text-muted">Show this at the counter</small>
+            </div>
+        </div>
+    }
+
+    <partial name="_OrderDetailBody" model="Model" />
+</div>
+
+@section foot {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+    <script>
+        // Real-time: if the kitchen/admin updates THIS order (payment settled,
+        // an item marked served, etc.) while the page is open, just reload —
+        // simplest correct behaviour for a single-order detail page.
+        const connection = new signalR.HubConnectionBuilder().withUrl("/orderHub").build();
+
+        connection.on("OrderUpdated", (orderId) => {
+            if (orderId === @Model.Id) location.reload();
+        });
+
+        connection.start().catch(err => console.error(err));
+    </script>
+}

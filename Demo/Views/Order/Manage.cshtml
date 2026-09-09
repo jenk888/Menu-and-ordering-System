@@ -1,0 +1,77 @@
+@using X.PagedList
+@model IPagedList<Order>
+
+@{
+    ViewBag.Title = "Manage Orders";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <a asp-action="Reports" class="btn btn-outline-dark btn-sm">View Reports</a>
+        <a asp-action="Scan" class="btn btn-outline-dark btn-sm">Scan QR</a>
+        <a asp-action="Tables" class="btn btn-outline-dark btn-sm">Table QR Codes</a>
+    </div>
+
+    <form data-ajax="true"
+          data-ajax-update="#target"
+          data-ajax-loading="#loader"
+          id="f" class="d-flex gap-2 mb-3">
+        @Html.Hidden("sort", "", new { form = "f" })
+        @Html.Hidden("dir", "", new { form = "f" })
+
+        <input type="search" name="search" id="search" value="@ViewBag.Search"
+               class="form-control" style="max-width: 260px"
+               placeholder="Search by Order Id or Customer" autofocus data-trim />
+
+        <select name="status" id="status" class="form-select" style="max-width: 200px">
+            <option value="">All Statuses</option>
+            @foreach (var s in new[] { "PendingPayment", "Preparing", "Completed", "Cancelled" })
+            {
+                <option value="@s" selected="@(s == (string?)ViewBag.Status)">@s</option>
+            }
+        </select>
+
+        <button class="btn btn-primary">Filter</button>
+        <img src="/photos/no-image.jpg" id="loader" style="display:none; width:24px;" />
+    </form>
+
+    <div id="target">
+        <partial name="_ManageList" model="Model" />
+    </div>
+</div>
+
+@section foot {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+    <script>
+        let timer = null;
+        $('#search').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 500);
+        });
+        $('#status').on('change', e => $(e.target.form).submit());
+
+        // Real-time: re-run the current search/filter/sort/page whenever an
+        // order is placed or changes, so the list stays live without polling.
+        const connection = new signalR.HubConnectionBuilder().withUrl("/orderHub").build();
+
+        function refreshList() {
+            $('#f').submit();
+        }
+
+        connection.on("OrderPlaced", (orderId) => {
+            // Fixed-position toast, deliberately OUTSIDE #target — refreshList()
+            // below replaces #target's contents, which would wipe out a toast
+            // placed inside it before the 4s timeout ever fires.
+            $('<div class="alert alert-success py-2 px-3 shadow" style="position:fixed; top:70px; right:16px; z-index:1050;">' +
+                'New order #' + orderId + ' just came in.</div>')
+                .appendTo('body')
+                .delay(4000)
+                .fadeOut(400, function () { $(this).remove(); });
+            refreshList();
+        });
+
+        connection.on("OrderUpdated", refreshList);
+
+        connection.start().catch(err => console.error(err));
+    </script>
+}

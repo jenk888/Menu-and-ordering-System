@@ -1,2 +1,3 @@
-﻿DELETE FROM dbo.Categories;
-DBCC CHECKIDENT ('dbo.Categories', RESEED, 0);
+﻿UPDATE Users
+SET Phone = REPLACE(Phone, '-', '')
+WHERE Phone LIKE '%-%';

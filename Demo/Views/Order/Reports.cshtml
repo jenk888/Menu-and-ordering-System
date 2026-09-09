@@ -1,0 +1,75 @@
+@{
+    ViewBag.Title = "Order Reports";
+}
+
+<div class="container my-4">
+    <a asp-action="Manage" class="btn btn-outline-secondary btn-sm mb-3">&larr; Back to Orders</a>
+
+    <div class="row g-4">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header">Orders by Status</div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header">Revenue — Last 7 Days (Paid Orders)</div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section head {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+}
+
+@section foot {
+    <script>
+        // Plain fetch() here rather than jQuery — Chart.js just needs the raw
+        // JSON, there's no HTML to swap into the page like the AJAX list views.
+        async function loadStatusChart() {
+            const res = await fetch('/Order/ReportsStatusData');
+            const data = await res.json();
+
+            new Chart(document.getElementById('statusChart'), {
+                type: 'pie',
+                data: {
+                    labels: data.map(d => d.status),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: ['#ffc107', '#0dcaf0', '#198754', '#6c757d'],
+                    }]
+                }
+            });
+        }
+
+        async function loadRevenueChart() {
+            const res = await fetch('/Order/ReportsRevenueData?days=7');
+            const data = await res.json();
+
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.label),
+                    datasets: [{
+                        label: 'Revenue (RM)',
+                        data: data.map(d => d.total),
+                        backgroundColor: '#0d6efd',
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        loadStatusChart();
+        loadRevenueChart();
+    </script>
+}

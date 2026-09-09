@@ -3,7 +3,10 @@ namespace Demo.Models
     public class CheckoutViewModel
     {
         public List<CartItemViewModel> Items { get; set; } = new();
-        public decimal Subtotal => Items.Sum(i => i.Price * i.Quantity);
+        // FIX: use LineTotal (which is UnitPrice * Quantity, i.e. Price + ModifiersExtraPrice)
+        // so modifier prices are included, matching CartViewModel.Subtotal and the amount
+        // actually charged in CheckoutController.PlaceOrder.
+        public decimal Subtotal => Items.Sum(i => i.LineTotal);
         public decimal SST => Math.Round(Subtotal * 0.06m, 2);
 
         // Discount from the voucher selected on the client, echoed back only to

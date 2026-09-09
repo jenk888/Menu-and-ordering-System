@@ -1,0 +1,88 @@
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Order>
+
+<p>@Model.Count() of @Model.TotalItemCount order(s) &middot; Page @Model.PageNumber of @Model.PageCount</p>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            @{
+                (string field, string label)[] cols = [("Id", "Order #"), ("CreatedAt", "Date"), ("Total", "Total")];
+            }
+            @foreach (var (field, label) in cols)
+            {
+                string d = "asc";
+                string c = "";
+
+                if (field == ViewBag.Sort)
+                {
+                    d = ViewBag.Dir == "asc" ? "des" : "asc";
+                    c = ViewBag.Dir == "asc" ? "asc" : "des";
+                }
+
+                <th>
+                    <a data-ajax="true"
+                       data-ajax-update="#target"
+                       data-ajax-loading="#loader"
+                       href="?search=@ViewBag.Search&sort=@field&dir=@d" class="@c text-decoration-none">
+                        @label
+                    </a>
+                </th>
+            }
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>#@o.Id</td>
+                <td>@o.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                <td>RM@(o.Total.ToString("0.00"))</td>
+                <td>
+                    @{
+                        string badge = o.OrderStatus switch
+                        {
+                            OrderStatus.Cancelled      => "bg-secondary",
+                            OrderStatus.PendingPayment => "bg-warning text-dark",
+                            OrderStatus.Preparing      => "bg-info text-dark",
+                            OrderStatus.Completed       => "bg-success",
+                            _ => "bg-secondary",
+                        };
+                    }
+                    <span class="badge @badge">@o.OrderStatus</span>
+                </td>
+                <td>
+                    <a asp-action="Detail" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">Detail</a>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="5" class="text-center text-muted">No orders found.</td></tr>
+        }
+    </tbody>
+</table>
+
+@{
+    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+    options.LinkToFirstPageFormat = "First";
+    options.LinkToLastPageFormat = "Last";
+    options.LinkToPreviousPageFormat = "Previous";
+    options.LinkToNextPageFormat = "Next";
+
+    var ajaxOptions = new AjaxOptions
+    {
+        HttpMethod = "get",
+        UpdateTargetId = "target",
+        LoadingElementId = "#loader",
+    };
+}
+
+@Html.PagedListPager(
+    Model,
+    p => $"?search={ViewBag.Search}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={p}",
+    PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+)

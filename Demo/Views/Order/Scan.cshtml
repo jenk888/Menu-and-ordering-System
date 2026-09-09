@@ -1,0 +1,113 @@
+@{
+    ViewBag.Title = "Scan QR";
+}
+
+<div class="container my-4">
+    <a asp-action="Manage" class="btn btn-outline-secondary btn-sm mb-3">&larr; Back to Orders</a>
+    <a asp-action="Tables" class="btn btn-outline-dark btn-sm mb-3">Print Table QR Codes</a>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div id="reader" style="width: 100%; max-width: 400px;"></div>
+        </div>
+        <div class="col-md-6">
+            <!-- Table QR result: a table number + its current live orders -->
+            <div id="tableResult" class="card" style="display:none;">
+                <div class="card-body">
+                    <h5 class="card-title">Table <span id="t-number"></span></h5>
+                    <table class="table table-sm">
+                        <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead>
+                        <tbody id="t-orders"></tbody>
+                    </table>
+                    <p id="t-empty" class="text-muted" style="display:none;">No active orders for this table yet.</p>
+                </div>
+            </div>
+
+            <!-- Order QR result: a single order, with a Mark Paid shortcut -->
+            <div id="orderResult" class="card" style="display:none;">
+                <div class="card-body">
+                    <h5 class="card-title">Order #<span id="r-id"></span></h5>
+                    <p class="mb-1">Customer: <span id="r-customer"></span></p>
+                    <p class="mb-1">Status: <span id="r-status" class="badge bg-info"></span></p>
+                    <p class="mb-3">Total: RM<span id="r-total"></span></p>
+                    <button id="r-markpaid" class="btn btn-success btn-sm">Mark Paid</button>
+                    <a id="r-detail" href="#" class="btn btn-outline-primary btn-sm">Open Full Detail</a>
+                </div>
+            </div>
+
+            <div id="notfound" class="alert alert-warning" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+@section head {
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+}
+
+@section foot {
+    <script>
+        let lastCode = null;
+        let lastScanAt = 0;
+
+        function renderTable(data) {
+            $('#orderResult, #notfound').hide();
+            $('#t-number').text(data.tableNumber);
+
+            const rows = data.orders.map(o =>
+                `<tr><td><a href="/Order/ManageDetail/${o.id}">#${o.id}</a></td>` +
+                `<td>${o.customer}</td><td>${o.status}</td><td>RM${o.total}</td></tr>`
+            ).join('');
+
+            $('#t-orders').html(rows);
+            $('#t-empty').toggle(data.orders.length === 0);
+            $('#tableResult').show();
+        }
+
+        function renderOrder(data) {
+            $('#tableResult, #notfound').hide();
+            $('#r-id').text(data.id);
+            $('#r-customer').text(data.customer);
+            $('#r-status').text(data.status);
+            $('#r-total').text(data.total);
+            $('#r-detail').attr('href', '/Order/ManageDetail/' + data.id);
+            $('#r-markpaid').toggle(data.canMarkPaid).data('id', data.id);
+            $('#orderResult').show();
+        }
+
+        function onScanSuccess(decodedText) {
+            // Debounce: the camera fires the same code many times a second
+            // while the QR stays in frame, so ignore repeats within 3s.
+            const now = Date.now();
+            if (decodedText === lastCode && now - lastScanAt < 3000) return;
+            lastCode = decodedText;
+            lastScanAt = now;
+
+            fetch('/Order/LookupByCode?code=' + encodeURIComponent(decodedText))
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.found) {
+                        $('#tableResult, #orderResult').hide();
+                        $('#notfound').text(data.message).show();
+                        return;
+                    }
+
+                    if (data.type === 'table') renderTable(data);
+                    else renderOrder(data);
+                });
+        }
+
+        const scanner = new Html5Qrcode("reader");
+        scanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            onScanSuccess
+        ).catch(err => {
+            $('#reader').html('<div class="alert alert-danger">Could not access webcam: ' + err + '</div>');
+        });
+
+        $('#r-markpaid').on('click', function () {
+            const id = $(this).data('id');
+            $.post('/Order/MarkPaid', { id: id }, () => onScanSuccess(lastCode));
+        });
+    </script>
+}

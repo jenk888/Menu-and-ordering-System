@@ -88,14 +88,30 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Manage
-        public IActionResult Manage()
+        public IActionResult Manage(string? search, int? categoryId)
         {
-            var model = db.Products
+            var query = db.Products
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(p => p.Name.Contains(search) || p.Id.Contains(search));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            var model = query
                 .OrderBy(p => p.Id)
                 .ToList();
 
+            ViewBag.Search = search;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.Categories = db.Categories.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
             return View(model);
         }
 
@@ -313,9 +329,6 @@ namespace Demo.Controllers
         }
 
         // POST: Product/BatchUpdate
-        // Same tab-separated format as BatchInsert, but every row updates an EXISTING
-        // product matched by Id — rows whose Id isn't found are skipped and reported.
-        // Photos aren't touched here; use the normal Update page for photos.
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchUpdate(IFormFile? file)
@@ -473,7 +486,7 @@ namespace Demo.Controllers
             return View(vm);
         }
 
-        
+
         // POST: Product/Delete
         [Authorize(Roles = "Admin")]
         [HttpPost]
@@ -500,7 +513,6 @@ namespace Demo.Controllers
         }
 
         // POST: Product/BatchDelete
-        // Deletes every Product whose Id is checked on the Manage page (and their photos).
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult BatchDelete(List<string>? ids)

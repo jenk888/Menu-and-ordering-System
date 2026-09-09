@@ -1,0 +1,31 @@
+﻿@model Demo.Models.ModifierGroupInsertViewModel
+@{
+    ViewBag.Title = "New Modifier Group";
+}
+
+<div class="container my-4" style="max-width: 500px;">
+    <h4 class="mb-3">New Modifier Group</h4>
+
+    <form asp-action="Insert" method="post">
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input asp-for="Name" class="form-control" placeholder="e.g. Size, Toppings, Spice Level" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Selection Type</label>
+            <select asp-for="SelectionType" class="form-select"
+                    asp-items="Html.GetEnumSelectList<Demo.Models.ModifierSelectionType>()"></select>
+            <div class="form-text">Single = customer picks one (radio buttons). Multi = customer can pick several (checkboxes).</div>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="IsRequired" class="form-check-input" />
+            <label asp-for="IsRequired" class="form-check-label">Required (customer must select before adding to cart)</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </form>
+</div>

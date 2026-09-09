@@ -1,0 +1,153 @@
+@model Order
+
+@{
+    bool showCancel = ViewBag.ShowCancel ?? false;
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+
+    string badge = Model.OrderStatus switch
+    {
+        OrderStatus.Cancelled      => "bg-secondary",
+        OrderStatus.PendingPayment => "bg-warning text-dark",
+        OrderStatus.Preparing      => "bg-info text-dark",
+        OrderStatus.Completed      => "bg-success",
+        _ => "bg-secondary",
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h5 class="mb-1">Order #@Model.Id</h5>
+        <div class="text-muted">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+    </div>
+    <span class="badge @badge fs-6">@Model.OrderStatus</span>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Customer</dt>
+    <dd class="col-sm-9">@(Model.User?.Name ?? Model.GuestName ?? "Guest")</dd>
+
+    @if (Model.TableNumber.HasValue)
+    {
+        <dt class="col-sm-3">Table</dt>
+        <dd class="col-sm-9">@Model.TableNumber</dd>
+    }
+
+    <dt class="col-sm-3">Payment Method</dt>
+    <dd class="col-sm-9">@Model.PaymentMethod</dd>
+
+    <dt class="col-sm-3">Payment Status</dt>
+    <dd class="col-sm-9">@Model.PaymentStatus</dd>
+
+    @if (Model.PaymentMethod == PaymentMethod.Cash && Model.AmountTendered.HasValue)
+    {
+        <dt class="col-sm-3">Amount Tendered</dt>
+        <dd class="col-sm-9">RM@(Model.AmountTendered.Value.ToString("0.00"))</dd>
+
+        <dt class="col-sm-3">Change Given</dt>
+        <dd class="col-sm-9">RM@(Model.ChangeGiven?.ToString("0.00"))</dd>
+    }
+
+    @if (Model.IsCancelled)
+    {
+        <dt class="col-sm-3">Cancelled At</dt>
+        <dd class="col-sm-9">@Model.CancelledAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+    }
+</dl>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Product</th>
+            <th>Unit Price</th>
+            <th>Qty</th>
+            <th>Line Total</th>
+            @if (isAdmin)
+            {
+                <th style="width:120px">Kitchen</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var oi in Model.OrderItems)
+        {
+            <tr>
+                <td>
+                    @oi.ProductNameSnapshot
+                    @if (oi.SelectedModifiers.Any())
+                    {
+                        <ul class="mb-0 text-muted small">
+                            @foreach (var mod in oi.SelectedModifiers)
+                            {
+                                <li>@mod.ModifierGroupNameSnapshot: @mod.ModifierOptionNameSnapshot
+                                    @if (mod.ExtraPriceSnapshot > 0)
+                                    {
+                                        <text> (+RM@(mod.ExtraPriceSnapshot.ToString("0.00")))</text>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </td>
+                <td>RM@(oi.UnitPriceSnapshot.ToString("0.00"))</td>
+                <td>@oi.Quantity</td>
+                <td>RM@(oi.LineTotal.ToString("0.00"))</td>
+                @if (isAdmin)
+                {
+                    <td>
+                        <form asp-action="ToggleItemStatus" asp-route-orderItemId="@oi.Id" method="post">
+                            @if (oi.Status == OrderItemStatus.Served)
+                            {
+                                <button class="btn btn-sm btn-outline-secondary" type="submit">Served &#10003;</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-outline-success" type="submit">Mark Served</button>
+                            }
+                        </form>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" class="text-end fw-bold">Subtotal</td>
+            <td colspan="@(isAdmin ? 2 : 1)">RM@(Model.Subtotal.ToString("0.00"))</td>
+        </tr>
+        @if (Model.DiscountAmount > 0)
+        {
+            <tr>
+                <td colspan="3" class="text-end fw-bold">Discount</td>
+                <td colspan="@(isAdmin ? 2 : 1)">-RM@(Model.DiscountAmount.ToString("0.00"))</td>
+            </tr>
+        }
+        <tr>
+            <td colspan="3" class="text-end fw-bold">Total</td>
+            <td colspan="@(isAdmin ? 2 : 1)" class="fw-bold">RM@(Model.Total.ToString("0.00"))</td>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="d-flex gap-2">
+    <a asp-action="Receipt" asp-route-id="@Model.Id" class="btn btn-outline-secondary" target="_blank">Download Receipt</a>
+
+    @if (showCancel && Model.CanBeCancelled)
+    {
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Cancel this order?');">
+            <button class="btn btn-danger" type="submit">Cancel Order</button>
+        </form>
+    }
+
+    @if (isAdmin && !Model.IsCancelled && Model.PaymentStatus == PaymentStatus.Unpaid)
+    {
+        <form asp-action="MarkPaid" asp-route-id="@Model.Id" method="post" class="d-flex gap-2 align-items-center">
+            @if (Model.PaymentMethod == PaymentMethod.Cash)
+            {
+                <input type="number" step="0.01" min="@Model.Total" name="amountTendered"
+                       class="form-control" style="width:140px" placeholder="Amount tendered" required />
+            }
+            <button class="btn btn-success" type="submit">Mark Paid</button>
+        </form>
+    }
+</div>

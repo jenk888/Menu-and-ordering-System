@@ -199,6 +199,9 @@ namespace Demo.Migrations
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<int?>("TableNumber")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(10,2)");
 

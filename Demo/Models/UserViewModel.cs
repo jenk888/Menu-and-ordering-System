@@ -31,7 +31,7 @@ public class RegisterVM
     public string Name { get; set; }
 
     [Required(ErrorMessage = "Phone number is required.")]
-    [RegularExpression(@"01[0-9]-[0-9]{7,8}$", ErrorMessage = "Invalid format.")]
+    [RegularExpression(@"^01(1\d{8}|[02-9]\d{7})$", ErrorMessage = "Invalid format.")]
     [DisplayName("Phone Number")]
     public string Phone { get; set;  }
 
@@ -70,7 +70,9 @@ public class AdminRegisterVm
     [Compare("Password", ErrorMessage = "Passwords do not match.")]
     public string ConfirmPassword { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Phone number is required.")]
+    [RegularExpression(@"^01(1\d{8}|[02-9]\d{7})$", ErrorMessage = "Invalid format.")]
+    [DisplayName("Phone Number")]
     public string Phone { get; set; }
 
     [Required]
@@ -113,13 +115,24 @@ public class UpdateProfileVM
     public string Name { get; set; }
 
     [Required(ErrorMessage = "Phone number is required.")]
-    [RegularExpression(@"01[0-9]-[0-9]{7,8}$", ErrorMessage = "Invalid format.")]
+    [RegularExpression(@"^01(1\d{8}|[02-9]\d{7})$", ErrorMessage = "Invalid format.")]
     [DisplayName("Phone No.")]
     public string Phone { get; set; }
 
     public string? PhotoURL { get; set; }
 
     public IFormFile? Photo { get; set; }
+    public List<ProfileVoucherVM> Vouchers { get; set; } = [];
+}
+
+public class ProfileVoucherVM
+{
+    public string Code { get; set; } = "";
+    public string RuleName { get; set; } = "";
+    public decimal DiscountAmount { get; set; }
+    public decimal MinimumSpend { get; set; }
+    public DateTime ExpiresAt { get; set; }
+    public string Status { get; set; } = "";
 }
 
 public class ResetPasswordVM

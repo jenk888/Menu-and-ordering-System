@@ -4,32 +4,26 @@
 }
 
 <div class="container my-4">
-    <!-- Search Bar -->
-    @await Html.PartialAsync("_SearchBox", new ViewDataDictionary(ViewData)
-    {
-        {"SearchEvent", "product:search"},
-        {"SearchPlaceholder", "Search products..."},
-        {"SearchBoxId", "products"}
-    })
-
-    <!-- Category Filter Bar (Default "ALL") -->
-    <div class="category-nav" id="categoryNav">
-        <button class="category-btn active" data-category-id="ALL">All</button>
-        @if (ViewBag.Categories != null)
-        {
-            foreach (var category in ViewBag.Categories)
-            {
-                <button class="category-btn" data-category-id="@category.Id">@category.Name</button>
-            }
-        }
-    </div>
-
-    <!-- AJAX Product Card Container -->
-    <div class="product-grid" id="productContainer">
-        <!-- Loaded dynamically via AJAX -->
-    </div>
     <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
           onsubmit="return confirm('Delete all selected products?');"></form>
+    
+    
+    <form method="get" asp-action="Manage" class="d-flex gap-2 mb-3" style="max-width: 550px">
+        <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Search by name or Id..." />
+        <select name="categoryId" class="form-select" style="max-width: 200px" onchange="this.form.submit()">
+            <option value="">All Categories</option>
+            @foreach (var c in (List<Category>)ViewBag.Categories)
+            {
+                <option value="@c.Id" selected="@(ViewBag.CategoryId == c.Id)">@c.Name</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+        @if (!string.IsNullOrEmpty((string)ViewBag.Search) || ViewBag.CategoryId != null)
+        {
+            <a asp-action="Manage" class="btn btn-outline-secondary">Clear</a>
+        }
+    </form>
+
     <div class="d-flex justify-content-between mb-3">
         <button type="submit" form="batchDeleteForm" class="btn btn-outline-danger">Delete Selected</button>
         <div class="d-flex gap-2">
@@ -42,7 +36,9 @@
     <table class="table table-bordered table-hover">
         <thead class="table-light">
             <tr>
-                <th></th>
+                <th style="width: 30px">
+                    <input type="checkbox" onclick="document.querySelectorAll('.rowCheck').forEach(c => c.checked = this.checked)" />
+                </th>
                 <th>Photo</th>
                 <th>Id</th>
                 <th>Name</th>
