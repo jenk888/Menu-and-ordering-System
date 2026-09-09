@@ -90,8 +90,31 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Manage
-        public IActionResult Manage(string? search, int? categoryId, int page = 1)
+        public IActionResult Manage(string? search, int? categoryId, string? sort, string? dir, int page = 1)
         {
+            // (2) Sorting --------------------------
+            var searched = db.Products
+                .Include(p => p.Category)
+                .Include(p => p.Photos)
+                .AsQueryable();
+
+            ViewBag.Sort = sort;
+            ViewBag.Dir = dir;
+
+            Func<Product, object> fn = sort switch
+            {
+                "name" => p => p.Name,
+                "price" => p => p.Price,
+                "stock" => p => p.Stock,
+                "category" => p => p.Category.Name,
+                _ => p => p.Id,
+            };
+
+            var sorted = dir == "des" ?
+                         searched.OrderByDescending(fn) :
+                         searched.OrderBy(fn);
+
+
             if (page < 1)
             {
                 return RedirectToAction("Manage", new { search, categoryId, page = 1 });
