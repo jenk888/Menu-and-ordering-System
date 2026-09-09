@@ -470,6 +470,7 @@ namespace Demo.Controllers
                 Price = p.Price,
                 Stock = p.Stock,
                 Description = p.Description,
+                CategoryId = p.CategoryId,
                 ExistingPhotos = p.Photos
                     .Select(ph => new ExistingPhotoViewModel { Id = ph.Id, PhotoUrl = ph.PhotoUrl })
                     .ToList(),
