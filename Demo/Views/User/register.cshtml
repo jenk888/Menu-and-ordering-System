@@ -4,46 +4,78 @@
     ViewBag.Title = "User | Register";
 }
 
-<form class="form" method="post" enctype="multipart/form-data" data-ajax="false">
-    <div asp-validation-summary="ModelOnly"></div>
-    
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="/photos/icon/logo.png" class="auth-logo" alt="Yellow Palace" onerror="this.style.display='none'">
+            <h2>Create Account</h2>
+            <p>Register to start ordering</p>
+        </div>
 
-    <label asp-for="Name"></label>
-    <input asp-for="Name" autofocus>
-    <span asp-validation-for="Name"></span>
-    
-    <label asp-for="Email"></label>
-    <input asp-for="Email">
-    <span asp-validation-for="Email"></span>
+        <form method="post" enctype="multipart/form-data" data-ajax="false">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
 
-    <label asp-for="Phone"></label>
-    <input asp-for="Phone">
-    <span asp-validation-for="Phone"></span>
+            <div class="mb-3">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" class="form-control" autofocus placeholder="Your full name">
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
 
-    <label asp-for="Password"></label>
-    <input asp-for="Password">
-    <span asp-validation-for="Password"></span>
+            <div class="mb-3">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" placeholder="you@gmail.com">
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
 
-    <label asp-for="Confirm"></label>
-    <input asp-for="Confirm">
-    <span asp-validation-for="Confirm"></span>
+            <div class="mb-3">
+                <label asp-for="Phone"></label>
+                <input asp-for="Phone" class="form-control" placeholder="0123456789">
+                <span asp-validation-for="Phone" class="text-danger small"></span>
+            </div>
 
-    <label asp-for="Photo"></label>
-    <label class="upload">
-        <small>Select Photo...</small>
-        <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-        <img src="/images/photo.jpg">
-    </label>
-    <span asp-validation-for="Photo"></span>
+            <div class="mb-3">
+                <label asp-for="Password"></label>
+                <div class="input-group">
+                    <input asp-for="Password" class="form-control" id="regPwd" placeholder="Your password">
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('regPwd', this)">Show</button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
 
-    <section>
-        <input type="submit" value="Register" class="btn btn-primary" />
-        <input type="reset" value="Reset" class="btn btn-secondary" />
-    </section>
-</form>
+            <div class="mb-3">
+                <label asp-for="Confirm"></label>
+                <div class="input-group">
+                    <input asp-for="Confirm" class="form-control" id="regConfirmPwd" placeholder="Confirm your password">
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('regConfirmPwd', this)">Show</button>
+                </div>
+                <span asp-validation-for="Confirm" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Photo"></label>
+                <label class="upload">
+                    <small>Select Photo...</small>
+                    <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
+                    <img src="/photos/userprofile/default-user.png">
+                </label>
+                <span asp-validation-for="Photo" class="text-danger small"></span>
+            </div>
+
+            <button class="btn btn-primary w-100">Register</button>
+        </form>
+
+        <p class="auth-footer"><a href="/User/Login">Already have an account?</a></p>
+    </div>
+</div>
 
 @section foot {
     <script>
         $.validator.setDefaults({ ignore: '' });
+
+        function togglePwd(id, btn) {
+            var el = document.getElementById(id);
+            if (el.type === "password") { el.type = "text"; btn.textContent = "Hide"; }
+            else { el.type = "password"; btn.textContent = "Show"; }
+        }
     </script>
 }

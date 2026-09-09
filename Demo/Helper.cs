@@ -93,10 +93,11 @@ public class Helper(IWebHostEnvironment en,
         }
     }
 
-    public void SignIn(string email, string role, bool rememberMe)
+    public void SignIn(string id, string email, string role, bool rememberMe)
     {
         List<Claim> claims =
         [
+            new(ClaimTypes.NameIdentifier, id),
             new(ClaimTypes.Name, email),
             new(ClaimTypes.Role, role),
         ];
