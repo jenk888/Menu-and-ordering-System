@@ -401,7 +401,7 @@ namespace Demo.Controllers
         }
 
         // GET: User/Profile
-        //[Authorize]
+        [Authorize]
         public IActionResult Profile()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -439,7 +439,7 @@ namespace Demo.Controllers
 
         // POST: User/Profile
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Profile(UpdateProfileVM vm)
         {
@@ -500,7 +500,7 @@ namespace Demo.Controllers
 
         // POST: User/ChangePassword
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult ChangePassword(UpdatePasswordVM passwordVm)
         {
