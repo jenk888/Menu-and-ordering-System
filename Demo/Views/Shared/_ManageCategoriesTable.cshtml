@@ -1,0 +1,61 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@using Microsoft.AspNetCore.Mvc.Ajax
+@model IPagedList<Category>
+
+<form id="batchDeleteForm" asp-action="BatchDelete" method="post"
+      onsubmit="return confirm('Delete all selected categories?');"></form>
+
+<p class="text-muted">@Model.TotalItemCount categor@(Model.TotalItemCount == 1 ? "y" : "ies") found &middot; page @Model.PageNumber of @Model.PageCount</p>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th style="width: 30px">
+                <input type="checkbox" onclick="document.querySelectorAll('.rowCheck').forEach(c => c.checked = this.checked)" />
+            </th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Display Order</th>
+            <th style="width: 160px;">Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td><input type="checkbox" class="rowCheck" name="ids" value="@c.Id" form="batchDeleteForm" /></td>
+                <td>@c.Id</td>
+                <td>@c.Name</td>
+                <td>@c.DisplayOrder</td>
+                <td>
+                    <a asp-action="Update" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">&#x270F;</a>
+                    <form asp-action="Delete" asp-route-id="@c.Id" method="post" style="display: inline" onsubmit="return confirm('Delete this category?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">&#x1F5D1;</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@{
+    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+    options.LinkToFirstPageFormat = "First";
+    options.LinkToLastPageFormat = "Last";
+    options.LinkToPreviousPageFormat = "Previous";
+    options.LinkToNextPageFormat = "Next";
+
+    var ajaxOptions = new AjaxOptions
+    {
+        HttpMethod = "get",
+        UpdateTargetId = "target",
+        LoadingElementId = "#loader",
+    };
+}
+
+@Html.PagedListPager(
+    Model,
+    p => Url.Action("Index", new { page = p, search = ViewBag.Search }),
+    PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions))

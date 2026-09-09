@@ -30,7 +30,7 @@
                     {
                     var photo = Model.ExistingPhotos[i];
                     <div class="text-center">
-                        <img src="/photos/products/@photo.PhotoUrl" style="width:90px; height:90px; object-fit:cover; border-radius:6px" />
+                        <img src="/photos/product/@photo.PhotoUrl" style="width:90px; height:90px; object-fit:cover; border-radius:6px" />
                         <input type="hidden" asp-for="ExistingPhotos[i].Id" />
                         <input type="hidden" asp-for="ExistingPhotos[i].PhotoUrl" />
                         <div class="form-check d-flex justify-content-center align-items-center mt-1 gap-1">

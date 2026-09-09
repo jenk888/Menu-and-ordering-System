@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static Demo.Helper;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Demo.Controllers
 {
@@ -10,12 +12,36 @@ namespace Demo.Controllers
     {
 
         // GET: Category/Index
-        public IActionResult Index()
+        public IActionResult Index(string? search, int page = 1)
         {
-            var model = db.Categories
+            if (page < 1)
+            {
+                return RedirectToAction("Index", new { search, page = 1 });
+            }
+
+            var query = db.Categories.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(c => c.Name.Contains(search));
+            }
+
+            var model = query
                 .OrderBy(c => c.DisplayOrder)
                 .ThenBy(c => c.Name)
-                .ToList();
+                .ToPagedList(page, 10);
+
+            if (page > model.PageCount && model.PageCount > 0)
+            {
+                return RedirectToAction("Index", new { search, page = model.PageCount });
+            }
+
+            ViewBag.Search = search;
+
+            if(Request.IsAjax())
+            {
+                return PartialView("_ManageCategoriesTable", model);
+            }
 
             return View(model);
         }

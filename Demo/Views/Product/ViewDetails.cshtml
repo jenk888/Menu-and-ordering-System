@@ -4,7 +4,7 @@
     ViewBag.Title = "Product Detail";
 
     var photoUrls = Model.Photos != null && Model.Photos.Any()
-        ? Model.Photos.Select(p => "/photos/products/" + p.PhotoUrl).ToList()
+        ? Model.Photos.Select(p => "/photos/product/" + p.PhotoUrl).ToList()
         : new List<string> { "/photos/no-image.jpg" };
 
     var modifierGroups = Model.ModifierGroups?.OrderBy(g => g.Id).ToList() ?? new List<ModifierGroup>();

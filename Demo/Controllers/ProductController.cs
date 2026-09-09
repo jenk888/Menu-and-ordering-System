@@ -88,8 +88,10 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Manage
-        public IActionResult Manage(string? search, int? categoryId)
+        public IActionResult Manage(string? search, int? categoryId, int page = 1)
         {
+            const int pageSize = 10;
+
             var query = db.Products
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
@@ -105,18 +107,36 @@ namespace Demo.Controllers
                 query = query.Where(p => p.CategoryId == categoryId.Value);
             }
 
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
             var model = query
                 .OrderBy(p => p.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
             ViewBag.Search = search;
             ViewBag.CategoryId = categoryId;
             ViewBag.Categories = db.Categories.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+            ViewBag.Page = page;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.TotalPages = totalPages;
+
+            // Search, filter, and pagination are done via AJAX (_ManageProductsPartial.cshtml)
+            //only the table region needs to come back, not the whole page
+            if (Request.IsAjax())
+            {
+                return PartialView("_ManageProductsPartial", model);
+            }
+
             return View(model);
         }
 
         // GET: Product/ViewDetails/{id}
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult ViewDetails(string? id)
         {
             if (string.IsNullOrEmpty(id))
@@ -170,7 +190,7 @@ namespace Demo.Controllers
                 p.Price,
                 p.Stock,
                 PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() != null
-                    ? "/photos/products/" + p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault()
+                    ? "/photos/product/" + p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault()
                     : "/photos/no-image.jpg"
             }).ToList();
 
@@ -208,7 +228,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Insert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Insert()
         {
             ViewBag.Categories = db.Categories.ToList();
@@ -223,7 +243,7 @@ namespace Demo.Controllers
         }
 
         // POST: Product/Insert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(ProductInsertViewModel vm)
         {
@@ -264,7 +284,7 @@ namespace Demo.Controllers
                 {
                     p.Photos.Add(new ProductPhoto
                     {
-                        PhotoUrl = hp.SavePhoto(file, "photos/products"),
+                        PhotoUrl = hp.SavePhoto(file, "photos/product"),
                     });
                 }
 
@@ -288,14 +308,14 @@ namespace Demo.Controllers
         }
 
         // GET: Product/BatchInsert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult BatchInsert()
         {
             return View();
         }
 
         // POST: Product/BatchInsert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchInsert(IFormFile? file)
         {
@@ -412,7 +432,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Update
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Update(string? id)
         {
             var p = db.Products
@@ -441,14 +461,14 @@ namespace Demo.Controllers
         }
 
         // GET: Product/BatchUpdate
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult BatchUpdate()
         {
             return View();
         }
 
         // POST: Product/Update
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(ProductUpdateViewModel vm)
         {
@@ -493,7 +513,7 @@ namespace Demo.Controllers
                     var toDelete = p.Photos.Where(ph => vm.DeletePhotoIds.Contains(ph.Id)).ToList();
                     foreach (var photo in toDelete)
                     {
-                        hp.DeletePhoto(photo.PhotoUrl, "photos/products");
+                        hp.DeletePhoto(photo.PhotoUrl, "photos/product");
                         db.ProductPhotos.Remove(photo);
                     }
                 }
@@ -505,7 +525,7 @@ namespace Demo.Controllers
                         db.ProductPhotos.Add(new ProductPhoto
                         {
                             ProductId = p.Id,
-                            PhotoUrl = hp.SavePhoto(file, "photos/products"),
+                            PhotoUrl = hp.SavePhoto(file, "photos/product"),
                         });
                     }
                 }
@@ -527,9 +547,25 @@ namespace Demo.Controllers
             return View(vm);
         }
 
+        // POST: Product/ToggleAvailability
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public IActionResult ToggleAvailability(string? id)
+        {
+            var p = db.Products.Find(id);
+            if (p != null)
+            {
+                p.IsAvailable = !p.IsAvailable;
+                db.SaveChanges();
+
+                TempData["Info"] = p.IsAvailable ? $"Product '{p.Name}' is now available." : $"Product '{p.Name}' is out of stock.";
+            }
+            return RedirectToAction("Manage");
+        }
+
 
         // POST: Product/Delete
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(string? id)
         {
@@ -541,7 +577,7 @@ namespace Demo.Controllers
             {
                 foreach (var photo in p.Photos)
                 {
-                    hp.DeletePhoto(photo.PhotoUrl, "photos/products");
+                    hp.DeletePhoto(photo.PhotoUrl, "photos/product");
                 }
 
                 db.Products.Remove(p);
@@ -574,7 +610,7 @@ namespace Demo.Controllers
             {
                 foreach (var photo in p.Photos)
                 {
-                    hp.DeletePhoto(photo.PhotoUrl, "photos/products");
+                    hp.DeletePhoto(photo.PhotoUrl, "photos/product");
                 }
             }
 
