@@ -1,3 +1,2 @@
-﻿UPDATE Users
-SET Phone = REPLACE(Phone, '-', '')
-WHERE Phone LIKE '%-%';
+﻿DELETE FROM dbo.ModifierOptions;
+DBCC CHECKIDENT ('dbo.ModifierOptions', RESEED, 0);
