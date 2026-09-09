@@ -184,9 +184,49 @@ namespace Demo.Controllers
 
             db.Orders.Add(order);
 
+            // Wrapped in a transaction: for online payment methods we need the real,
+            // database-generated order.Id before we can ask HitPay to create a payment
+            // session (it becomes the reference_number HitPay hands back on the webhook).
+            // If HitPay initiation fails, we roll back the order and the stock
+            // deduction above, rather than leaving an unpayable "ghost" order behind.
+            using var transaction = await db.Database.BeginTransactionAsync();
+
+            if (method == PaymentMethod.Cash)
+            {
+                if (user != null)
+                    db.CartItems.RemoveRange(db.CartItems.Where(ci => ci.UserId == user.Id));
+                else
+                    hp.SetCart(null);
+
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return RedirectToAction("Confirmation", new { id = order.Id });
+            }
+
+            // Save now so order.Id exists for the reference_number below.
+            await db.SaveChangesAsync();
+
+            if (user == null)
+            {
+                cache.Set($"guest-email-order-{order.Id}", guestEmail!, TimeSpan.FromHours(2));
+            }
+
+            var email = user?.Email ?? guestEmail!;
+            var name = user?.Name ?? guestName!;
+
+            var (success, hitPayRedirectUrl, error) = await InitiateHitPayPaymentAsync(order, email, name);
+
+            if (!success)
+            {
+                await transaction.RollbackAsync();
+                TempData["CheckoutError"] = $"Payment initiation failed: {error}";
+                return RedirectToAction("Index");
+            }
+
             if (user != null)
             {
                 db.CartItems.RemoveRange(db.CartItems.Where(ci => ci.UserId == user.Id));
+            }
             else
                 hp.SetCart(null);
 
