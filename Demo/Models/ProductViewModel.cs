@@ -20,10 +20,9 @@ public class ProductInsertViewModel
     public int Stock { get; set; }
 
     [MaxLength(500)]
-    public string Description { get; set; } = null!;
+    public string? Description { get; set; }
 
-    [Required(ErrorMessage = "Please select a photo.")]
-
+    // Optonal, a product with no photos falls back to a default image
     public List<IFormFile> Photos { get; set; } = [];
 
     // ModifierGroup.Id values the admin ticked to attach with this product
@@ -43,7 +42,7 @@ public class ProductUpdateViewModel
     public int Stock { get; set; }
 
     [MaxLength(500)]
-    public string Description { get; set; } = null!;
+    public string? Description { get; set; } 
 
     // Photo already saved against this product, rendered with checkbox
     // tick ones to remove on save

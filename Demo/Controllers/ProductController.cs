@@ -272,12 +272,8 @@ namespace Demo.Controllers
                 ModelState.AddModelError("CategoryId", "Invalid category.");
             }
 
-            // [Required] doesn't fire on an empty (non-null) list, so check explicitly.
-            if (vm.Photos.Count == 0)
-            {
-                ModelState.AddModelError("Photos", "Please select at least one photo.");
-            }
-            else if (ModelState.IsValid("Photos"))
+            // Photos are optional, a product with none falls back to the default "no-image"
+            if (ModelState.IsValid("Photos"))
             {
                 foreach (var file in vm.Photos)
                 {
@@ -515,14 +511,7 @@ namespace Demo.Controllers
                 }
             }
 
-            // A product must keep at least one photo after removals + additions.
-            int remainingCount = p.Photos.Count(ph => !vm.DeletePhotoIds.Contains(ph.Id))
-                                  + (vm.NewPhotos?.Count ?? 0);
-            if (remainingCount == 0)
-            {
-                ModelState.AddModelError("DeletePhotoIds", "A product must have at least one photo.");
-            }
-
+            // Photo are optional, if every photo is removed and no new photo is added, the product will fall back to the default "no-image" photo.
             if (ModelState.IsValid)
             {
                 p.Name = vm.Name;
