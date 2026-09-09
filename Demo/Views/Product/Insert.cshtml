@@ -9,7 +9,7 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <div class="mb-3">
-            <label asp-for="CategoryId" class="form-label"></label>
+            <label asp-for="CategoryId" class="form-label">Category</label>
             <select asp-for="CategoryId" class="form-select">
                 <option value="">-- Select Category --</option>
                 @foreach (var c in (List<Category>)ViewBag.Categories)
