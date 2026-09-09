@@ -2,10 +2,31 @@
 @using X.PagedList.Mvc.Core
 @model IPagedList<Product>
 
+@{
+    // display label and sort key for each column
+    (string Label, string Key)[] fields =
+    [
+        ("Id", "id"),
+        ("Name", "name"),
+        ("Category", "category"),
+        ("Price", "price"),
+        ("Stock", "stock"),
+        ("Status", "status"),
+    ];
+}
+
+<!-- Hidden fields to preserve sort and direction in the form -->
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+
+
 <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
       onsubmit="return confirm('Delete all selected products?');"></form>
 
-<p class="text-muted">@Model.TotalItemCount product(s) found &middot; page @Model.PageNumber of @Model.PageCount</p>
+<p class="text-muted">
+    @Model.Count() of @Model.TotalItemCount product(s) |
+    Page @Model.PageNumber of @Model.PageCount
+</p>
 
 <table class="table table-bordered table-hover">
     <thead class="table-light">
@@ -14,12 +35,24 @@
                 <input type="checkbox" onclick="document.querySelectorAll('.rowCheck').forEach(c => c.checked = this.checked)" />
             </th>
             <th>Photo</th>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Status</th>
+            @foreach (var f in fields)
+            {
+                string d = "asc";
+                string c = "";
+
+                if (f.Key == ViewBag.Sort)
+                {
+                    d = ViewBag.Dir == "desc" ? "asc" : "desc";
+                    c = ViewBag.Dir;
+                }
+
+                <th>
+                    <a data-ajax="true"
+                       data-ajax-update="#target"
+                       data-ajax-loading="#loader"
+                       href="?search=@ViewBag.Search&categoryId=@ViewBag.CategoryId&sort=@f.Key&dir=@d" class="@c">@f.Label</a>
+                </th>
+            }
             <th style="width: 160px">Actions</th>
         </tr>
     </thead>
@@ -85,13 +118,13 @@
     var ajaxOptions = new AjaxOptions
     {
         HttpMethod = "get",
-        UpdateTargetId = "manageTableTarget",
+        UpdateTargetId = "target",
         LoadingElementId = "#loader",
     };
 }
 
 @Html.PagedListPager(
     Model,
-    p => Url.Action("Manage", new { page = p, search = ViewBag.Search, categoryId = ViewBag.CategoryId }),
+    p => Url.Action("Manage", new { page = p, search = ViewBag.Search, categoryId = ViewBag.CategoryId, sort = ViewBag.Sort, dir = ViewBag.Dir }),
     PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions))
 

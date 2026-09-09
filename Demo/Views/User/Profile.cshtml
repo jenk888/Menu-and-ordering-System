@@ -21,19 +21,19 @@
             <div class="row align-items-center">
 
                 <!-- Left side: Profile picture preview and upload button -->
+                <!-- Left side: Profile picture preview and upload button -->
                 <div class="col-md-4 text-center border-end">
                     <div class="mb-3">
                         <img id="avatarPreview" src="/photos/userprofile/@(Model.PhotoURL ?? "default.jpg")" class="rounded-circle shadow" style="width: 130px; height: 130px; object-fit: cover;" alt="Avatar" />
                     </div>
-                    <div class="mb-2">
-                        <!-- Label 'for' attribute must match the input 'id' -->
-                        <label for="photoInput" class="btn btn-outline-secondary btn-sm mb-0" style="cursor: pointer;">
-                            Change Avatar
-                        </label>
-                        <!-- Single file input with correct id for both binding and script -->
-                        <input asp-for="Photo" id="photoInput" class="d-none" accept="image/*" />
-                        <span asp-validation-for="Photo" class="text-danger d-block small"></span>
+                    <div class="d-flex justify-content-center gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="choosePhotoBtn">Change Avatar</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="takePhotoBtn">Take Photo</button>
                     </div>
+                    <!-- Label 'for' attribute must match the input 'id' -->
+                    <input asp-for="Photo" id="photoInput" type="file" accept="image/*" style="display:none" />
+                    <div id="photoPreviewList" class="d-flex justify-content-center flex-wrap gap-2 mb-2"></div>
+                    <span asp-validation-for="Photo" class="text-danger d-block small"></span>
                 </div>
 
                 <!-- Right side: User details -->
@@ -146,30 +146,38 @@
     </div>
 </div>
 
-@section Scripts {
+@await Html.PartialAsync("_PhotoEditorModal")
+@await Html.PartialAsync("_WebcamCaptureModal")
+
+@section head {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <style>
+        /* Keep the new-photo thumbnail circular, matching the avatar above it */
+        #photoPreviewList img {
+            border-radius: 50% !important;
+        }
+    </style>
+}
+
+@section foot {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="/js/photoEditor.js"></script>
     <script>
-        // 1. Real-time avatar preview script upon file selection
-        document.getElementById('photoInput').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('avatarPreview').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
+        initPhotoEditor({
+            fileInputId: "photoInput",
+            chooseButtonId: "choosePhotoBtn",
+            previewListId: "photoPreviewList",
+            webcamButtonId: "takePhotoBtn",
         });
     </script>
 
-    @* 2. Automatically re-open the Change Password modal if validation failed on server-side *@
     @if (ViewBag.ShowPasswordModal != null && (bool)ViewBag.ShowPasswordModal)
     {
         <script>
-            window.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('DOMContentLoaded', function() {
                 var passwordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
                 passwordModal.show();
             });
         </script>
     }
-
 }

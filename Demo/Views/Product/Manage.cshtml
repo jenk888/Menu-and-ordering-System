@@ -6,11 +6,20 @@
 
 <div class="container my-4">
     <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
-          onsubmit="return confirm('Delete all selected products?');"></form>
+          onsubmit="return confirm('Delete all selected products?');">
+    </form>
+    <div class="d-flex justify-content-between mb-3">
+        <button type="submit" form="batchDeleteForm" class="btn btn-outline-danger">Delete Selected</button>
+        <div class="d-flex gap-2">
+            <a asp-action="BatchUpdate" class="btn btn-outline-primary">Batch Update</a>
+            <a asp-action="BatchInsert" class="btn btn-outline-primary">Batch Insert</a>
+            <a asp-action="Insert" class="btn btn-primary">Add Product</a>
+        </div>
+    </div>
 
     @* Ajax form *@
-    <form id="f" method="get" asp-action="Manage"
-          data-ajax="true" data-ajax-update="#manageTableTarget" data-ajax-loading="#loader"
+    <form data-ajax="true" id="f" method="get" asp-action="Manage"
+          data-ajax-update="#target" data-ajax-loading="#loader"
           class="d-flex align-items-center gap-2 mb-3" style="max-width: 700px">
         <input type="text" name="search" value="@ViewBag.Search" class="form-control"
                placeholder="Search by name or Id..." data-trim="" />
@@ -31,16 +40,8 @@
         <img src="/images/loader.gif" id="loader" style="display:none; width:24px; height:24px;" />
     </form>
 
-    <div class="d-flex justify-content-between mb-3">
-        <button type="submit" form="batchDeleteForm" class="btn btn-outline-danger">Delete Selected</button>
-        <div class="d-flex gap-2">
-            <a asp-action="BatchUpdate" class="btn btn-outline-primary">Batch Update</a>
-            <a asp-action="BatchInsert" class="btn btn-outline-primary">Batch Insert</a>
-            <a asp-action="Insert" class="btn btn-primary">Add Product</a>
-        </div>
-    </div>
-
-    <div id="manageTableTarget">
+    <div id="target">
         <partial name="_ManageProductsTable" model="Model" />
     </div>
+
 </div>

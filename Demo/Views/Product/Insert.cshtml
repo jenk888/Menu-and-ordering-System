@@ -33,6 +33,18 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="Stock" class="form-label">Stock </label>
+            <input asp-for="Stock" type="number" min="0" max="999" class="form-control" />
+            <span asp-validation-for="Stock" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Photos" class="form-label">Photos</label>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-secondary btn-sm" id="choosePhotosBtn">Choose Photos</button>
