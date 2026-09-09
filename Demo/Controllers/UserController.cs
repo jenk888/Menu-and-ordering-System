@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System.Net.Mail;
+using System.Security.Claims;
 namespace Demo.Controllers
 
 {
@@ -32,7 +33,7 @@ namespace Demo.Controllers
         // POST: User/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginVM vm, string? returnUrl)
+        public async Task<IActionResult> Login(LoginVM vm, string? returnUrl)
         {
             if (!hp.VerifyCaptcha(vm.CaptchaAnswer))
             {
@@ -89,7 +90,7 @@ namespace Demo.Controllers
                 user.LockoutUntil = null;
                 db.SaveChanges();
 
-                hp.SignIn(user.Email, user.Role, vm.RememberMe);
+                await hp.SignInAsync(user.Email, user.Role, vm.RememberMe);
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
@@ -107,9 +108,9 @@ namespace Demo.Controllers
         // GET/POST: User/Logout
         [HttpGet]
         [HttpPost]
-        public IActionResult Logout(string? returnURL)
+        public async Task<IActionResult> Logout(string? returnURL)
         {
-            hp.SignOut();
+            await hp.SignOutAsync();
             TempData["Info"] = "Logout successfully.";
             return RedirectToAction("Index", "Product");
         }
@@ -396,8 +397,8 @@ namespace Demo.Controllers
         //[Authorize]
         public IActionResult Profile()
         {
-            string email = "membertest2@gmail.com";      // User.Identity!.Name!
-            var user = db.Users.FirstOrDefault(u => u.Email == email);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = db.Users.FirstOrDefault(u => u.Id == userId);
             if (user == null) return NotFound();
 
             var userVouchers = db.Vouchers
@@ -435,8 +436,8 @@ namespace Demo.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Profile(UpdateProfileVM vm)
         {
-            string email = User.Identity!.Name!;      // "membertest2@gmail.com"
-            var user = db.Users.FirstOrDefault(u => u.Email == email);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = db.Users.FirstOrDefault(u => u.Id == userId);
             if (user == null) return NotFound();
 
             // check if Email is used by others
@@ -496,8 +497,8 @@ namespace Demo.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult ChangePassword(UpdatePasswordVM passwordVm)
         {
-            string email = "membertest2@gmail.com";      // User.Identity!.Name!
-            var user = db.Users.FirstOrDefault(u => u.Email == email);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = db.Users.FirstOrDefault(u => u.Id == userId);
             if (user == null) return NotFound();
 
             // 1. Check if current password is correct

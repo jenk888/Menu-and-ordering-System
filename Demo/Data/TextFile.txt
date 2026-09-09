@@ -1,0 +1,4 @@
+﻿1	Weekend Special Deal	30.00	10.00	7	9/8/2026 8:04:11 AM	True
+2	New Member Welcome Voucher	15.00	5.00	30	9/8/2026 8:05:12 AM	True
+3	Party Combo Off	50.00	15.00	12	9/8/2026 8:05:35 AM	True
+4	Old Spring Promo	20.00	5.00	60	9/8/2026 8:05:52 AM	False

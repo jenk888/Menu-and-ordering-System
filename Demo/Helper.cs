@@ -93,10 +93,11 @@ public class Helper(IWebHostEnvironment en,
         }
     }
 
-    public void SignIn(string email, string role, bool rememberMe)
+    public async Task SignInAsync(string email, string role, bool rememberMe)
     {
         List<Claim> claims =
         [
+            new(ClaimTypes.NameIdentifier, id),
             new(ClaimTypes.Name, email),
             new(ClaimTypes.Role, role),
         ];
@@ -110,13 +111,13 @@ public class Helper(IWebHostEnvironment en,
             IsPersistent = rememberMe,
         };
 
-        ct.HttpContext!.SignInAsync("Cookies", principal, properties);
+        await ct.HttpContext!.SignInAsync("Cookies", principal, properties);
     }
 
 
-    public void SignOut()
+    public async Task SignOutAsync()
     {
-        ct.HttpContext!.SignOutAsync();
+        await ct.HttpContext!.SignOutAsync();
     }
 
     public string RandomPassword()
@@ -267,7 +268,7 @@ public class Helper(IWebHostEnvironment en,
         public static async Task<BatchImportResult> ProcessAsync(IFormFile file, int expectedColumns, Func<string[], int, string?> processRow)
         {
             var result = new BatchImportResult();
-           
+
             using var reader = new StreamReader(file.OpenReadStream());
             string? line;
             int lineNo = 0;
@@ -284,7 +285,7 @@ public class Helper(IWebHostEnvironment en,
                     result.Skipped++;
                     continue;
                 }
-               
+
                 var error = processRow(cols, lineNo);
                 if (error != null)
                 {

@@ -18,6 +18,11 @@
         <div class="info" id="infoToast">@Html.Raw(TempData["Info"])</div>
     }
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="error" id="errorToast">@Html.Raw(TempData["Error"])</div>
+    }
+
     <header>
         <button id="navToggle" type="button" aria-label="Toggle menu" style="background:none;border:none;font-size:24px;cursor:pointer;color:inherit;">&#9776;</button>
         <h1><a href="/">Menu and Ordering System</a></h1>
@@ -28,8 +33,13 @@
     <nav id="sideNav">
         <a href="/">Menu</a>
         <a href="/Cart/Index">Cart</a>
-        <a href="/Order/History">My Orders</a>
-        
+
+        @* Member-only links *@
+        @if (User.IsInRole("Admin"))
+        {
+            <a href="/Order/History">My Orders</a>
+        }
+
         @* Admin-only links *@
         @if (User.IsInRole("Admin"))
         {
@@ -46,13 +56,13 @@
         @if (User.Identity?.IsAuthenticated ?? false)
         {
             <div class="d-flex align-items-center gap-2">
-                <a href="/User/Profile/${User.Identity.Id}">
+                <a href="@(User.IsInRole("Admin") ? Url.Action("Profile", "Admin") : Url.Action("Profile", "User"))" class="text-decoration-none text-dark d-flex align-items-center gap-2">
                     <img src="@(User.FindFirst("Photo")?.Value ?? "/photos/user/default-user.png")"
                          alt="Profile"
                          class="rounded-circle"
                          style="width: 32px; height: 32px; object-fit: cover;" />
 
-                    <div class="d-flex flex-column text-end" style="font-size: 0.85rem; line-height: 1.2;">
+                    <div class="d-flex flex-column text-start" style="font-size: 0.85rem; line-height: 1.2;">
                         <span class="fw-bold">@User.Identity.Name</span>
                         <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</small>
                     </div>
@@ -98,6 +108,15 @@
             setTimeout(() => infoToast.remove(), 400);
             }, 3000);
         }
+
+        const errorToast = document.getElementById("errorToast");
+            if (errorToast) {
+            setTimeout(() => {
+            errorToast.style.opacity = "0";
+            setTimeout(() => errorToast.remove(), 400);
+            }, 3000);
+        }
+
         syncHeaderHeight();
         window.addEventListener("resize", syncHeaderHeight);
 

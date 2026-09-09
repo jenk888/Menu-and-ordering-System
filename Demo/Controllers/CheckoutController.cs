@@ -36,11 +36,15 @@ namespace Demo.Controllers
                 return RedirectToAction("Index", "Cart");
             }
 
+            var isAdmin = user != null && user.Role == "Admin";
+
             var vm = new CheckoutViewModel
             {
                 Items = items,
                 IsGuest = user == null,
-                AvailableVouchers = user != null ? GetAvailableVouchers(user) : []
+                IsAdmin = isAdmin,
+                // Admins can't redeem vouchers, so there's no point loading them.
+                AvailableVouchers = user != null && !isAdmin ? GetAvailableVouchers(user) : []
             };
 
             return View(vm);
@@ -78,6 +82,12 @@ namespace Demo.Controllers
                     return RedirectToAction("Index");
                 }
 
+                voucherId = null;
+            }
+            else if (user.Role == "Admin")
+            {
+                // Admins aren't allowed to redeem vouchers - ignore any voucherId
+                // submitted from the client instead of trusting it.
                 voucherId = null;
             }
 

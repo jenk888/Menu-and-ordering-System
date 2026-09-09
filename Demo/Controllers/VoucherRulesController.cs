@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Demo.Controllers
 {
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class VoucherRulesController(DB db) : Controller
     {
         // GET: VoucherRules/Index

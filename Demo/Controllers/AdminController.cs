@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 
 namespace Demo.Controllers
 {
-    //[Authorize(Roles = "Admin")]
-    public class AdminController(DB db, Helper hp) : Controller
+    [Authorize(Roles = "Admin")]
+    public class AdminController(DB db,
+                                 IWebHostEnvironment en,
+                                 Helper hp) : Controller
     {
         // GET: Admin/Index (Member Listing + Basic Searching + Sorting + Paging)
         public IActionResult Index(string search, string sortOrder, int page = 1)
@@ -124,7 +127,7 @@ namespace Demo.Controllers
             {
                 ModelState.AddModelError("Email", "Duplicated Email.");
             }
-            
+
             // Validate photo using Helper
             if (ModelState.IsValid("Photo"))
             {
@@ -136,7 +139,7 @@ namespace Demo.Controllers
             if (vm.Password != vm.ConfirmPassword)
             {
                 ModelState.AddModelError("ConfirmPassword", "Passwords do not match.");
-            }    
+            }
 
             if (ModelState.IsValid)
             {
@@ -144,7 +147,7 @@ namespace Demo.Controllers
 
                 // Generate admin id (2xA00001)
                 string yearPrefix = DateTime.Now.ToString("yy") + "A";
-    
+
                 var lastAdmin = db.Users
                     .Where(u => u.Role == "Admin" && u.Id.StartsWith(yearPrefix))
                     .OrderByDescending(u => u.Id)
@@ -171,7 +174,7 @@ namespace Demo.Controllers
                     Email = vm.Email,
                     Password = hp.HashPassword(vm.Password),
                     Phone = vm.Phone,
-                    ProfilePhoto = hp.SavePhoto(vm.Photo, "photos/profile"),
+                    ProfilePhoto = hp.SavePhoto(vm.Photo, "photos/adminprofile"),
                     Role = "Admin",
                     IsActive = true,
                     FailedLoginCount = 0
@@ -259,7 +262,7 @@ namespace Demo.Controllers
         public IActionResult DeleteAdmin(string id)
         {
             // get current admin id(login), to avoid deleting themselves
-            var currentAdminId = HttpContext.Session.GetString("AdminId");
+            var currentAdminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (id == currentAdminId)
             {
                 TempData["Error"] = "You cannot delete your own active account!";
@@ -279,6 +282,140 @@ namespace Demo.Controllers
             }
 
             return RedirectToAction("AdminList");
+        }
+
+        // GET: Admin/Profile
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var admin = db.Users.FirstOrDefault(u => u.Id == adminId);
+            if (admin == null) return NotFound();
+
+            var vm = new UpdateProfileVM
+            {
+                Id = admin.Id,
+                Name = admin.Name,
+                Email = admin.Email,
+                Phone = admin.Phone,
+                PhotoURL = admin.ProfilePhoto
+            };
+
+            ViewBag.Id = admin.Id;
+            ViewBag.Phone = admin.Phone;
+
+            return View(vm);
+        }
+
+        // POST: Admin/Profile
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Profile(UpdateProfileVM vm)
+        {
+            var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var admin = db.Users.FirstOrDefault(u => u.Id == adminId);
+            if (admin == null) return NotFound();
+
+            // check if email duplicated
+            var currentUser = db.Users.FirstOrDefault(u => u.Id == vm.Id);
+            if (currentUser != null && currentUser.Email != vm.Email)
+            {
+                if (db.Users.Any(u => u.Email == vm.Email))
+                {
+                    ModelState.AddModelError("Email", "Duplicated Email.");
+                }
+            }
+
+            if (vm.Photo != null)
+            {
+                var err = hp.ValidatePhoto(vm.Photo);
+                if (err != "") ModelState.AddModelError("Photo", err);
+            }
+
+            if (ModelState.IsValid)
+            {
+                vm.Phone = vm.Phone?.Replace("-", "").Trim() ?? "";
+
+                admin.Name = vm.Name;
+                admin.Email = vm.Email;
+                admin.Phone = vm.Phone;
+
+                if (vm.Photo != null)
+                {
+                    if (!string.IsNullOrEmpty(admin.ProfilePhoto))
+                    {
+                        var oldImagePath = Path.Combine(en.WebRootPath, "photos/adminprofile", admin.ProfilePhoto);
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    admin.ProfilePhoto = hp.SavePhoto(vm.Photo, "photos/adminprofile");
+                }
+
+                db.SaveChanges();
+                TempData["Info"] = "Admin profile updated successfully.";
+                return RedirectToAction("Profile", "Admin");
+            }
+
+            vm.PhotoURL = admin.ProfilePhoto;
+            return View(vm);
+        }
+
+        // POST: Admin/ChangePassword
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangePassword(UpdatePasswordVM passwordVm)
+        {
+            var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var admin = db.Users.FirstOrDefault(u => u.Id == adminId);
+            if (admin == null) return NotFound();
+
+            bool isPasswordValid = false;
+            try
+            {
+                isPasswordValid = hp.VerifyPassword(passwordVm.Current, admin.Password);
+            }
+            catch
+            {
+                isPasswordValid = (passwordVm.Current == admin.Password);
+            }
+
+            if (!isPasswordValid)
+            {
+                ModelState.AddModelError("Current", "Incorrect current password.");
+            }
+
+            if (passwordVm.New != passwordVm.Confirm)
+            {
+                ModelState.AddModelError("Confirm", "The new password and confirm password do not match.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                admin.Password = hp.HashPassword(passwordVm.New);
+                db.SaveChanges();
+                TempData["Info"] = "Password updated successfully.";
+                return RedirectToAction("Profile", "Admin");
+            }
+
+            var profileVm = new UpdateProfileVM
+            {
+                Id = admin.Id,
+                Name = admin.Name,
+                Email = admin.Email,
+                Phone = admin.Phone,
+                PhotoURL = admin.ProfilePhoto
+            };
+
+            ViewBag.ShowPasswordModal = true;
+            TempData["Error"] = "Failed to update password. Please check your inputs.";
+
+            return View("Profile", profileVm);
         }
     }
 }

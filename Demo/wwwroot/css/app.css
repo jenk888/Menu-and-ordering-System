@@ -228,6 +228,25 @@ main {
         animation: fade 5s;
     }
 
+.error {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #dc3545;
+    color: #fff;
+    padding: 0.65rem 1.25rem;
+    border-radius: 999px;
+    font-weight: 600;
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: opacity 0.4s ease;
+}
+
+    .error:not(:empty) {
+        animation: fade 5s;
+    }
+
 @keyframes fade {
     0% {
         top: -100px;
