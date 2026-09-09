@@ -14,15 +14,17 @@
         <div class="alert alert-info">@Html.Raw(TempData["Info"])</div>
     }
 
-    <table class="table table-bordered align-middle">
-        <thead>
+    <p class="text-muted">@Model.Count modifier group(s)</p>
+
+    <table class="table table-bordered table-hover table-sm align-middle">
+        <thead class="table-light">
             <tr>
                 <th>Name</th>
                 <th>Selection Type</th>
                 <th>Required</th>
                 <th># Options</th>
                 <th># Products Using It</th>
-                <th></th>
+                <th style="width: 100px">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -31,14 +33,23 @@
                 <tr>
                     <td>@g.Name</td>
                     <td>@(g.SelectionType == Demo.Models.ModifierSelectionType.Single ? "Single (radio)" : "Multi (checkbox)")</td>
-                    <td>@(g.IsRequired ? "Required" : "Optional")</td>
+                    <td>
+                        @if (g.IsRequired)
+                        {
+                            <span class="badge bg-success">Required</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Optional</span>
+                        }
+                    </td>
                     <td>@g.Options.Count</td>
                     <td>@g.Products.Count</td>
                     <td>
-                        <a asp-action="Update" asp-route-id="@g.Id" class="btn btn-sm btn-outline-primary">Manage</a>
-                        <form asp-action="Delete" asp-route-id="@g.Id" method="post" class="d-inline"
+                        <a asp-action="Update" asp-route-id="@g.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-fill"></i></a>
+                        <form asp-action="Delete" asp-route-id="@g.Id" method="post" style="display: inline"
                               onsubmit="return confirm('Delete modifier group \'@g.Name\'? This also removes all its options and unlinks it from any products. This cannot be undone.');">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>
                         </form>
                     </td>
                 </tr>

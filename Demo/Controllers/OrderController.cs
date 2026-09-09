@@ -162,6 +162,9 @@ namespace Demo.Controllers
         // ====================================================================
 
         // GET: Order/Manage
+        // Admin-only: this lists EVERY order in the system (all customers'
+        // names/phone numbers/guest info) with no per-user filtering, so
+        // widening this beyond Admin would leak other people's order data.
         [Authorize(Roles = "Admin")]
         public IActionResult Manage(string? search, string? status, string? sort, string? dir, int page = 1)
         {
@@ -368,6 +371,121 @@ namespace Demo.Controllers
         {
             ViewBag.Count = count;
             return View();
+        }
+
+        // GET: Order/TableQrCode/{id} — a PNG image encoding the FULL
+        // absolute URL to /Table/{id}. It has to be a real URL (not a
+        // short custom code) so a phone's stock camera app opens it directly.
+        // NOTE: parameter is named "id" (not "number") to match the default
+        // conventional route "{controller}/{action}/{id?}" in Program.cs —
+        // otherwise model binding can't fill it and this always 404s.
+        [Authorize(Roles = "Admin")]
+        public IActionResult TableQrCode(int id)
+        {
+            if (id < 1) return NotFound();
+
+            string url = Url.Action("Index", "Table", new { number = id }, Request.Scheme)!;
+
+            using var generator = new QRCodeGenerator();
+            using var data = generator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
+            var png = new PngByteQRCode(data).GetGraphic(8);
+
+            return File(png, "image/png");
+        }
+
+        // ====================================================================
+        // QR CODE: order pickup slip (member) + webcam scanning (admin)
+        // ====================================================================
+
+        // The QR payload is intentionally just "ORD:{id}" — plain and short so
+        // it scans reliably even on a cheap laptop webcam. This is a DIFFERENT
+        // kind of code from the table QR above.
+        private static string QrPayload(int orderId) => $"ORD:{orderId}";
+
+        // GET: Order/QrCode/{id} — a PNG image, e.g. <img src="/Order/QrCode/5">
+        [Authorize]
+        public IActionResult QrCode(int id)
+        {
+            var user = CurrentUser;
+            bool isAdmin = User.IsInRole("Admin");
+
+            var order = db.Orders.FirstOrDefault(o => o.Id == id &&
+                (isAdmin || (user != null && o.UserId == user.Id)));
+
+            if (order == null) return NotFound();
+
+            using var generator = new QRCodeGenerator();
+            using var data = generator.CreateQrCode(QrPayload(order.Id), QRCodeGenerator.ECCLevel.Q);
+            var png = new PngByteQRCode(data).GetGraphic(8);
+
+            return File(png, "image/png");
+        }
+
+        // GET: Order/Scan — admin page with a live webcam QR reader.
+        // Handles BOTH kinds of code: a table QR (to locate/check a table) or
+        // an order QR (to verify pickup) — see LookupByCode below.
+        [Authorize(Roles = "Admin")]
+        public IActionResult Scan()
+        {
+            return View();
+        }
+
+        // GET: Order/LookupByCode?code=... — called by the scan page after the
+        // webcam decodes a QR code.
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult LookupByCode(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                return Json(new { found = false, message = "Not a recognised code." });
+            }
+
+            // --- Table QR: a URL ending in /Table/{number} ---------------
+            var tableMatch = System.Text.RegularExpressions.Regex.Match(code, @"/Table/(\d+)\b");
+            if (tableMatch.Success)
+            {
+                int tableNumber = int.Parse(tableMatch.Groups[1].Value);
+
+                var tableOrders = db.Orders
+                    .Include(o => o.User)
+                    .Where(o => o.TableNumber == tableNumber && !o.IsCancelled)
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Take(10)
+                    .Select(o => new
+                    {
+                        id = o.Id,
+                        customer = o.User != null ? o.User.Name : (o.GuestName ?? "Guest"),
+                        status = o.OrderStatus.ToString(),
+                        total = o.Total.ToString("0.00"),
+                    })
+                    .ToList();
+
+                return Json(new { found = true, type = "table", tableNumber, orders = tableOrders });
+            }
+
+            // --- Order pickup QR: "ORD:{id}" ------------------------------
+            var prefix = "ORD:";
+            if (code.StartsWith(prefix) && int.TryParse(code[prefix.Length..], out int id))
+            {
+                var order = db.Orders.Include(o => o.User).FirstOrDefault(o => o.Id == id);
+
+                if (order == null) return Json(new { found = false, message = $"Order #{id} does not exist." });
+
+                return Json(new
+                {
+                    found = true,
+                    type = "order",
+                    id = order.Id,
+                    customer = order.User?.Name ?? order.GuestName ?? "Guest",
+                    status = order.OrderStatus.ToString(),
+                    paymentStatus = order.PaymentStatus.ToString(),
+                    total = order.Total.ToString("0.00"),
+                    canMarkPaid = !order.IsCancelled && order.PaymentStatus == PaymentStatus.Unpaid,
+                });
+            }
+
+            return Json(new { found = false, message = "Not a recognised code." });
         }
     }
 }
