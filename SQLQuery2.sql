@@ -1,1 +1,1 @@
-﻿
+﻿TRUNCATE TABLE dbo.ProductPhotos;
