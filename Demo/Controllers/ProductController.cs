@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static Demo.Helper;
 using Demo.Models;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Demo.Controllers
 {
@@ -90,7 +92,10 @@ namespace Demo.Controllers
         // GET: Product/Manage
         public IActionResult Manage(string? search, int? categoryId, int page = 1)
         {
-            const int pageSize = 10;
+            if (page < 1)
+            {
+                return RedirectToAction("Manage", new { search, categoryId, page = 1 });
+            }
 
             var query = db.Products
                 .Include(p => p.Category)
@@ -107,29 +112,25 @@ namespace Demo.Controllers
                 query = query.Where(p => p.CategoryId == categoryId.Value);
             }
 
-            int totalItems = query.Count();
-            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-            if (page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
-
             var model = query
                 .OrderBy(p => p.Id)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+                .ToPagedList(page, 10);
+
+            // Requested page is past the last page
+
+            if(page > model.PageCount && model.PageCount > 0)
+            {
+                return RedirectToAction("Manage", new { search, categoryId, page = model.PageCount });
+            }
 
             ViewBag.Search = search;
             ViewBag.CategoryId = categoryId;
             ViewBag.Categories = db.Categories.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
-            ViewBag.Page = page;
-            ViewBag.TotalItems = totalItems;
-            ViewBag.TotalPages = totalPages;
 
-            // Search, filter, and pagination are done via AJAX (_ManageProductsPartial.cshtml)
-            //only the table region needs to come back, not the whole page
+            // Ajax request (search, filter, or pagination) returns the table & pager fragment
             if (Request.IsAjax())
             {
-                return PartialView("_ManageProductsPartial", model);
+                return PartialView("_ManageProductsTable", model);
             }
 
             return View(model);

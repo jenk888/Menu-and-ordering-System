@@ -1,13 +1,21 @@
-﻿@model List<Product>
+﻿@using X.PagedList
+@model IPagedList<Product>
 @{
     ViewBag.Title = "Manage Products";
 }
 
 <div class="container my-4">
-    <form method="get" asp-action="Manage" class="d-flex gap-2 mb-3" style="max-width: 550px"
-          data-ajax="true" data-ajax-mode="replace" data-ajax-update="#manageTableTarget">
-        <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Search by name or Id..." />
-        <select name="categoryId" class="form-select" style="max-width: 200px" onchange="this.form.submit()">
+    <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
+          onsubmit="return confirm('Delete all selected products?');"></form>
+
+    @* Ajax form *@
+    <form id="f" method="get" asp-action="Manage"
+          data-ajax="true" data-ajax-update="#manageTableTarget" data-ajax-loading="#loader"
+          class="d-flex align-items-center gap-2 mb-3" style="max-width: 700px">
+        <input type="text" name="search" value="@ViewBag.Search" class="form-control"
+               placeholder="Search by name or Id..." data-trim="" />
+
+        <select name="categoryId" class="form-select" style="max-width: 220px" onchange="this.form.submit()">
             <option value="">All Categories</option>
             @foreach (var c in (List<Category>)ViewBag.Categories)
             {
@@ -16,11 +24,11 @@
         </select>
 
         <button type="submit" class="btn btn-outline-primary">Search</button>
-
         @if (!string.IsNullOrEmpty((string)ViewBag.Search) || ViewBag.CategoryId != null)
         {
             <a asp-action="Manage" class="btn btn-outline-secondary">Clear</a>
         }
+        <img src="/images/loader.gif" id="loader" style="display:none; width:24px; height:24px;" />
     </form>
 
     <div class="d-flex justify-content-between mb-3">
@@ -33,6 +41,6 @@
     </div>
 
     <div id="manageTableTarget">
-        @await Html.PartialAsync("_ManageProductsTable", Model)
+        <partial name="_ManageProductsTable" model="Model" />
     </div>
 </div>

@@ -30,14 +30,17 @@
         <a href="/Cart/Index">Cart</a>
         <a href="/Order/History">My Orders</a>
         
-        <a href="/Product/Manage">Products</a>
-        <a href="/Category/Index">Categories</a>
-        <a href="/ModifierGroup/Index">Modifier Groups</a>
-        <a href="/Admin/Index">Members</a>
-        <a href="/Admin/AdminList">Admins</a>
-        <a href="/VoucherRules/Index">Vouchers</a>
-
-       
+        @* Admin-only links *@
+        @if (User.IsInRole("Admin"))
+        {
+            <a href="/Product/Manage">Products</a>
+            <a href="/Category/Index">Categories</a>
+            <a href="/ModifierGroup/Index">Modifier Groups</a>
+            <a href="/Admin/Index">Members</a>
+            <a href="/Admin/AdminList">Admins</a>
+            <a href="/VoucherRules/Index">Vouchers</a>
+        }
+        
         <div></div>
         @if (User.Identity?.IsAuthenticated ?? false)
         {

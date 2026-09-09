@@ -1,7 +1,11 @@
-﻿@model List<Product>
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Product>
 
 <form id="batchDeleteForm" asp-action="BatchDelete" method="post"
       onsubmit="return confirm('Delete all selected products?');"></form>
+
+<p class="text-muted">@Model.TotalItemCount product(s) found &middot; page @Model.PageNumber of @Model.PageCount</p>
 
 <table class="table table-bordered table-hover">
     <thead class="table-light">
@@ -26,7 +30,7 @@
             var photoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault();
             <tr>
                 <td><input type="checkbox" class="rowCheck" name="ids" value="@p.Id" form="batchDeleteForm" /></td>
-                <td>
+                <td style="position: relative;">
                     <img src="@(photoUrl != null ? "/photos/product/" + photoUrl : "/photos/no-image.jpg")" style="width:60px; height:60px; object-fit:cover;" />
                     @if (p.Photos.Count > 1)
                     {
@@ -45,24 +49,24 @@
                     }
                     else
                     {
-                        <span class="badge bg-secondary">Out of Stock</span>
+                        <span class="badge bg-secondary">Hidden</span>
                     }
                 </td>
                 <td>
-                    <a asp-action="ViewDetails" asp-route-id="@p.Id" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                    <a asp-action="ViewDetails" asp-route-id="@p.Id" class="btn btn-sm btn-outline-info"><i class="bi bi-eye-fill"></i></a>
                     <form asp-action="ToggleAvailability" asp-route-id="@p.Id" method="post" style="display: inline">
                         @if (p.IsAvailable)
                         {
-                            <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-x-circle"></i></button>
+                            <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-x-circle-fill"></i></button>
                         }
                         else
                         {
-                            <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-check-circle"></i></button>
+                            <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-check-circle-fill"></i></button>
                         }
                     </form>
-                    <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                    <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-fill"></i></a>
                     <form asp-action="Delete" asp-route-id="@p.Id" method="post" style="display: inline" onsubmit="return confirm('Delete this product?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>
                     </form>
                 </td>
             </tr>
@@ -70,30 +74,23 @@
     </tbody>
 </table>
 
+@* Pager*@
 @{
-    int page = (int)ViewBag.Page;
-    int totalPages = (int)ViewBag.TotalPages;
+    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+    options.LinkToFirstPageFormat = "First";
+    options.LinkToLastPageFormat = "Last";
+    options.LinkToPreviousPageFormat = "Previous";
+    options.LinkToNextPageFormat = "Next";
+
+    var ajaxOptions = new AjaxOptions
+    {
+        HttpMethod = "get",
+        UpdateTargetId = "manageTableTarget",
+        LoadingElementId = "#loader",
+    };
 }
 
-@if (totalPages > 1)
-{
-    <nav>
-        <ul class="pagination">
-            <li class="page-item @(page == 1 ? "disabled" : "")">
-                <a class="page-link" asp-action="Manage" asp-route-page="@(page - 1)" asp-route-search="@ViewBag.Search" asp-route-categoryId="@ViewBag.CategoryId"
-                   data-ajax="true" data-ajax-mode="replace" data-ajax-update="#manageTableTarget">Previous</a>
-            </li>
-            @for (int i = 1; i <= totalPages; i++)
-            {
-                <li class="page-item @(page == i ? "active" : "")">
-                    <a class="page-link" asp-action="Manage" asp-route-page="@i" asp-route-search="@ViewBag.Search" asp-route-categoryId="@ViewBag.CategoryId"
-                       data-ajax="true" data-ajax-mode="replace" data-ajax-update="#manageTableTarget">@i</a>
-                </li>
-            }
-            <li class="page-item @(page >= totalPages ? "disabled" : "")">
-                <a class="page-link" asp-action="Manage" asp-route-page="@(page + 1)" asp-route-search="@ViewBag.Search" asp-route-categoryId="@ViewBag.CategoryId"
-                   data-ajax="true" data-ajax-mode="replace" data-ajax-update="#manageTableTarget">Next</a>
-            </li>
-        </ul>
-    </nav>
-}
+@Html.PagedListPager(
+    Model,
+    p => Url.Action("Manage", new { page = p, search = ViewBag.Search, categoryId = ViewBag.CategoryId }),
+    PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions))
