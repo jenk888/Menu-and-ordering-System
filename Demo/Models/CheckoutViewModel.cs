@@ -1,4 +1,3 @@
-
 namespace Demo.Models
 {
     public class CheckoutViewModel
@@ -18,13 +17,13 @@ namespace Demo.Models
 
         public bool IsGuest { get; set; }
 
-        // Members only — vouchers this specific user currently holds that are
-        // neither used nor expired. Always empty for guests.
-        public List<VoucherOptionViewModel> AvailableVouchers { get; set; } = new();
+        // True when the logged-in user's Role is "Admin". Admins can place
+        // orders but are not allowed to redeem vouchers.
+        public bool IsAdmin { get; set; }
 
-        // Section shows for any member with at least one available voucher, and
-        // always for guests (disabled, with a prompt to register).
-        public bool ShowVoucherSection => IsGuest || AvailableVouchers.Any();
+        // Members only — vouchers this specific user currently holds that are
+        // neither used nor expired. Always empty for guests and admins.
+        public List<VoucherOptionViewModel> AvailableVouchers { get; set; } = new();
     }
 
     public class VoucherOptionViewModel

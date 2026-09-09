@@ -1,0 +1,43 @@
+@model List<Order>
+
+@{
+    ViewBag.Title = "Kitchen Dashboard";
+}
+
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Kitchen Dashboard</h3>
+        <a asp-action="Manage" class="btn btn-outline-secondary btn-sm">&larr; Back to Orders</a>
+    </div>
+
+    <p class="text-muted">Updates live — no need to refresh. Cards grey out and move to the
+        back once every item is served.</p>
+
+    <div id="queue">
+        <partial name="_QueueGrid" model="Model" />
+    </div>
+</div>
+
+@section foot {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+    <script>
+        function refreshQueue() {
+            fetch('/Order/DashboardQueue')
+                .then(res => res.text())
+                .then(html => $('#queue').html(html));
+        }
+
+        // A single POST-and-forget helper for the per-item status buttons in
+        // the grid below. No page reload — the server's SignalR broadcast
+        // (fired inside SetItemStatus) triggers refreshQueue() for us, same
+        // as it would for any other admin who has this page open.
+        function setItemStatus(orderItemId, status) {
+            $.post('/Order/SetItemStatus', { orderItemId, status });
+        }
+
+        const connection = new signalR.HubConnectionBuilder().withUrl("/orderHub").build();
+        connection.on("OrderPlaced", refreshQueue);
+        connection.on("OrderUpdated", refreshQueue);
+        connection.start().catch(err => console.error(err));
+    </script>
+}

@@ -23,6 +23,30 @@
             </div>
         </div>
     </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Top Selling Items (by revenue)</div>
+                <div class="card-body">
+                    <canvas id="itemSalesChart" height="260"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Item Sales Summary</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr><th>Item</th><th class="text-end">Qty Sold</th><th class="text-end">Revenue</th></tr>
+                        </thead>
+                        <tbody id="itemSalesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section head {
@@ -69,7 +93,36 @@
             });
         }
 
+        async function loadItemSalesReport() {
+            const res = await fetch('/Order/ReportsItemSalesData?top=10');
+            const data = await res.json();
+
+            new Chart(document.getElementById('itemSalesChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.product),
+                    datasets: [{
+                        label: 'Revenue (RM)',
+                        data: data.map(d => d.revenue),
+                        backgroundColor: '#20c997',
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',   // horizontal bars — easier to read product names
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+
+            const rows = data.map(d =>
+                `<tr><td>${d.product}</td><td class="text-end">${d.quantitySold}</td>` +
+                `<td class="text-end">RM${d.revenue.toFixed(2)}</td></tr>`
+            ).join('');
+            document.getElementById('itemSalesTable').innerHTML = rows ||
+                '<tr><td colspan="3" class="text-center text-muted">No sales yet.</td></tr>';
+        }
+
         loadStatusChart();
         loadRevenueChart();
+        loadItemSalesReport();
     </script>
 }

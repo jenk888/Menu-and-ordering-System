@@ -93,10 +93,11 @@ public class Helper(IWebHostEnvironment en,
         }
     }
 
-    public void SignIn(string email, string role, bool rememberMe)
+    public void SignIn(string id, string email, string role, bool rememberMe)
     {
         List<Claim> claims =
         [
+            new(ClaimTypes.NameIdentifier, id),
             new(ClaimTypes.Name, email),
             new(ClaimTypes.Role, role),
         ];
@@ -267,7 +268,7 @@ public class Helper(IWebHostEnvironment en,
         public static async Task<BatchImportResult> ProcessAsync(IFormFile file, int expectedColumns, Func<string[], int, string?> processRow)
         {
             var result = new BatchImportResult();
-           
+
             using var reader = new StreamReader(file.OpenReadStream());
             string? line;
             int lineNo = 0;
@@ -284,7 +285,7 @@ public class Helper(IWebHostEnvironment en,
                     result.Skipped++;
                     continue;
                 }
-               
+
                 var error = processRow(cols, lineNo);
                 if (error != null)
                 {

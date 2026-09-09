@@ -237,36 +237,40 @@
                 </div>
             }
 
-            @if (Model.ShowVoucherSection)
-            {
-                <div class="voucher-panel">
-                    <h5>Voucher</h5>
+            <div class="voucher-panel">
+                <h5>Voucher</h5>
 
-                    @if (Model.IsGuest)
-                    {
-                        <select class="form-select" disabled>
-                            <option>No Voucher Selected</option>
-                        </select>
-                        <p class="voucher-register-note">Register as member for FREE to enjoy member benefits!</p>
-                    }
-                    else
-                    {
-                        <select class="form-select" id="voucherSelect" name="voucherId">
-                            <option value="" data-discount="0">No Voucher Selected</option>
-                            @foreach (var v in Model.AvailableVouchers)
-                            {
-                                var qualifies = Model.Subtotal >= v.MinimumSpend;
+                @if (Model.IsGuest)
+                {
+                    <select class="form-select" disabled>
+                        <option>No Voucher Selected</option>
+                    </select>
+                    <p class="voucher-register-note">Register as member for FREE to enjoy member benefits!</p>
+                }
+                else if (Model.IsAdmin)
+                {
+                    <select class="form-select" disabled>
+                        <option>No Voucher Selected</option>
+                    </select>
+                    <p class="voucher-register-note">Admin cannot use voucher</p>
+                }
+                else
+                {
+                    <select class="form-select" id="voucherSelect" name="voucherId">
+                        <option value="" data-discount="0">No Voucher Selected</option>
+                        @foreach (var v in Model.AvailableVouchers)
+                        {
+                            var qualifies = Model.Subtotal >= v.MinimumSpend;
 
-                                <option value="@v.Id"
-                                        data-discount="@v.DiscountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                        disabled="@(!qualifies)">
-                                    @v.Code — RM @v.DiscountAmount.ToString("0.00") off (min. spend RM @v.MinimumSpend.ToString("0.00"))@(qualifies ? "" : " — not eligible yet")
-                                </option>
-                            }
-                        </select>
-                    }
-                </div>
-            }
+                            <option value="@v.Id"
+                                    data-discount="@v.DiscountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                    disabled="@(!qualifies)">
+                                @v.Code — RM @v.DiscountAmount.ToString("0.00") off (min. spend RM @v.MinimumSpend.ToString("0.00"))@(qualifies ? "" : " — not eligible yet")
+                            </option>
+                        }
+                    </select>
+                }
+            </div>
 
             <div class="payment-method-panel">
                 <h5>Payment Method</h5>

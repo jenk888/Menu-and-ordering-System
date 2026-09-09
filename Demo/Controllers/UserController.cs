@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System.Net.Mail;
+using System.Security.Claims;
 namespace Demo.Controllers
 
 {
@@ -89,7 +90,7 @@ namespace Demo.Controllers
                 user.LockoutUntil = null;
                 db.SaveChanges();
 
-                hp.SignIn(user.Email, user.Role, vm.RememberMe);
+                hp.SignIn(user.Id, user.Email, user.Role, vm.RememberMe);
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
@@ -141,6 +142,59 @@ namespace Demo.Controllers
             // If i exists for another user, return false 
             return Json(!emailExists);
         }
+
+        // ====================================================================
+        // Email Verification (account activation)
+        // ====================================================================
+        // NOTE: Public self-registration issues accounts as active already (see
+        // Register below), so nothing currently issues a "VERIFY" token. This
+        // is kept so any account created with IsActive = false (e.g. a future
+        // "Add Member" flow) can still be activated via an emailed link.
+
+        // GET: User/ConfirmEmail?token=...
+        [HttpGet]
+        public IActionResult ConfirmEmail(string token)
+        {
+            var userToken = db.UserTokens
+                .Include(t => t.User)
+                .FirstOrDefault(t => t.Token == token && t.TokenType == "VERIFY");
+
+            if (userToken == null || userToken.IsUsed || userToken.Expire < DateTime.Now)
+            {
+                ViewBag.Success = false;
+                return View();
+            }
+
+            userToken.User.IsActive = true;
+            userToken.IsUsed = true;
+
+            // Give a welcome voucher now that the email is confirmed
+            var welcomeRule = db.VoucherRules
+                .FirstOrDefault(r => r.Name == "New Member Welcome Voucher" && r.IsActive);
+
+            if (welcomeRule != null)
+            {
+                // generate a random unique voucher code
+                string voucherCode = "NEW" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+
+                var voucher = new Voucher
+                {
+                    UserId = userToken.UserId,
+                    VoucherRuleId = welcomeRule.Id,
+                    Code = voucherCode,
+                    IssuedAt = DateTime.Now,
+                    ExpiresAt = DateTime.Now.AddDays((double)(welcomeRule.ExpiryDurationDays ?? 30))
+                };
+                db.Vouchers.Add(voucher);
+                ViewBag.SmsSimulationText = $"[SMS Sent to {userToken.User.Phone}: Welcome to Yellow Palace! Your welcome voucher code is {voucherCode}.]";
+            }
+
+            db.SaveChanges();
+
+            ViewBag.Success = true;
+            return View();
+        }
+
         // GET: User/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -275,43 +329,44 @@ namespace Demo.Controllers
                     Role = "Member",
                     Password = hp.HashPassword(vm.Password),
                     ProfilePhoto = hp.SavePhoto(vm.Photo, "photos/userprofile"),
-                    IsActive = true,
+                    IsActive = false,
                     FailedLoginCount = 0,
                 };
 
                 db.Users.Add(newUser);
 
-                // give a voucher to new register member
-                var welcomeRule = db.VoucherRules
-                    .FirstOrDefault(r => r.Name == "New Member Welcome Voucher" && r.IsActive);
-
-                string smsSimulationText = "";
-
-                if (welcomeRule != null)
-                {
-                    // generate a random n unique voucher code
-                    string voucherCode = "NEW" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
-
-                    var voucher = new Voucher
-                    {
-                        UserId = newUser.Id,
-                        VoucherRuleId = welcomeRule.Id,
-                        Code = voucherCode,
-                        IssuedAt = DateTime.Now,
-                        ExpiresAt = DateTime.Now.AddDays((double)(welcomeRule.ExpiryDurationDays ?? 30))
-                    };
-                    db.Vouchers.Add(voucher);
-                    smsSimulationText = $" [SMS Sent to {newUser.Phone}: Welcome to Yellow Palace! Your welcome voucher code is {voucherCode}.]";
-                }
-
                 // submit & save
                 db.SaveChanges();
 
-                TempData["Info"] = "Register successfully. Please login" + smsSimulationText;
+                // Send an activation link so the user can confirm their email.
+                // The welcome voucher is issued once they confirm (see ConfirmEmail), not here.
+                string verifyToken = Guid.NewGuid().ToString("N");
+
+                db.UserTokens.Add(new UserToken
+                {
+                    Token = verifyToken,
+                    TokenType = "VERIFY",
+                    UserId = newUser.Id,
+                    IsUsed = false,
+                    Expire = DateTime.Now.AddHours(24),
+                });
+                db.SaveChanges();
+
+                string confirmLink = Url.Action("ConfirmEmail", "User", new { token = verifyToken }, Request.Scheme)!;
+
+                var mail = new MailMessage();
+                mail.To.Add(newUser.Email);
+                mail.Subject = "Confirm your Yellow Palace account";
+                mail.Body = $"Hi {newUser.Name},<br/>Please click the link below to activate your account:<br/><a href='{confirmLink}'>{confirmLink}</a><br/>This link expires in 24 hours.";
+                mail.IsBodyHtml = true;
+
+                try { hp.SendEmail(mail); } catch { }
+
+                TempData["Info"] = "Registration successful! Please check your email to activate your account before logging in.";
                 return RedirectToAction("Login");
             }
 
-            return View();
+            return View(vm);
         }
 
         public string GenerateMemberId()
@@ -339,11 +394,11 @@ namespace Demo.Controllers
         }
 
         // GET: User/Profile
-        [Authorize]
+        //[Authorize]
         public IActionResult Profile()
         {
-            string email = User.Identity!.Name!;
-            var user = db.Users.FirstOrDefault(u => u.Email == email);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = db.Users.FirstOrDefault(u => u.Id == userId);
             if (user == null) return NotFound();
 
             var userVouchers = db.Vouchers
@@ -377,12 +432,12 @@ namespace Demo.Controllers
 
         // POST: User/Profile
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Profile(UpdateProfileVM vm)
         {
-            string email = User.Identity!.Name!;      
-            var user = db.Users.FirstOrDefault(u => u.Email == email);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = db.Users.FirstOrDefault(u => u.Id == userId);
             if (user == null) return NotFound();
 
             // check if Email is used by others
@@ -438,12 +493,12 @@ namespace Demo.Controllers
 
         // POST: User/ChangePassword
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult ChangePassword(UpdatePasswordVM passwordVm)
         {
-            string email = User.Identity!.Name!;      
-            var user = db.Users.FirstOrDefault(u => u.Email == email);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = db.Users.FirstOrDefault(u => u.Id == userId);
             if (user == null) return NotFound();
 
             // 1. Check if current password is correct

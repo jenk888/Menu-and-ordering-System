@@ -1,0 +1,63 @@
+@model List<Order>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+    @foreach (var order in Model)
+    {
+        bool done = order.IsFullyServed;
+
+        <div class="col">
+            <div class="card h-100 @(done ? "bg-light border-secondary text-muted" : "border-primary")">
+                <div class="card-header d-flex justify-content-between align-items-center @(done ? "" : "bg-primary bg-opacity-10")">
+                    <div>
+                        <strong>Order #@order.Id</strong>
+                        @if (order.TableNumber.HasValue)
+                        {
+                            <span class="badge bg-secondary ms-1">Table @order.TableNumber</span>
+                        }
+                    </div>
+                    <span class="badge @(order.PaymentStatus == PaymentStatus.Paid ? "bg-success" : "bg-warning text-dark")">
+                        @order.PaymentStatus
+                    </span>
+                </div>
+
+                <div class="card-body py-2">
+                    <div class="small text-muted mb-2">
+                        @(order.User?.Name ?? order.GuestName ?? "Guest") &middot;
+                        @order.CreatedAt.ToLocalTime().ToString("HH:mm")
+                        @if (!order.CanBeCancelled && !done)
+                        {
+                            <span class="badge bg-dark ms-1">Locked (in progress)</span>
+                        }
+                    </div>
+
+                    @foreach (var item in order.OrderItems)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="@(item.Status == OrderItemStatus.Served ? "text-decoration-line-through text-muted" : "")">
+                                @item.ProductNameSnapshot &times;@item.Quantity
+                            </span>
+
+                            <div class="btn-group btn-group-sm" role="group">
+                                @foreach (var s in new[] { OrderItemStatus.Queued, OrderItemStatus.Preparing, OrderItemStatus.Served })
+                                {
+                                    bool active = item.Status == s;
+                                    <button type="button"
+                                            class="btn @(active ? "btn-dark" : "btn-outline-secondary")"
+                                            onclick="setItemStatus(@item.Id, '@s')"
+                                            @(active ? "disabled" : "")>
+                                        @s
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No active orders right now.</p>
+    }
+</div>
