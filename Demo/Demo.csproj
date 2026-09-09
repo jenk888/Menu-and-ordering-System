@@ -8,21 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\beverage\**" />
+    <Compile Remove="wwwroot\food\**" />
+    <Compile Remove="wwwroot\images\**" />
     <Compile Remove="wwwroot\photos\user\**" />
     <Compile Remove="wwwroot\profile\**" />
+    <Content Remove="wwwroot\beverage\**" />
+    <Content Remove="wwwroot\food\**" />
+    <Content Remove="wwwroot\images\**" />
     <Content Remove="wwwroot\photos\user\**" />
     <Content Remove="wwwroot\profile\**" />
+    <EmbeddedResource Remove="wwwroot\beverage\**" />
+    <EmbeddedResource Remove="wwwroot\food\**" />
+    <EmbeddedResource Remove="wwwroot\images\**" />
     <EmbeddedResource Remove="wwwroot\photos\user\**" />
     <EmbeddedResource Remove="wwwroot\profile\**" />
+    <None Remove="wwwroot\beverage\**" />
+    <None Remove="wwwroot\food\**" />
+    <None Remove="wwwroot\images\**" />
     <None Remove="wwwroot\photos\user\**" />
     <None Remove="wwwroot\profile\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\images\" />
-    <Folder Include="wwwroot\food\" />
-    <Folder Include="wwwroot\beverage\" />
-    <Folder Include="wwwroot\photos\products\" />
   </ItemGroup>
 
   <ItemGroup>
