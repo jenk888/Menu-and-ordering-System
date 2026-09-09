@@ -1,9 +1,11 @@
 global using Demo.Models;
 global using Demo;
 using Demo.Hubs;
+
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddSqlServer<DB>($@"
     Data Source=(LocalDB)\MSSQLLocalDB;
@@ -12,25 +14,36 @@ builder.Services.AddSqlServer<DB>($@"
 ");
 builder.Services.AddScoped<Helper>();
 builder.Services.AddScoped<ReceiptService>();
-builder.Services.AddMemoryCache();
-builder.Services.AddAuthentication().AddCookie();
+
+// NOTE: paths updated to /User/... since the Account controller's
+// actions were merged into UserController.
+builder.Services.AddAuthentication().AddCookie(options =>
+{
+    options.LoginPath = "/User/Login";
+    options.LogoutPath = "/User/Logout";
+    options.AccessDeniedPath = "/User/AccessDenied";
+});
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
-builder.Services.AddSignalR();
-// Add session
+builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache(); // required by AddSession()
 builder.Services.AddSession();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
-app.MapHub<OrderHub>("/orderHub");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRequestLocalization("en-MY");
-// Use session
-app.UseSession();
 
+app.UseSession();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapHub<OrderHub>("/orderHub");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Product}/{action=Index}/{id?}");
+
 app.Run();
-
-

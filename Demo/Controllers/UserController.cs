@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using System.Net.Mail;
 namespace Demo.Controllers
 
@@ -8,24 +10,123 @@ namespace Demo.Controllers
                                IWebHostEnvironment en,
                                Helper hp) : Controller
     {
+        // How many failed attempts before the account gets locked.
+        private const int MaxFailedAttempts = 3;
+
+        // How long an account stays locked once triggered.
+        private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
+
+        // ====================================================================
+        // Login / Logout
+        // ====================================================================
+
         // GET: User/Login
-        public IActionResult Login()
+        [HttpGet]
+        public IActionResult Login(string? returnUrl)
         {
+            ViewBag.ReturnUrl = returnUrl;
+            ViewBag.CaptchaQuestion = hp.GenerateCaptcha();
             return View();
         }
 
-        //GET: User/Logout
+        // POST: User/Login
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Login(LoginVM vm, string? returnUrl)
+        {
+            if (!hp.VerifyCaptcha(vm.CaptchaAnswer))
+            {
+                ModelState.AddModelError("CaptchaAnswer", "Incorrect answer. Please try again.");
+            }
+
+            var user = db.Users.FirstOrDefault(u => u.Email == vm.Email);
+
+            // Already locked out from earlier attempts?
+            if (user != null && user.LockoutUntil.HasValue)
+            {
+                if (user.LockoutUntil.Value > DateTime.Now)
+                {
+                    return RedirectToAction("Lockout", new { until = user.LockoutUntil });
+                }
+
+                // Lockout period has passed on its own — clear it so login can proceed normally.
+                user.FailedLoginCount = 0;
+                user.LockoutUntil = null;
+                db.SaveChanges();
+            }
+
+            bool passwordOk = user != null
+                && !string.IsNullOrEmpty(vm.Password)
+                && hp.VerifyPassword(vm.Password, user.Password);
+
+            if (!passwordOk)
+            {
+                ModelState.AddModelError("", "Email or password is incorrect.");
+
+                if (user != null)
+                {
+                    user.FailedLoginCount++;
+
+                    if (user.FailedLoginCount >= MaxFailedAttempts)
+                    {
+                        user.LockoutUntil = DateTime.Now.Add(LockoutDuration);
+                        db.SaveChanges();
+                        return RedirectToAction("Lockout", new { until = user.LockoutUntil });
+                    }
+
+                    db.SaveChanges();
+                }
+            }
+            else if (!user!.IsActive)
+            {
+                ModelState.AddModelError("", "Your account has not been activated yet. Please check your email for the activation link.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Successful login — clear the failed-attempt counter.
+                user!.FailedLoginCount = 0;
+                user.LockoutUntil = null;
+                db.SaveChanges();
+
+                hp.SignIn(user.Email, user.Role, vm.RememberMe);
+
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
+
+                return RedirectToAction("Index", "Product");
+            }
+
+            ViewBag.ReturnUrl = returnUrl;
+            ViewBag.CaptchaQuestion = hp.GenerateCaptcha();
+            return View(vm);
+        }
+
+        // GET/POST: User/Logout
+        [HttpGet]
+        [HttpPost]
         public IActionResult Logout(string? returnURL)
         {
-            TempData["Info"] = "Logout successfully.";
-
             hp.SignOut();
-
+            TempData["Info"] = "Logout successfully.";
             return RedirectToAction("Index", "Product");
         }
 
-        //GET: User/AccessDenied
-        public IActionResult AccessDenied(string? returnURL)
+        // GET: User/Lockout
+        // Shown after 3 consecutive failed login attempts for the same account.
+        [HttpGet]
+        public IActionResult Lockout(DateTime? until)
+        {
+            ViewBag.Until = until;
+            return View();
+        }
+
+        // GET: User/AccessDenied
+        // Shown when a logged-in user tries to visit a page their Role can't access.
+        [HttpGet]
+        public IActionResult AccessDenied(string? returnUrl)
         {
             return View();
         }
@@ -39,6 +140,104 @@ namespace Demo.Controllers
 
             // If i exists for another user, return false 
             return Json(!emailExists);
+        }
+        // GET: User/ForgotPassword
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        // POST: User/ForgotPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ForgotPassword(ForgotPasswordVM vm)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = db.Users.FirstOrDefault(u => u.Email == vm.Email);
+
+                if (user != null)
+                {
+                    // Generate a one-time token for the reset link
+                    string token = Guid.NewGuid().ToString("N");
+
+                    db.UserTokens.Add(new UserToken
+                    {
+                        Token = token,
+                        TokenType = "RESET",
+                        UserId = user.Id,
+                        IsUsed = false,
+                        Expire = DateTime.Now.AddHours(1),
+                    });
+                    db.SaveChanges();
+
+                    string resetLink = Url.Action("ResetPassword", "User", new { token }, Request.Scheme)!;
+
+                    var mail = new MailMessage();
+                    mail.To.Add(user.Email);
+                    mail.Subject = "Password Reset Request";
+                    mail.Body = $"Click the link below to reset your password:<br/><a href='{resetLink}'>{resetLink}</a><br/>This link expires in 1 hour.";
+                    mail.IsBodyHtml = true;
+
+                    // TODO: confirm this matches your teammate's actual Helper.SendEmail signature
+                    hp.SendEmail(mail);
+                }
+
+                // Same message regardless of whether the email exists, so we don't leak which emails are registered.
+                TempData["Info"] = "If that email is registered, a password reset link has been sent.";
+                return RedirectToAction("Login");
+            }
+
+            return View(vm);
+        }
+
+        // GET: User/ResetPassword
+        // User arrives here via the emailed link (?token=...)
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            var userToken = db.UserTokens.FirstOrDefault(t => t.Token == token && t.TokenType == "RESET");
+
+            if (userToken == null || userToken.IsUsed || userToken.Expire < DateTime.Now)
+            {
+                TempData["Error"] = "This password reset link is invalid or has expired. Please request a new one.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            return View(new ResetPasswordVM { Token = token });
+        }
+
+        // POST: User/ResetPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ResetPassword(ResetPasswordVM vm)
+        {
+            var userToken = db.UserTokens
+                .Include(t => t.User)
+                .FirstOrDefault(t => t.Token == vm.Token && t.TokenType == "RESET");
+
+            if (userToken == null || userToken.IsUsed || userToken.Expire < DateTime.Now)
+            {
+                ModelState.AddModelError("", "This password reset link is invalid or has expired. Please request a new one.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                userToken!.User.Password = hp.HashPassword(vm.NewPassword);
+                userToken.IsUsed = true;
+
+                // A successful reset also lifts any active lockout.
+                userToken.User.FailedLoginCount = 0;
+                userToken.User.LockoutUntil = null;
+
+                db.SaveChanges();
+
+                TempData["Info"] = "Your password has been reset successfully. Please login with your new password.";
+                return RedirectToAction("Login");
+            }
+
+            return View(vm);
         }
 
         //GET: User/Register
@@ -143,7 +342,7 @@ namespace Demo.Controllers
         //[Authorize]
         public IActionResult Profile()
         {
-            string email = "membertest2@gmail.com";      // User.Identity!.Name!
+            string email = User.Identity!.Name!;      //"membertest2@gmail.com"
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
 
@@ -182,7 +381,7 @@ namespace Demo.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Profile(UpdateProfileVM vm)
         {
-            string email = "membertest2@gmail.com";      // User.Identity!.Name!
+            string email = User.Identity!.Name!;      // "membertest2@gmail.com"
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
 
