@@ -28,8 +28,13 @@
     <nav id="sideNav">
         <a href="/">Menu</a>
         <a href="/Cart/Index">Cart</a>
-        <a href="/Order/History">My Orders</a>
-        
+
+        @* Member-only links *@
+        @if (User.IsInRole("Admin"))
+        {
+            <a href="/Order/History">My Orders</a>
+        }
+
         @* Admin-only links *@
         @if (User.IsInRole("Admin"))
         {
@@ -45,7 +50,7 @@
         @if (User.Identity?.IsAuthenticated ?? false)
         {
             <div class="d-flex align-items-center gap-2">
-                <a href="/User/Profile/${User.Identity.Id}">
+                <a href="/User/Profile">
                     <img src="@(User.FindFirst("Photo")?.Value ?? "/photos/user/default-user.png")"
                          alt="Profile"
                          class="rounded-circle"
