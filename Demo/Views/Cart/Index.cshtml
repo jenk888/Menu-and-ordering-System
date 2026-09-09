@@ -232,7 +232,7 @@ else
                 var lineId = item.CartItemId > 0 ? item.CartItemId.ToString() : item.GuestLineKey;
 
                 <div class="cart-item-card" data-product-id="@item.ProductId" data-id="@lineId">
-                    <img class="cart-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
+                    <img class="cart-item-thumb" src="/photos/product/@(string.IsNullOrEmpty(item.ImageUrl) ? "/photos/no-image.jpg" : item.ImageUrl)" alt="@item.ProductName" />
 
                     <div class="flex-grow-1">
                         <div class="cart-item-name">@item.ProductName</div>
