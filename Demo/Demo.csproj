@@ -22,7 +22,6 @@
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\food\" />
     <Folder Include="wwwroot\beverage\" />
-    <Folder Include="wwwroot\photos\icon\" />
     <Folder Include="wwwroot\photos\products\" />
   </ItemGroup>
 

@@ -31,7 +31,7 @@ header {
         flex: 1;
         margin: 0;
         padding-left: 40px;
-        background: url(/photos/favicon.png) no-repeat left / 32px;
+        background: url(/photos/icon/logo.png) no-repeat left / 32px;
     }
 
     header a {
