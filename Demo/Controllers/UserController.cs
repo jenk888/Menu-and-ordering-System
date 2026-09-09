@@ -90,7 +90,14 @@ namespace Demo.Controllers
                 user.LockoutUntil = null;
                 db.SaveChanges();
 
-                hp.SignIn(user.Id, user.Email, user.Role, vm.RememberMe);
+                string? photoPath = null;
+                if (!string.IsNullOrEmpty(user.ProfilePhoto))
+                {
+                    string folder = user.Role == "Admin" ? "photos/adminprofile" : "photos/userprofile";
+                    photoPath = $"/{folder}/{user.ProfilePhoto}";
+                }
+
+                hp.SignIn(user.Id, user.Email, user.Role, vm.RememberMe, photoPath);
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
@@ -394,7 +401,7 @@ namespace Demo.Controllers
         }
 
         // GET: User/Profile
-        //[Authorize]
+        [Authorize]
         public IActionResult Profile()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -432,7 +439,7 @@ namespace Demo.Controllers
 
         // POST: User/Profile
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Profile(UpdateProfileVM vm)
         {
@@ -493,7 +500,7 @@ namespace Demo.Controllers
 
         // POST: User/ChangePassword
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult ChangePassword(UpdatePasswordVM passwordVm)
         {
