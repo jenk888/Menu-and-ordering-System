@@ -17,6 +17,9 @@ public class ProductInsertViewModel
 
     [Required(ErrorMessage = "Please select a photo.")]
     public List<IFormFile> Photos { get; set; } = [];
+
+    // ModifierGroup.Id values the admin ticked to attach with this product
+    public List<int> ModifierGroupIds { get; set; } = [];
 }
 
 public class ProductUpdateViewModel
@@ -38,6 +41,9 @@ public class ProductUpdateViewModel
 
     // New selected photos to add to this product
     public List<IFormFile> NewPhotos { get; set; } = [];
+
+    // ModifierGroup.Id values the admin ticked to attach with this product
+    public List<int> ModifierGroupIds { get; set; } = [];
 }
 
 public class ExistingPhotoViewModel

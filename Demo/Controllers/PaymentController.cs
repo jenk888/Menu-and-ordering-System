@@ -110,7 +110,6 @@ namespace HitPayIntegration.Controllers
         // 2. WEBHOOK HANDLER (HMAC SHA-256 Verified)
         // ----------------------------------------------------
         [HttpPost("webhook")]
-        public async Task<IActionResult> ReceiveWebhook()   // added "async", changed return type
         {
             try
             {

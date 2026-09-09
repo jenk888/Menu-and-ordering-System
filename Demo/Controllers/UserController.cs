@@ -74,7 +74,7 @@ namespace Demo.Controllers
                     Phone = vm.Phone,
                     Role = "Member",
                     Password = hp.HashPassword(vm.Password),
-                    ProfilePhoto = hp.SavePhoto(vm.Photo, "photos"),
+                    ProfilePhoto = hp.SavePhoto(vm.Photo, "photos/userprofile"),
                     IsActive = true,
                     FailedLoginCount = 0,
                 };
@@ -101,7 +101,7 @@ namespace Demo.Controllers
                 // submit & save
                 db.SaveChanges();
 
-                TempData["Info"] = "Register successfully. Please login";
+                TempData["Info"] = "Register successfully. Please login" + smsSimulationText;
                 return RedirectToAction("Login");
             }
 
@@ -205,7 +205,18 @@ namespace Demo.Controllers
 
                 if (vm.Photo != null)
                 {
-                    user.ProfilePhoto = hp.SavePhoto(vm.Photo, "photos");
+                    // if user has existing profile pic (and its not empty), delete it from server's physical path
+                    if (!string.IsNullOrEmpty(user.ProfilePhoto))
+                    {
+                        var oldImagePath = Path.Combine(en.WebRootPath, "photos/userprofile", user.ProfilePhoto);
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    // 2. save the new profile pic & update the db field
+                    user.ProfilePhoto = hp.SavePhoto(vm.Photo, "photos/userprofile");
                 }
 
                 db.SaveChanges();

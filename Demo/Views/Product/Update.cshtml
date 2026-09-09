@@ -29,7 +29,7 @@
                     {
                     var photo = Model.ExistingPhotos[i];
                     <div class="text-center">
-                        <img src="/photos/product/@photo.PhotoUrl" style="width:90px; height:90px; object-fit:cover; border-radius:6px" />
+                        <img src="/photos/products/@photo.PhotoUrl" style="width:90px; height:90px; object-fit:cover; border-radius:6px" />
                         <input type="hidden" asp-for="ExistingPhotos[i].Id" />
                         <input type="hidden" asp-for="ExistingPhotos[i].PhotoUrl" />
                         <div class="form-check d-flex justify-content-center align-items-center mt-1 gap-1">
@@ -54,6 +54,42 @@
             <span asp-validation-for="NewPhotos" class="text-danger"></span>
         </div>
 
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label mb-0">Modifier Groups</label>
+                <a href="/ModifierGroup/Insert" class="btn btn-sm btn-outline-secondary">Create New Modifier Group</a>
+            </div>
+
+            @{ var modifierGroups = (List<ModifierGroup>)ViewBag.ModifierGroups; }
+            @if (modifierGroups.Count == 0)
+            {
+                <div class="text-muted small">No modifier groups yet — create one first.</div>
+            }
+            else
+            {
+                <div class="border rounded p-2">
+                    @foreach (var g in modifierGroups)
+                    {
+                        var isChecked = Model.ModifierGroupIds.Contains(g.Id);
+                        <details class="mb-1">
+                            <summary style="cursor:pointer;">
+                                <input type="checkbox" name="ModifierGroupIds" value="@g.Id"
+                                       checked="@isChecked" onclick="event.stopPropagation()" />
+                                @g.Name
+                                <span class="text-muted small">(@g.SelectionType, @(g.IsRequired ? "Required" : "Optional"))</span>
+                            </summary>
+                            <ul class="small text-muted mb-1 ms-4">
+                                @foreach (var o in g.Options)
+                                {
+                                    <li>@o.Name @(o.ExtraPrice > 0 ? $"(+RM{o.ExtraPrice:0.00})" : "")</li>
+                                }
+                            </ul>
+                        </details>
+                    }
+                </div>
+            }
+        </div>
+
         <button type="submit" class="btn btn-primary">Save</button>
         <a asp-action="Manage" class="btn btn-secondary">Cancel</a>
 
@@ -68,7 +104,7 @@
 
 @section foot{
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>   
-    <script src="/js/photo-editor.js"></script>
+    <script src="/js/photoEditor.js"></script>
     <script>
         initPhotoEditor({
             fileInputId: "NewPhotos",

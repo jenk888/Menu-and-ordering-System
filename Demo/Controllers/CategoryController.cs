@@ -8,7 +8,7 @@ namespace Demo.Controllers
 {
     public class CategoryController(DB db) : Controller
     {
-        
+
         // GET: Category/Index
         public IActionResult Index()
         {
@@ -16,20 +16,20 @@ namespace Demo.Controllers
                 .OrderBy(c => c.DisplayOrder)
                 .ThenBy(c => c.Name)
                 .ToList();
-            
+
             return View(model);
         }
 
 
         // GET: Category/Insert
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult Insert()
         {
             return View();
         }
 
         // POST: Category/Insert
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(CategoryInsertViewModel vm)
         {
@@ -54,7 +54,7 @@ namespace Demo.Controllers
         }
 
         // GET: Category/Update
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult Update(int id)
         {
             var c = db.Categories.Find(id);
@@ -74,8 +74,17 @@ namespace Demo.Controllers
             return View(vm);
         }
 
-        
-        [Authorize(Roles = "Admin")]
+
+        // GET: Category/BatchInsert
+        //[Authorize(Roles = "Admin")]
+        public IActionResult BatchInsert()
+        {
+            return View();
+        }
+
+        // POST: Category/BatchInsert
+        //[Authorize(Roles = "Admin")]
+        [HttpPost]
         public async Task<IActionResult> BatchInsert(IFormFile? file)
         {
             if (file == null || file.Length == 0)
@@ -111,10 +120,8 @@ namespace Demo.Controllers
                 return null;
             });
 
-            // Category.Id is an identity column, so SaveChanges would normally ignore
-            // the Id we set above and let SQL Server assign its own. Wrapping the save
-            // in an explicit transaction with IDENTITY_INSERT toggled on lets our
-            // chosen Ids actually get used.
+            // Category.Id is an identity column, so SaveChanges would normally ignore the Id we set above and let SQL Server assign its own. 
+            // Wrapping the save in an explicit transaction with IDENTITY_INSERT toggled on lets our chosen Ids actually get used.
             if (result.Success > 0)
             {
                 using var tx = db.Database.BeginTransaction();
@@ -129,9 +136,9 @@ namespace Demo.Controllers
             return View();
         }
 
-        
+
         // POST: Category/Update
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(CategoryUpdateViewModel vm)
         {
@@ -161,16 +168,14 @@ namespace Demo.Controllers
         }
 
         // GET: Category/BatchUpdate
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult BatchUpdate()
         {
             return View();
         }
 
         // POST: Category/BatchUpdate
-        // Same tab-separated format as BatchInsert (Id, Name, DisplayOrder), but every
-        // row updates an EXISTING category matched by Id — unknown Ids are skipped.
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchUpdate(IFormFile? file)
         {
@@ -213,7 +218,7 @@ namespace Demo.Controllers
 
 
         // POST: Category/Delete
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(int id)
         {
@@ -240,10 +245,9 @@ namespace Demo.Controllers
         }
 
         // POST: Category/BatchDelete
-        // Deletes every checked category from the Index page — same "no products
-        // under it" rule as the single Delete action, applied per row (rows that
-        // still have products are skipped and reported instead of failing the batch).
-        [Authorize(Roles = "Admin")]
+        // Deletes every checked category from the Index page — same "no products under it" rule as the single Delete action
+        // applied per row (rows that still have products are skipped and reported instead of failing the batch).
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult BatchDelete(List<int>? ids)
         {

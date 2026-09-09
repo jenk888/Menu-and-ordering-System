@@ -40,6 +40,12 @@ public class Helper(IWebHostEnvironment en,
         var file = Guid.NewGuid().ToString("n") + ".jpg";
         var path = Path.Combine(en.WebRootPath, folder, file);
 
+        // if folder not exist, create it
+        if (!Directory.Exists(Path.Combine(en.WebRootPath, folder)))
+        {
+            Directory.CreateDirectory(Path.Combine(en.WebRootPath, folder));
+        }
+
         var options = new ResizeOptions
         {
             Size = new(200, 200),

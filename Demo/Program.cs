@@ -2,6 +2,7 @@ global using Demo.Models;
 global using Demo;
 using Demo.Hubs;
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
@@ -13,11 +14,6 @@ builder.Services.AddSqlServer<DB>($@"
 builder.Services.AddScoped<Helper>();
 builder.Services.AddAuthentication().AddCookie();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient();
-builder.Services.AddScoped<ReceiptService>();
-builder.Services.AddMemoryCache();
-builder.Services.AddSignalR();
-
 // Add session
 builder.Services.AddSession();
 
