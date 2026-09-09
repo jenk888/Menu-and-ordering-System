@@ -53,11 +53,12 @@
 
             <div class="mb-3">
                 <label asp-for="Photo"></label>
-                <label class="upload">
-                    <small>Select Photo...</small>
-                    <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-                    <img src="/photos/userprofile/default-user.png">
-                </label>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="choosePhotoBtn">Choose Photo</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="takePhotoBtn">Take Photo</button>
+                </div>
+                <input asp-for="Photo" id="Photo" type="file" accept="image/jpeg,image/png" hidden>
+                <div id="photoPreviewList" class="d-flex flex-wrap gap-2 mt-2"></div>
                 <span asp-validation-for="Photo" class="text-danger small"></span>
             </div>
 
@@ -68,7 +69,16 @@
     </div>
 </div>
 
+@await Html.PartialAsync("_PhotoEditorModal")
+@await Html.PartialAsync("_WebcamCaptureModal")
+
+@section head {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+}
+
 @section foot {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="/js/photoEditor.js"></script>
     <script>
         $.validator.setDefaults({ ignore: '' });
 
@@ -77,5 +87,12 @@
             if (el.type === "password") { el.type = "text"; btn.textContent = "Hide"; }
             else { el.type = "password"; btn.textContent = "Show"; }
         }
+
+        initPhotoEditor({
+            fileInputId: "Photo",
+            chooseButtonId: "choosePhotoBtn",
+            previewListId: "photoPreviewList",
+            webcamButtonId: "takePhotoBtn",
+        });
     </script>
 }
