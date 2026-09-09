@@ -52,26 +52,30 @@
             //<a href="/VoucherRules/Get">Vouchers</a>"
         }
 
-        <div></div>
+                <div></div>
         @if (User.Identity?.IsAuthenticated ?? false)
         {
-            <div class="d-flex align-items-center gap-2">
-                <a href="@(User.IsInRole("Admin") ? Url.Action("Profile", "Admin") : Url.Action("Profile", "User"))" class="text-decoration-none text-dark d-flex align-items-center gap-2">
-                    <img src="@(User.FindFirst("Photo")?.Value ?? "/photos/user/default-user.png")"
+            <div class="border-top pt-3 mt-2">
+                <a href="@(User.IsInRole("Admin") ? Url.Action("Profile", "Admin") : Url.Action("Profile", "User"))"
+                   class="text-decoration-none text-dark d-flex align-items-center gap-2 mb-4 p-2 rounded"
+                   style="margin-bottom: 20px;"
+                   onmouseover="this.style.background='#f0f0f0'"
+                   onmouseout="this.style.background='transparent'">
+                    <img src="@(string.IsNullOrEmpty(User.FindFirst("Photo")?.Value) ? "/photos/user/default-user.png" : User.FindFirst("Photo")?.Value)"
                          alt="Profile"
                          class="rounded-circle"
-                         style="width: 32px; height: 32px; object-fit: cover;" />
+                         style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #ddd;" />
 
-                    <div class="d-flex flex-column text-start" style="font-size: 0.85rem; line-height: 1.2;">
-                        <span class="fw-bold">@User.Identity.Name</span>
+                    <div class="d-flex flex-column text-start" style="font-size: 0.85rem; line-height: 1.3; overflow: hidden;">
+                        <span class="fw-bold text-truncate">@User.Identity.Name</span>
                         <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</small>
                     </div>
                 </a>
-            </div>
 
-            <form asp-controller="User" asp-action="Logout" method="post" class="m-0">
-                <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
-            </form>
+                <form asp-controller="User" asp-action="Logout" method="post" class="m-0" style="text-align: center;">
+                    <button type="submit" class="btn btn-outline-danger btn-sm" style="width: 90%;">Logout</button>
+                </form>
+            </div>
         }
         else
         {
