@@ -31,6 +31,10 @@
     <div class="nav-backdrop" id="navBackdrop"></div>
 
     <nav id="sideNav">
+        @* Guest links *@
+        <a href="/Product/Index">Menu</a>
+        <a href="/Cart/Index">Cart</a>
+
         @* Admin-only links *@
         @if (User.IsInRole("Admin"))
         {
@@ -42,12 +46,10 @@
             <a href="/Admin/AdminList">Admins</a>
             <a href="/VoucherRules/Index">Vouchers</a>
         }
-        @* Guest and Member links *@
-        else
+        @if (User.IsInRole("Member"))
         {
-            <a href="/Product/Index">Menu</a>
-            <a href="/Cart/Index">Cart</a>
             <a href="/Order/History">My Orders</a>
+            //<a href="/VoucherRules/Get">Vouchers</a>"
         }
 
         <div></div>
