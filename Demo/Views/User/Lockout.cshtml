@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Title = "Account Locked";
+}
+
+<div class="auth-wrap">
+    <div class="auth-card text-center">
+        <div class="auth-header">
+            <div class="auth-icon-circle">&#128274;</div>
+            <h2>Account Temporarily Locked</h2>
+            <p>Your account has been locked due to too many failed login attempts.</p>
+        </div>
+
+        @if (ViewBag.Until != null)
+        {
+            <div class="captcha-box mb-3">
+                Try again after <strong>@(((DateTime)ViewBag.Until).ToString("dd MMM yyyy, hh:mm tt"))</strong>
+            </div>
+        }
+
+        <a href="/User/ForgotPassword" class="btn btn-primary w-100 mb-2">Reset Password Instead</a>
+        <p class="auth-footer"><a href="/User/Login">Back to Login</a></p>
+    </div>
+</div>

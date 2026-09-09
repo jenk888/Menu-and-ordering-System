@@ -45,15 +45,17 @@
         @if (User.Identity?.IsAuthenticated ?? false)
         {
             <div class="d-flex align-items-center gap-2">
-                <img src="@(User.FindFirst("Photo")?.Value ?? "/photos/default-user.png")"
-                     alt="Profile"
-                     class="rounded-circle"
-                     style="width: 32px; height: 32px; object-fit: cover;" />
+                <a href="/User/Profile/${User.Identity.Id}">
+                    <img src="@(User.FindFirst("Photo")?.Value ?? "/photos/user/default-user.png")"
+                         alt="Profile"
+                         class="rounded-circle"
+                         style="width: 32px; height: 32px; object-fit: cover;" />
 
-                <div class="d-flex flex-column text-end" style="font-size: 0.85rem; line-height: 1.2;">
-                    <span class="fw-bold">@User.Identity.Name</span>
-                    <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</small>
-                </div>
+                    <div class="d-flex flex-column text-end" style="font-size: 0.85rem; line-height: 1.2;">
+                        <span class="fw-bold">@User.Identity.Name</span>
+                        <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</small>
+                    </div>
+                </a>
             </div>
 
             <form asp-controller="User" asp-action="Logout" method="post" class="m-0">

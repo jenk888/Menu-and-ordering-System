@@ -2,31 +2,60 @@
 @{
     ViewBag.Title = "Login";
 }
-<form class="form" method="post">
-    <div asp-validation-summary="ModelOnly"></div>
 
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="/photos/icon/logo.png" class="auth-logo" alt="Yellow Palace" onerror="this.style.display='none'">
+            <h2>Welcome Back</h2>
+            <p>Login to continue ordering</p>
+        </div>
 
-    <label asp-for="Email"></label>
-    <input asp-for="Email" autofocus>
-    <span asp-validation-for="Email"></span>
+        <form method="post" asp-action="Login">
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
 
-    <label asp-for="Password"></label>
-    <input asp-for="Password">
-    <span asp-validation-for="Password"></span>
+            <div class="mb-3">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" autofocus placeholder="you@gmail.com">
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
 
-    <br>
-    <label>
-        <input asp-for="RememberMe">Remember Me
-    </label>
-    <br>
+            <div class="mb-3">
+                <label asp-for="Password"></label>
+                <div class="input-group">
+                    <input asp-for="Password" class="form-control" id="loginPwd" placeholder="Your password">
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('loginPwd', this)">Show</button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
 
-    <section>
-        <button>Login</button>
-        <button type="reset">Reset</button>
-    </section>
-</form>
+            <div class="mb-3 form-check">
+                <input asp-for="RememberMe" class="form-check-input">
+                <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
+            </div>
 
-<p>
-    [ <a href="/User/Register">Register</a> |
-    <a href="/User/ResetPassword">Reset Password</a> ]
-</p>
+            <div class="mb-3">
+                <label>Security Check</label>
+                <div class="captcha-box">@ViewBag.CaptchaQuestion</div>
+                <input asp-for="CaptchaAnswer" class="form-control" autocomplete="off" placeholder="Your answer">
+                <span asp-validation-for="CaptchaAnswer" class="text-danger small"></span>
+            </div>
+
+            <button class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <p class="auth-footer"><a href="/User/ForgotPassword">Forgot Password?</a></p>
+        <p class="auth-footer"><a href="/User/Register">Don't have an account?</a></p>
+    </div>
+</div>
+
+@section foot {
+    <script>
+        function togglePwd(id, btn) {
+            var el = document.getElementById(id);
+            if (el.type === "password") { el.type = "text"; btn.textContent = "Hide"; }
+            else { el.type = "password"; btn.textContent = "Show"; }
+        }
+    </script>
+}

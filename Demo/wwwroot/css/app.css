@@ -361,3 +361,147 @@ label > * {
 .detail-stock {
     font-size: 0.95rem;
 }
+
+/* Auth Pages (Login / Register / Forgot / Reset / Lockout / Confirm) --------- */
+
+.auth-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 40px 15px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(8, 8, 150, 0.08);
+    padding: 32px 28px;
+    align-self: flex-start;
+}
+
+    .auth-card.wide {
+        max-width: 560px;
+    }
+
+.auth-logo {
+    width: 48px;
+    height: 48px;
+    display: block;
+    margin: 0 auto 12px;
+    object-fit: contain;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+    .auth-header h2 {
+        margin: 0 0 6px;
+        color: #080896;
+        font-weight: 700;
+    }
+
+    .auth-header p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+.auth-card label:not(.form-check-label):not(.upload) {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+    display: block;
+    color: #333;
+}
+
+.auth-card .form-control,
+.auth-card .form-select {
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.auth-card .btn-primary {
+    background: #080896;
+    border-color: #080896;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 600;
+}
+
+    .auth-card .btn-primary:hover {
+        background: #060670;
+        border-color: #060670;
+    }
+
+.auth-footer {
+    text-align: center;
+    margin-top: 16px;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+    .auth-footer a {
+        color: #080896;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+.captcha-box {
+    background: #f4f5fb;
+    border: 1px dashed #b9bdf0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-weight: 600;
+    color: #080896;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.auth-upload-label {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.auth-avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e0f7;
+    display: block;
+    margin: 0 auto 6px;
+}
+
+.auth-upload-hint {
+    font-size: 0.8rem;
+    color: #080896;
+    font-weight: 600;
+}
+
+.auth-icon-circle {
+    width: 64px;
+    height: 64px;
+    line-height: 64px;
+    border-radius: 50%;
+    background: #f4f5fb;
+    color: #080896;
+    font-size: 1.6rem;
+    margin: 0 auto 16px;
+}
+
+    .auth-icon-circle.success {
+        background: #e6f7ec;
+        color: #1f9d55;
+    }
+
+    .auth-icon-circle.error {
+        background: #fdeaea;
+        color: #d64545;
+    }
