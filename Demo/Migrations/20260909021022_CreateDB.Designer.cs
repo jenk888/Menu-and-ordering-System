@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Demo.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20260908053157_Ordering_and_Menu_System_db")]
-    partial class Ordering_and_Menu_System_db
+    [Migration("20260909021022_CreateDB")]
+    partial class CreateDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -201,6 +201,9 @@ namespace Demo.Migrations
 
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("decimal(10,2)");
+
+                    b.Property<int?>("TableNumber")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(10,2)");
