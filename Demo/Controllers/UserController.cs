@@ -90,7 +90,9 @@ namespace Demo.Controllers
 
                 if (welcomeRule != null)
                 {
-                    var voucherCode = "NEW" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+                    // generate a random n unique voucher code
+                    string voucherCode = "NEW" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+
                     var voucher = new Voucher
                     {
                         UserId = newUser.Id,
@@ -100,8 +102,7 @@ namespace Demo.Controllers
                         ExpiresAt = DateTime.Now.AddDays((double)(welcomeRule.ExpiryDurationDays ?? 30))
                     };
                     db.Vouchers.Add(voucher);
-
-                    smsSimulationText = $" [SMS Sent to {newUser.Phone}: Welcome to Yello Palace! Your welcome voucher code is {voucherCode}.]";
+                    smsSimulationText = $" [SMS Sent to {newUser.Phone}: Welcome to Yellow Palace! Your welcome voucher code is {voucherCode}.]";
                 }
 
                 // submit & save
@@ -295,7 +296,7 @@ namespace Demo.Controllers
             return View("Profile", profileVm);
         }
 
-            private List<ProfileVoucherVM> GetUserVouchers(string userId)
+        private List<ProfileVoucherVM> GetUserVouchers(string userId)
         {
             return db.Vouchers
                 .Where(v => v.UserId == userId)
