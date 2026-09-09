@@ -170,7 +170,7 @@ namespace Demo.Controllers
                 p.Price,
                 p.Stock,
                 PhotoUrl = p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault() != null
-                    ? "/photos/products/" + p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault()
+                    ? "/photos/product/" + p.Photos.Select(ph => ph.PhotoUrl).FirstOrDefault()
                     : "/photos/no-image.jpg"
             }).ToList();
 
