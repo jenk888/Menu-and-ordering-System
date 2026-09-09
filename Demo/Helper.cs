@@ -110,7 +110,7 @@ public class Helper(IWebHostEnvironment en,
             IsPersistent = rememberMe,
         };
 
-        ct.HttpContext!.SignInAsync(principal, properties);
+        ct.HttpContext!.SignInAsync("Cookies", principal, properties);
     }
 
 
@@ -134,7 +134,37 @@ public class Helper(IWebHostEnvironment en,
         return password;
     }
 
+    // ------------------------------------------------------------------------
+    // Simple Math Captcha (anti-bot) — no external service/API key required.
+    // Call GenerateCaptcha() when rendering the Login form (GET or on
+    // validation failure) to get a question to show. Call VerifyCaptcha() with
+    // the user's submitted answer when handling the POST.
+    // ------------------------------------------------------------------------
 
+    public string GenerateCaptcha()
+    {
+        Random r = new();
+        int a = r.Next(1, 10);
+        int b = r.Next(1, 10);
+
+        // Stash the correct answer server-side (Session) — never trust a value
+        // sent back from the client for this.
+        ct.HttpContext!.Session.Set("CaptchaAnswer", a + b);
+
+        return $"What is {a} + {b} ?";
+    }
+
+    public bool VerifyCaptcha(string? givenAnswer)
+    {
+        int? correctAnswer = ct.HttpContext!.Session.Get<int?>("CaptchaAnswer");
+
+        // One-time use: remove it so the same question can't be reused across attempts.
+        ct.HttpContext!.Session.Remove("CaptchaAnswer");
+
+        return correctAnswer.HasValue
+            && int.TryParse(givenAnswer, out int given)
+            && given == correctAnswer.Value;
+    }
 
     // ------------------------------------------------------------------------
     // Email Helper Functions

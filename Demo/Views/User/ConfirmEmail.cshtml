@@ -1,0 +1,22 @@
+﻿@{
+    ViewBag.Title = "Confirm Email";
+}
+
+<div class="auth-wrap">
+    <div class="auth-card text-center">
+        @if (ViewBag.Success == true)
+        {
+            <div class="auth-icon-circle success">&#10003;</div>
+            <h2>Account Activated</h2>
+            <p>Your account has been activated successfully. You may now login.</p>
+            <a href="/User/Login" class="btn btn-primary w-100">Go to Login</a>
+        }
+        else
+        {
+            <div class="auth-icon-circle error">&#10007;</div>
+            <h2>Link Invalid or Expired</h2>
+            <p>This confirmation link is invalid or has expired.</p>
+            <a href="/User/Login" class="btn btn-secondary w-100">Back to Login</a>
+        }
+    </div>
+</div>
