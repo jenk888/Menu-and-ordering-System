@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace Demo.Models;
 
 public class DB(DbContextOptions options) : DbContext(options)
@@ -72,8 +71,13 @@ public enum PaymentStatus
 
 public enum OrderItemStatus
 {
-    Queued,
-    Served
+    // Explicit values on purpose: Served must stay = 1 so existing "Served"
+    // rows in the DB don't silently become "Preparing" after this migration.
+    // Logically the flow is Queued -> Preparing -> Served, but the stored
+    // numbers don't have to (and here deliberately don't) match that order.
+    Queued = 0,
+    Served = 1,
+    Preparing = 2
 }
 
 public enum VoucherStatus
@@ -438,9 +442,12 @@ public class Order
         IsFullyServed ? OrderStatus.Completed :
         OrderStatus.Preparing;
 
-    // A member can only cancel before the order has been paid.
+    // A member can only cancel before payment AND before the kitchen has
+    // touched anything — once even one item moves past Queued (Preparing or
+    // Served), it's too late, since food/effort is already committed.
     [NotMapped]
-    public bool CanBeCancelled => !IsCancelled && PaymentStatus == PaymentStatus.Unpaid;
+    public bool CanBeCancelled => !IsCancelled && PaymentStatus == PaymentStatus.Unpaid &&
+        OrderItems.All(i => i.Status == OrderItemStatus.Queued);
 }
 
 public class OrderItem
