@@ -175,7 +175,7 @@
             @foreach (var item in Model.Items)
             {
                 <div class="checkout-item-row">
-                    <img class="checkout-item-thumb" src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" alt="@item.ProductName" />
+                    <img class="checkout-item-thumb" src="/photos/product/@(string.IsNullOrEmpty(item.ImageUrl) ? "/photos/no-image.jpg" : item.ImageUrl)" alt="@item.ProductName" />
                     <div class="flex-grow-1">
                         <div class="checkout-item-name">@item.ProductName</div>
                         <div class="checkout-item-qty">Qty: @item.Quantity &times; RM @item.UnitPrice.ToString("0.00")</div>
