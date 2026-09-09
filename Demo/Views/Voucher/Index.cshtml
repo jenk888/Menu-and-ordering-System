@@ -1,0 +1,46 @@
+﻿@model List<Demo.Models.VoucherClaimVM>
+
+@{
+    ViewData["Title"] = "Vouchers";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        @foreach (var v in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@v.Name</h5>
+                        <p class="card-text mb-1">
+                            <strong>Discount:</strong> RM @v.DiscountAmount.ToString("0.00")
+                            (Min spend: RM @v.MinimumSpend.ToString("0.00"))
+                        </p>
+                        <p class="card-text text-muted small">
+                            Valid for @(v.ExpiryDurationDays ?? 30) days after claiming
+                        </p>
+
+                        <div class="mt-auto">
+                            @if (v.AlreadyClaimed)
+                            {
+                                <button class="btn btn-secondary w-100" disabled>Already Claimed</button>
+                            }
+                            else
+                            {
+                                <form asp-action="Claim" method="post">
+                                    <input type="hidden" name="id" value="@v.Id" />
+                                    <button type="submit" class="btn btn-primary w-100">Claim</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <p class="text-muted">No vouchers available right now.</p>
+        }
+    </div>
+</div>
