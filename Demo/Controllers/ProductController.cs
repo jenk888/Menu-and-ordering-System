@@ -92,7 +92,7 @@ namespace Demo.Controllers
         // GET: Product/Manage
         public IActionResult Manage(string? search, int? categoryId, string? sort, string? dir, int page = 1)
         {
-            // (2) Sorting --------------------------
+            // Sorting
             var searched = db.Products
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
@@ -101,29 +101,13 @@ namespace Demo.Controllers
             ViewBag.Sort = sort;
             ViewBag.Dir = dir;
 
-            Func<Product, object> fn = sort switch
-            {
-                "name" => p => p.Name,
-                "price" => p => p.Price,
-                "stock" => p => p.Stock,
-                "category" => p => p.Category.Name,
-                _ => p => p.Id,
-            };
-
-            var sorted = dir == "des" ?
-                         searched.OrderByDescending(fn) :
-                         searched.OrderBy(fn);
-
-
             if (page < 1)
             {
                 return RedirectToAction("Manage", new { search, categoryId, page = 1 });
             }
 
-            var query = db.Products
-                .Include(p => p.Category)
-                .Include(p => p.Photos)
-                .AsQueryable();
+            // Search and filter
+            var query = searched;
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -135,13 +119,25 @@ namespace Demo.Controllers
                 query = query.Where(p => p.CategoryId == categoryId.Value);
             }
 
+            //Appy sorting
+            bool desc = dir == "desc";
+
+            query = sort switch
+            {
+                "name" => desc ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
+                "price" => desc ? query.OrderByDescending(p => p.Price) : query.OrderBy(p => p.Price),
+                "stock" => desc ? query.OrderByDescending(p => p.Stock) : query.OrderBy(p => p.Stock),
+                "category" => desc ? query.OrderByDescending(p => p.Category!.Name) : query.OrderBy(p => p.Category!.Name),
+                "status" => desc ? query.OrderByDescending(p => p.IsAvailable) : query.OrderBy(p => p.IsAvailable),
+                _ => desc ? query.OrderByDescending(p => p.Id) : query.OrderBy(p => p.Id),
+            };
+
             var model = query
-                .OrderBy(p => p.Id)
                 .ToPagedList(page, 10);
 
             // Requested page is past the last page
 
-            if(page > model.PageCount && model.PageCount > 0)
+            if (page > model.PageCount && model.PageCount > 0)
             {
                 return RedirectToAction("Manage", new { search, categoryId, page = model.PageCount });
             }
@@ -302,6 +298,8 @@ namespace Demo.Controllers
                     Name = vm.Name,
                     Price = vm.Price,
                     CategoryId = vm.CategoryId,
+                    Stock = vm.Stock,
+                    Description = vm.Description,
                 };
 
                 foreach (var file in vm.Photos)
@@ -382,7 +380,7 @@ namespace Demo.Controllers
                 {
                     Id = id,
                     Name = name,
-                    Description = string.IsNullOrEmpty(description) ? null : description,
+                    Description = description,
                     Price = price,
                     Stock = stock,
                     IsAvailable = isAvailable,
@@ -399,10 +397,6 @@ namespace Demo.Controllers
         }
 
         // POST: Product/BatchUpdate
-        // Same tab-separated format as BatchInsert, but every row updates an EXISTING
-        // product matched by Id — rows whose Id isn't found are skipped and reported.
-        // Photos aren't touched here; use the normal Update page for photos.
-        // product matched by Id — rows whose Id isn't found are skipped and reported.
         // Photos aren't touched here; use the normal Update page for photos.
         [Authorize(Roles = "Admin")]
         [HttpPost]
@@ -476,6 +470,8 @@ namespace Demo.Controllers
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
+                Stock = p.Stock,
+                Description = p.Description,
                 ExistingPhotos = p.Photos
                     .Select(ph => new ExistingPhotoViewModel { Id = ph.Id, PhotoUrl = ph.PhotoUrl })
                     .ToList(),
@@ -531,6 +527,8 @@ namespace Demo.Controllers
             {
                 p.Name = vm.Name;
                 p.Price = vm.Price;
+                p.Stock = vm.Stock;
+                p.Description = vm.Description;
 
                 if (vm.DeletePhotoIds.Count > 0)
                 {

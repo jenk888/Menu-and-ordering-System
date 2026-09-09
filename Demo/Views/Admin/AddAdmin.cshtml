@@ -29,11 +29,14 @@
     <span asp-validation-for="ConfirmPassword"></span>
 
     <label asp-for="Photo"></label>
-    <label class="upload">
-        <small>Select Photo...</small>
-        <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-        <img src="/photos/adminprofile/default.jpg" alt="Preview" id="adminPhotoPreview">
-    </label>
+    <div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="choosePhotoBtn">Choose Photo</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="takePhotoBtn">Take Photo</button>
+        </div>
+        <input asp-for="Photo" id="Photo" type="file" accept="image/jpeg,image/png" hidden>
+        <div id="photoPreviewList" class="d-flex flex-wrap gap-2 mt-2"></div>
+    </div>
     <span asp-validation-for="Photo"></span>
 
     <section>
@@ -42,19 +45,25 @@
     </section>
 </form>
 
+@await Html.PartialAsync("_PhotoEditorModal")
+@await Html.PartialAsync("_WebcamCaptureModal")
+
+@section head {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+}
+
 @section foot {
+    <script src="/js/photoEditor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
     <script>
         $.validator.setDefaults({ ignore: '' });
 
-        document.querySelector('input[name="Photo"]').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    document.querySelector('.upload img').src = event.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
+        initPhotoEditor({
+            fileInputId: "Photo",
+            chooseButtonId: "choosePhotoBtn",
+            previewListId: "photoPreviewList",
+            webcamButtonId: "takePhotoBtn",
         });
     </script>
 }

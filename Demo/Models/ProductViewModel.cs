@@ -16,7 +16,14 @@ public class ProductInsertViewModel
     [Required, Range(0.01, 100000, ErrorMessage = "Price must be between 0.01 and 100000.")]
     public decimal Price { get; set; }
 
+    [Required, Range(0, int.MaxValue, ErrorMessage = "Stock must be a positive integer.")]
+    public int Stock { get; set; }
+
+    [MaxLength(500)]
+    public string Description { get; set; } = null!;
+
     [Required(ErrorMessage = "Please select a photo.")]
+
     public List<IFormFile> Photos { get; set; } = [];
 
     // ModifierGroup.Id values the admin ticked to attach with this product
@@ -32,6 +39,11 @@ public class ProductUpdateViewModel
 
     [Required, Range(0.01, 100000, ErrorMessage = "Price must be between 0.01 and 100000.")]
     public decimal Price { get; set; }
+    [Required, Range(0, int.MaxValue, ErrorMessage = "Stock must be a positive integer.")]
+    public int Stock { get; set; }
+
+    [MaxLength(500)]
+    public string Description { get; set; } = null!;
 
     // Photo already saved against this product, rendered with checkbox
     // tick ones to remove on save
