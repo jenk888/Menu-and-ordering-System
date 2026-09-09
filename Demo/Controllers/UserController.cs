@@ -90,7 +90,14 @@ namespace Demo.Controllers
                 user.LockoutUntil = null;
                 db.SaveChanges();
 
-                hp.SignIn(user.Id, user.Email, user.Role, vm.RememberMe);
+                string? photoPath = null;
+                if (!string.IsNullOrEmpty(user.ProfilePhoto))
+                {
+                    string folder = user.Role == "Admin" ? "photos/adminprofile" : "photos/userprofile";
+                    photoPath = $"/{folder}/{user.ProfilePhoto}";
+                }
+
+                hp.SignIn(user.Id, user.Email, user.Role, vm.RememberMe, photoPath);
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {

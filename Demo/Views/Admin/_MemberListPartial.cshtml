@@ -63,7 +63,7 @@
 <!-- Pagination Controls -->
 @if (ViewBag.TotalPages > 1)
 {
-    <nav aria-label="Member pagination">
+    <div aria-label="Member pagination">
         <ul class="pagination justify-content-center">
             <!-- Previous Page Button -->
             <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
@@ -83,5 +83,5 @@
                 <a class="page-link page-btn" href="#" data-page="@(ViewBag.CurrentPage + 1)">Next</a>
             </li>
         </ul>
-    </nav>
+    </div>
 }

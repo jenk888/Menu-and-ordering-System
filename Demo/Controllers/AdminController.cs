@@ -13,7 +13,7 @@ namespace Demo.Controllers
         // GET: Admin/Index (Member Listing + Basic Searching + Sorting + Paging)
         public IActionResult Index(string search, string sortOrder, int page = 1)
         {
-            int pageSize = 5;
+            int pageSize = 7;
 
             // 1. Fetch only users with "Member" role
             var members = db.Users.Where(u => u.Role == "Member").AsQueryable();
@@ -64,7 +64,7 @@ namespace Demo.Controllers
         // GET：Admin/AdminList (Admin Listing + Basic Searching + Sorting + Paging)
         public IActionResult AdminList(string search, string sortOrder, int page = 1)
         {
-            int pageSize = 5;
+            int pageSize = 7;
 
             // 1. Fetch only users with "Admin" role
             var admins = db.Users.Where(u => u.Role == "Admin").AsQueryable();

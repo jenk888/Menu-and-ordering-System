@@ -93,7 +93,7 @@ public class Helper(IWebHostEnvironment en,
         }
     }
 
-    public void SignIn(string id, string email, string role, bool rememberMe)
+    public void SignIn(string id, string email, string role, bool rememberMe, string? photo = null)
     {
         List<Claim> claims =
         [
@@ -101,6 +101,11 @@ public class Helper(IWebHostEnvironment en,
             new(ClaimTypes.Name, email),
             new(ClaimTypes.Role, role),
         ];
+
+        if (!string.IsNullOrEmpty(photo))
+        {
+            claims.Add(new Claim("Photo", photo));
+        }
 
         ClaimsIdentity identity = new(claims, "Cookies");
 
