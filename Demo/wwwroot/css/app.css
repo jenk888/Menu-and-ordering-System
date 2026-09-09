@@ -74,7 +74,7 @@ nav {
     width: 200px;
     background: #fff;
     box-shadow: 2px 0 8px rgba(0,0,0,0.15);
-    padding: 20px 15px;
+    padding: 20px 5px;
     display: flex;
     flex-direction: column;
     gap: 5px;
