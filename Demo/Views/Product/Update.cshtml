@@ -16,6 +16,18 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="CategoryId" class="form-label">Category </label>
+            <select asp-for="CategoryId" class="form-select">
+                <option value="">-- Select Category --</option>
+                @foreach (var c in (List<Category>)ViewBag.Categories)
+                {
+                    <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                }
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Price" class="form-label">Price </label>
             <input asp-for="Price" type="number" step="0.01" min="0.01" class="form-control" />
             <span asp-validation-for="Price" class="text-danger"></span>

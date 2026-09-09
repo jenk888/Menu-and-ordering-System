@@ -459,6 +459,8 @@ namespace Demo.Controllers
                 return RedirectToAction("Index");
             }
 
+            ViewBag.Categories = db.Categories.ToList();
+
             ViewBag.ModifierGroups = db.ModifierGroups.Include(g => g.Options).ToList();
 
             var vm = new ProductUpdateViewModel

@@ -32,6 +32,8 @@ public class ProductInsertViewModel
 public class ProductUpdateViewModel
 {
     public string Id { get; set; } = null!;
+    [Required(ErrorMessage = "Please select a category.")]
+    public int CategoryId { get; set; }
 
     [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
