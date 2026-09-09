@@ -113,6 +113,7 @@ public class Helper(IWebHostEnvironment en,
         ct.HttpContext!.SignInAsync(principal, properties);
     }
 
+
     public void SignOut()
     {
         ct.HttpContext!.SignOutAsync();

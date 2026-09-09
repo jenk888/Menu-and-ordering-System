@@ -1,4 +1,5 @@
 ﻿namespace HitPayIntegration.Models
+
 {
     // Incoming request from your frontend checkout
     public class CreatePaymentRequest

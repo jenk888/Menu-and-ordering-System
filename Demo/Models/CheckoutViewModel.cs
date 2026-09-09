@@ -1,3 +1,4 @@
+
 namespace Demo.Models
 {
     public class CheckoutViewModel
