@@ -33,7 +33,9 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+app.UseWhen(
+    context => !context.Request.Path.StartsWithSegments("/api/payment/webhook"),
+    branch => branch.UseHttpsRedirection());
 app.UseStaticFiles();
 app.UseRequestLocalization("en-MY");
 
