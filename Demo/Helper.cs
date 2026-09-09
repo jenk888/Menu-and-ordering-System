@@ -93,7 +93,7 @@ public class Helper(IWebHostEnvironment en,
         }
     }
 
-    public async Task SignInAsync(string email, string role, bool rememberMe)
+    public void SignIn(string id, string email, string role, bool rememberMe)
     {
         List<Claim> claims =
         [
@@ -111,13 +111,13 @@ public class Helper(IWebHostEnvironment en,
             IsPersistent = rememberMe,
         };
 
-        await ct.HttpContext!.SignInAsync("Cookies", principal, properties);
+        ct.HttpContext!.SignInAsync("Cookies", principal, properties);
     }
 
 
-    public async Task SignOutAsync()
+    public void SignOut()
     {
-        await ct.HttpContext!.SignOutAsync();
+        ct.HttpContext!.SignOutAsync();
     }
 
     public string RandomPassword()

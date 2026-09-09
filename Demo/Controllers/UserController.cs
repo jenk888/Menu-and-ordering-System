@@ -33,7 +33,7 @@ namespace Demo.Controllers
         // POST: User/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginVM vm, string? returnUrl)
+        public IActionResult Login(LoginVM vm, string? returnUrl)
         {
             if (!hp.VerifyCaptcha(vm.CaptchaAnswer))
             {
@@ -90,7 +90,7 @@ namespace Demo.Controllers
                 user.LockoutUntil = null;
                 db.SaveChanges();
 
-                await hp.SignInAsync(user.Email, user.Role, vm.RememberMe);
+                hp.SignIn(user.Id, user.Email, user.Role, vm.RememberMe);
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
@@ -108,9 +108,9 @@ namespace Demo.Controllers
         // GET/POST: User/Logout
         [HttpGet]
         [HttpPost]
-        public async Task<IActionResult> Logout(string? returnURL)
+        public IActionResult Logout(string? returnURL)
         {
-            await hp.SignOutAsync();
+            hp.SignOut();
             TempData["Info"] = "Logout successfully.";
             return RedirectToAction("Index", "Product");
         }
