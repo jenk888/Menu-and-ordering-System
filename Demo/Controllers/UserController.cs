@@ -339,10 +339,10 @@ namespace Demo.Controllers
         }
 
         // GET: User/Profile
-        //[Authorize]
+        [Authorize]
         public IActionResult Profile()
         {
-            string email = User.Identity!.Name!;      //"membertest2@gmail.com"
+            string email = User.Identity!.Name!;
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
 
@@ -377,11 +377,11 @@ namespace Demo.Controllers
 
         // POST: User/Profile
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Profile(UpdateProfileVM vm)
         {
-            string email = User.Identity!.Name!;      // "membertest2@gmail.com"
+            string email = User.Identity!.Name!;      
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
 
@@ -438,11 +438,11 @@ namespace Demo.Controllers
 
         // POST: User/ChangePassword
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult ChangePassword(UpdatePasswordVM passwordVm)
         {
-            string email = "membertest2@gmail.com";      // User.Identity!.Name!
+            string email = User.Identity!.Name!;      
             var user = db.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
 
