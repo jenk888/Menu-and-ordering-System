@@ -232,6 +232,10 @@ namespace Demo.Controllers
             var user = db.Users.FirstOrDefault(u => u.Id == id);
             if (user != null)
             {
+                // Remove related vouchers first before deleting user account
+                var userVouchers = db.Vouchers.Where(v => v.UserId == id).ToList();
+                db.Vouchers.RemoveRange(userVouchers);
+            
                 db.Users.Remove(user);
                 db.SaveChanges();
                 TempData["Info"] = $"Member {id} has been deleted successfully.";
