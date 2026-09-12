@@ -90,6 +90,7 @@ namespace Demo.Controllers
         }
 
         // GET: Product/Manage
+        [Authorize(Roles = "Admin")]
         public IActionResult Manage(string? search, int? categoryId, string? sort, string? dir, int page = 1)
         {
             // Sorting
