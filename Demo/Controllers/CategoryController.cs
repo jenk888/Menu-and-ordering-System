@@ -57,7 +57,7 @@ namespace Demo.Controllers
         }
 
         // GET: Category/Insert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Insert()
         {
             return View();
