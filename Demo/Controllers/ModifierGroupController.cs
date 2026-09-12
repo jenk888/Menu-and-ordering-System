@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Demo.Controllers
 {
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class ModifierGroupController(DB db) : Controller
     {
         // GET: ModifierGroup/Index
