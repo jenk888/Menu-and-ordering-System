@@ -224,27 +224,19 @@ namespace Demo.Controllers
             return Json(NextId(categoryId));
         }
 
-        // Generates an Id like "F001" — first letter of the category's name + a 3-digit counter
-        // scoped to that letter, so different categories can restart their own numbering.
+        // Generates an Id like "P0001" — a global counter across all products, so it
+        // matches the "P" + 4-digit scheme already used by the imported product data.
         private string NextId(int categoryId)
         {
-            var cat = db.Categories.Find(categoryId);
-            if (cat == null || string.IsNullOrEmpty(cat.Name))
-            {
-                return "X001";
-            }
-
-            string prefix = char.ToUpper(cat.Name[0]).ToString();
-
             int max = db.Products
-                .Where(p => p.Id.StartsWith(prefix))
+                .Where(p => p.Id.StartsWith("P"))
                 .Select(p => p.Id)
                 .AsEnumerable()
                 .Select(id => int.TryParse(id[1..], out int n) ? n : 0)
                 .DefaultIfEmpty(0)
                 .Max();
 
-            return prefix + (max + 1).ToString("000");
+            return "P" + (max + 1).ToString("0000");
         }
 
         // GET: Product/Insert
