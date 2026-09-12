@@ -64,7 +64,7 @@ namespace Demo.Controllers
         }
 
         // POST: Category/Insert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Insert(CategoryInsertViewModel vm)
         {
@@ -89,7 +89,7 @@ namespace Demo.Controllers
         }
 
         // GET: Category/Update
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Update(int id)
         {
             var c = db.Categories.Find(id);
@@ -111,14 +111,14 @@ namespace Demo.Controllers
 
 
         // GET: Category/BatchInsert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult BatchInsert()
         {
             return View();
         }
 
         // POST: Category/BatchInsert
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchInsert(IFormFile? file)
         {
@@ -173,7 +173,7 @@ namespace Demo.Controllers
 
 
         // POST: Category/Update
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Update(CategoryUpdateViewModel vm)
         {
@@ -203,14 +203,14 @@ namespace Demo.Controllers
         }
 
         // GET: Category/BatchUpdate
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult BatchUpdate()
         {
             return View();
         }
 
         // POST: Category/BatchUpdate
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> BatchUpdate(IFormFile? file)
         {
@@ -253,7 +253,7 @@ namespace Demo.Controllers
 
 
         // POST: Category/Delete
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Delete(int id)
         {
@@ -282,7 +282,7 @@ namespace Demo.Controllers
         // POST: Category/BatchDelete
         // Deletes every checked category from the Index page — same "no products under it" rule as the single Delete action
         // applied per row (rows that still have products are skipped and reported instead of failing the batch).
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult BatchDelete(List<int>? ids)
         {
