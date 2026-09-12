@@ -19,7 +19,14 @@
                 <div class="mb-3">
                     <img src="/photos/userprofile/@(Model.ProfilePhoto ?? "default.jpg")" class="rounded-circle shadow" style="width: 130px; height: 130px; object-fit: cover;" alt="Avatar" />
                 </div>
-                <span class="badge bg-success">Active</span>
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Active</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Inactive</span>
+                }
             </div>
 
             <!-- member details (Read-only) -->
